@@ -17,7 +17,6 @@
 
     <target name="nps" board="pc">
       <subsystem name="fdm" type="jsbsim"/>
-      <subsystem name="radio_control" type="ppm"/>
     </target>
 
     <subsystem name="motor_mixing"/>
@@ -117,18 +116,18 @@
     <define name="REF_TAU" value="4"/>
 
     <!-- feedback -->
-    <define name="GAIN_P" value="400"/>
-    <define name="GAIN_Q" value="400"/>
-    <define name="GAIN_R" value="350"/>
+    <define name="GAIN_P" value="100"/>
+    <define name="GAIN_Q" value="100"/>
+    <define name="GAIN_R" value="75"/>
 
-    <define name="IGAIN_P" value="75"/>
-    <define name="IGAIN_Q" value="75"/>
-    <define name="IGAIN_R" value="50"/>
+    <define name="IGAIN_P" value="0"/>
+    <define name="IGAIN_Q" value="0"/>
+    <define name="IGAIN_R" value="0"/>
 
     <!-- feedforward -->
-    <define name="DDGAIN_P" value="300"/>
-    <define name="DDGAIN_Q" value="300"/>
-    <define name="DDGAIN_R" value="300"/>
+    <define name="DDGAIN_P" value="0"/>
+    <define name="DDGAIN_Q" value="0"/>
+    <define name="DDGAIN_R" value="0"/>
   </section>
 
 
@@ -158,22 +157,22 @@
     <define name="REF_MAX_RDOT" value="RadOfDeg(1800.)"/>
 
     <!-- feedback -->
-    <define name="PHI_PGAIN"  value="1000"/>
-    <define name="PHI_DGAIN"  value="400"/>
-    <define name="PHI_IGAIN"  value="200"/>
+    <define name="PHI_PGAIN"  value="230"/>
+    <define name="PHI_DGAIN"  value="170"/>
+    <define name="PHI_IGAIN"  value="30"/>
 
-    <define name="THETA_PGAIN"  value="1000"/>
-    <define name="THETA_DGAIN"  value="400"/>
-    <define name="THETA_IGAIN"  value="200"/>
+    <define name="THETA_PGAIN"  value="230"/>
+    <define name="THETA_DGAIN"  value="170"/>
+    <define name="THETA_IGAIN"  value="30"/>
 
-    <define name="PSI_PGAIN"  value="500"/>
-    <define name="PSI_DGAIN"  value="300"/>
+    <define name="PSI_PGAIN"  value="230"/>
+    <define name="PSI_DGAIN"  value="170"/>
     <define name="PSI_IGAIN"  value="10"/>
 
     <!-- feedforward -->
-    <define name="PHI_DDGAIN"   value="300"/>
-    <define name="THETA_DDGAIN" value="300"/>
-    <define name="PSI_DDGAIN"   value="300"/>
+    <define name="PHI_DDGAIN"   value=" 0"/>
+    <define name="THETA_DDGAIN" value=" 0"/>
+    <define name="PSI_DDGAIN"   value=" 0"/>
   </section>
 
   <section name="GUIDANCE_V" prefix="GUIDANCE_V_">
