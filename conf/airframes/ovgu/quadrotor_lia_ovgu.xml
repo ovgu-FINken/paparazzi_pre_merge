@@ -44,10 +44,10 @@
 	SW			SW
 	/-->
   <servos driver="Pwm">
-    <servo name="FRONT"   no="0" min="1000" neutral="1100" max="1900"/>
-    <servo name="BACK"    no="1" min="1000" neutral="1100" max="1900"/>
-    <servo name="LEFT"   no="2" min="1000" neutral="1100" max="1900"/>
-    <servo name="RIGHT"    no="3" min="1000" neutral="1100" max="1900"/>
+    <servo name="FRONT"   no="2" min="1000" neutral="1100" max="1900"/>
+    <servo name="BACK"    no="3" min="1000" neutral="1100" max="1900"/>
+    <servo name="LEFT"   no="4" min="1000" neutral="1100" max="1900"/>
+    <servo name="RIGHT"    no="5" min="1000" neutral="1100" max="1900"/>
   </servos>
 
   <commands>
