@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2009 Antoine Drouin <poinix@gmail.com>
+ * Copyright (C) 2013 Sergey Krukowski <softsr@yahoo.de>
  *
  * This file is part of paparazzi.
  *
@@ -19,12 +19,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef STABILIZATION_ATTITUDE_PASSTHROUGH_H
-#define STABILIZATION_ATTITUDE_PASSTHROUGH_H
+/** @file hott.h
+ *
+ * Graupner HOTT telemetry control module.
+ */
 
-#include "math/pprz_algebra_int.h"
-#include "firmwares/rotorcraft/stabilization/stabilization_attitude_common_int.h"
+#ifndef HOTT_H
+#define HOTT_H
 
-extern struct Int32Eulers stab_att_sp_euler;
+#include "generated/airframe.h"
+#include "std.h"
 
-#endif /* STABILIZATION_ATTITUDE_PASSTHROUGH_H */
+extern void hott_init(void);
+extern void hott_periodic(void);
+extern void hott_event(void);
+
+#endif /* HOTT_H */
