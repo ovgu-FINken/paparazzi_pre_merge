@@ -37,6 +37,14 @@
 
     <!--define name="KILL_ON_GROUND_DETECT" value="TRUE"/-->
   </firmware>
+	<modules>
+		<load name="sonar_i2c.xml" />
+	<!--
+		<define name="SONAR_I2C_DEV" value="i2c2"/> 
+		<define name="USE_I2C2" />	</modules>
+
+	/-->
+	</modules>
 
 	<!--
     ^Front^
