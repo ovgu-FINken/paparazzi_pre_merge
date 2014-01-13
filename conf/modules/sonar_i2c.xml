@@ -6,6 +6,7 @@
 			I2C Sonar driver
     </description>
     <define name="SONAR_I2C_DEV" value="i2cX" description="set i2c peripheral (default: i2c0)"/>
+    <define name="SONAR_ADDR" value="0x71" description="set i2c peripheral (default: i2c0)"/>
     <define name="SONAR_OFFSET" value="offset" description="sensor reading offset (default: 0)"/>
     <define name="SONAR_SCALE" value="scale" description="sensor scale factor (default: 0.00)"/>
     <define name="SONAR_SYNC_SEND" description="flag to transmit the data as it is acquired"/>
@@ -20,6 +21,16 @@
 
   <makefile>
     <file name="sonar_i2c.c"/>
+  </makefile>
+  <makefile target="ap">
+		<!--  
+			<define name="ADC_CHANNEL_SONAR" value="$(ADC_SONAR)"/>
+    <define name="USE_$(I2C_SONAR)"/>
+    <define name="USE_SONAR"/>
+		/-->
+		<!--  
+    <define name="USE_VFF_EXTENDED"/>
+		/-->
   </makefile>
 
 </module>

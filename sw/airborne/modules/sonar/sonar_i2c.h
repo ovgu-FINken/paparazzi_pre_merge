@@ -32,7 +32,7 @@
 
 /** Raw I2C value.
  */
-extern uint16_t sonar_raw;
+extern uint16_t sonar_meas;
 
 /** Sonar distance in m.
  */
