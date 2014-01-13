@@ -357,6 +357,23 @@ void ins_update_gps(void)
 static void sonar_cb(uint8_t __attribute__((unused)) sender_id, const float *distance)
 {
   static float last_offset = 0.;
+  // new value filtered with median_filter
+  ins_impl.sonar_alt = update_median_filter(&ins_impl.sonar_median, sonar_meas);
+  float sonar = (ins_impl.sonar_alt - ins_impl.sonar_offset)
+#ifdef INS_SONAR_SENS
+		* INS_SONAR_SENS
+#endif
+ 	;
+
+#ifdef INS_SONAR_VARIANCE_THRESHOLD
+  /* compute variance of error between sonar and baro alt */
+  float err = sonar + ins_impl.baro_z; // sonar positive up, baro positive down !!!!
+  var_err[var_idx] = err;
+  var_idx = (var_idx + 1) % VAR_ERR_MAX;
+  float var = variance_float(var_err, VAR_ERR_MAX);
+  DOWNLINK_SEND_INS_SONAR(DefaultChannel,DefaultDevice,&err, &sonar, &var);
+  //DOWNLINK_SEND_INS_SONAR(DefaultChannel,DefaultDevice,&ins_impl.sonar_alt, &sonar, &var);
+#endif
 
   /* update filter assuming a flat ground */
   if (*distance < INS_SONAR_MAX_RANGE && *distance > INS_SONAR_MIN_RANGE

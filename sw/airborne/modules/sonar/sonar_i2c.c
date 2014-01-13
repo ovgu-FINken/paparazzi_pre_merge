@@ -45,6 +45,13 @@
 #define SONAR_SCALE 1.0000
 #endif
 
+#ifndef SONAR_ADDR
+#define SONAR_ADDR 0x71
+#endif
+#ifndef SONAR_I2C_DEV
+#define SONAR_I2C_DEV i2c2
+#endif
+
 uint16_t sonar_meas;
 bool_t sonar_data_available;
 float sonar_distance;
@@ -82,10 +89,10 @@ void sonar_read_event( void ) {
 #ifndef SITL
   sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);
 	sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
-	sonar_data_available = TRUE
+	sonar_data_available = TRUE;
 #endif
 #ifdef SENSOR_SYNC_SEND_SONAR
   DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
 #endif
-  airspeed_ets_i2c_trans.status = I2CTransDone;
+  sonar_i2c_trans.status = I2CTransDone;
 }
