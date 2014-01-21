@@ -87,12 +87,15 @@ void sonar_read_periodic(void) {
 
 void sonar_read_event( void ) {
 #ifndef SITL
-  sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);
+  sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);	// recieve mesuarment
+	// send read-command 0x51
 	sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
 	sonar_data_available = TRUE;
 #endif
 #ifdef SENSOR_SYNC_SEND_SONAR
   DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
+#else
+#warning "No Downlink for Sonar"
 #endif
   sonar_i2c_trans.status = I2CTransDone;
 }
