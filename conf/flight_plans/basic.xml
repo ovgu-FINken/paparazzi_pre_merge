@@ -19,8 +19,14 @@
   </waypoints>
   <exceptions>
     <!--exception cond="datalink_time > 22" deroute="Standby"/-->
+    <exception cond="2 > 1" deroute="go_right"/>
   </exceptions>
+
+
   <blocks>
+    <block name="go_right">
+      <attitude roll="30" alt="ground_alt+50"/>
+    </block>
     <block name="Wait GPS">
       <set value="1" var="kill_throttle"/>
       <while cond="!GpsFixValid()"/>
