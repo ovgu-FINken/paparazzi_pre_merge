@@ -57,6 +57,9 @@ bool_t sonar_data_available;
 float sonar_distance;
 float sonar_offset;
 float sonar_scale;
+uint8_t sonar_status;
+#define SONAR_STATUS_IDLE 0
+#define SONAR_STATUS_PENDING 1
 
 struct i2c_transaction sonar_i2c_trans;
 
@@ -70,15 +73,22 @@ void sonar_i2c_init(void) {
   sonar_i2c_trans.status = I2CTransDone;
 }
 
-/** Read I2C value to update sonar measurement
+/** Read I2C value to update sonar measurement and request new value
  */
 void sonar_read_periodic(void) {
 #ifndef SITL
-  if (sonar_i2c_trans.status == I2CTransDone) {
+  if (sonar_i2c_trans.status == I2CTransDone && sonar_status == SONAR_STATUS_IDLE) {
+		//send 0x51 to sensor
+		sonar_i2c_trans.buf[0] = 0x51;
+		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR, 1);
+		sonar_status = SONAR_STATUS_PENDING;
+	}
+  if (sonar_i2c_trans.status == I2CTransDone && sonar_status == SONAR_STATUS_PENDING) {
     i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR, 2);
 	}
 
 #else // SITL
+#warn "Compiling without SITL"
   sonar_distance = stateGetPositionEnu_f()->z;
   Bound(sonar_distance, 0.1f, 7.0f);
 #endif // SITL
@@ -98,4 +108,5 @@ void sonar_read_event( void ) {
 #warning "No Downlink for Sonar"
 #endif
   sonar_i2c_trans.status = I2CTransDone;
+	sonar_status = SONAR_STATUS_IDLE;
 }
