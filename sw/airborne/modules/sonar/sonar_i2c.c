@@ -62,6 +62,7 @@ uint8_t sonar_status;
 #define SONAR_STATUS_PENDING 1
 
 struct i2c_transaction sonar_i2c_trans;
+struct i2c_transaction sonar_i2c_trans2;
 
 void sonar_i2c_init(void) {
   sonar_meas = 0;
@@ -71,42 +72,43 @@ void sonar_i2c_init(void) {
   sonar_scale = SONAR_SCALE;
 
   sonar_i2c_trans.status = I2CTransDone;
+  sonar_i2c_trans2.status = I2CTransDone;
 }
 
 /** Read I2C value to update sonar measurement and request new value
  */
 void sonar_read_periodic(void) {
 #ifndef SITL
-  if (sonar_i2c_trans.status == I2CTransDone && sonar_status == SONAR_STATUS_IDLE) {
+  if (sonar_i2c_trans2.status == I2CTransDone && sonar_status == SONAR_STATUS_IDLE) {
 		//send 0x51 to sensor
-		sonar_i2c_trans.buf[0] = 0x51;
-		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR, 1);
-		sonar_status = SONAR_STATUS_PENDING;
+		sonar_i2c_trans2.buf[0] = 0x51;
+		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_trans2, SONAR_ADDR, 1);
 	}
   if (sonar_i2c_trans.status == I2CTransDone && sonar_status == SONAR_STATUS_PENDING) {
-    i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR, 2);
+    if(i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR, 2)) {
+			sonar_data_available = TRUE;
+			sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);	// recieve mesuarment
+			// send read-command 0x51
+			sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
+		}
 	}
+
+	sonar_status++;
+	sonar_status %= 2;
+  sonar_i2c_trans.status = I2CTransDone;
+  sonar_i2c_trans2.status = I2CTransDone;
 
 #else // SITL
 #warn "Compiling without SITL"
   sonar_distance = stateGetPositionEnu_f()->z;
   Bound(sonar_distance, 0.1f, 7.0f);
 #endif // SITL
-
+#ifdef SENSOR_SYNC_SEND_SONAR
+  DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
+#endif
 }
 
 void sonar_read_event( void ) {
 #ifndef SITL
-  sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);	// recieve mesuarment
-	// send read-command 0x51
-	sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
-	sonar_data_available = TRUE;
 #endif
-#ifdef SENSOR_SYNC_SEND_SONAR
-  DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
-#else
-#warning "No Downlink for Sonar"
-#endif
-  sonar_i2c_trans.status = I2CTransDone;
-	sonar_status = SONAR_STATUS_IDLE;
 }
