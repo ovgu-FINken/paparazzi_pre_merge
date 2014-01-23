@@ -16,13 +16,14 @@
     <file name="sonar_i2c.h"/>
   </header>
   <init fun="sonar_i2c_init()"/>
-  <periodic fun="sonar_read_periodic()" freq="10."/>
+  <periodic fun="sonar_read_periodic()" freq="1."/>
   <event fun="SonarEvent()"/>
 
   <makefile>
     <file name="sonar_i2c.c"/>
   </makefile>
   <makefile target="ap">
+    <define name="SENSOR_SYNC_SEND_SONAR"/>
 		<!--  
 			<define name="ADC_CHANNEL_SONAR" value="$(ADC_SONAR)"/>
     <define name="USE_$(I2C_SONAR)"/>
