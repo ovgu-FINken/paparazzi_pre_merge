@@ -79,22 +79,11 @@ void sonar_i2c_init(void) {
  */
 void sonar_read_periodic(void) {
 #ifndef SITL
-  if (sonar_i2c_trans2.status == I2CTransDone && sonar_status == SONAR_STATUS_IDLE) {
+  if (sonar_i2c_trans2.status == I2CTransDone) {
 		//send 0x51 to sensor
 		sonar_i2c_trans2.buf[0] = 0x51;
 		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_trans2, (SONAR_ADDR << 1) | 1, 1); // 7-Bit Adress + write Bit
 	}
-  if (sonar_i2c_trans.status == I2CTransDone && sonar_status == SONAR_STATUS_PENDING) {
-    if(i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR << 1, 2)) {
-			sonar_data_available = TRUE;
-			sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);	// recieve mesuarment
-			// send read-command 0x51
-			sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
-		}
-	}
-	sonar_status++;
-	sonar_status %= 2;
-  sonar_i2c_trans.status = I2CTransDone;
   sonar_i2c_trans2.status = I2CTransDone;
 
 #else // SITL
@@ -102,13 +91,21 @@ void sonar_read_periodic(void) {
   sonar_distance = stateGetPositionEnu_f()->z;
   Bound(sonar_distance, 0.1f, 7.0f);
 #endif // SITL
-#ifdef SENSOR_SYNC_SEND_SONAR
-	sonar_meas = (uint16_t) sonar_status;
-  DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
-#endif
 }
 
 void sonar_read_event( void ) {
 #ifndef SITL
+  if (sonar_i2c_trans.status == I2CTransDone) {
+    if(i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR << 1, 2)) {
+			sonar_data_available = TRUE;
+#ifdef SENSOR_SYNC_SEND_SONAR
+			DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
+#endif
+		}
+	}
+	sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);	// recieve mesuarment
+	// send read-command 0x51
+	sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
+  sonar_i2c_trans.status = I2CTransDone;
 #endif
 }
