@@ -98,14 +98,14 @@ void sonar_read_event( void ) {
   if (sonar_i2c_trans.status == I2CTransDone) {
     if(i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR << 1, 2)) {
 			sonar_data_available = TRUE;
-#ifdef SENSOR_SYNC_SEND_SONAR
-			DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
-#endif
 		}
 	}
 	sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);	// recieve mesuarment
 	// send read-command 0x51
 	sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
   sonar_i2c_trans.status = I2CTransDone;
+#endif
+#ifdef SENSOR_SYNC_SEND_SONAR
+	DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
 #endif
 }
