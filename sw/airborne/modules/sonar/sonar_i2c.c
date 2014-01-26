@@ -70,6 +70,8 @@ void sonar_i2c_init(void) {
   sonar_distance = 0;
   sonar_offset = SONAR_OFFSET;
   sonar_scale = SONAR_SCALE;
+	sonar_i2c_trans.buf[1] = 0;
+	sonar_i2c_trans.buf[0] = 0;
 
   sonar_i2c_trans.status = I2CTransDone;
   sonar_i2c_trans2.status = I2CTransDone;
@@ -82,8 +84,9 @@ void sonar_read_periodic(void) {
   if (sonar_i2c_trans2.status == I2CTransDone) {
 		//send 0x51 to sensor
 		sonar_i2c_trans2.buf[0] = 0x51;
-		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_trans2, (SONAR_ADDR << 1) | 1, 1); // 7-Bit Adress + write Bit
+		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_trans2, SONAR_ADDR << 1, 1); // 7-Bit Adress + write Bit
 	}
+	sonar_status = SONAR_STATUS_PENDING;
   sonar_i2c_trans2.status = I2CTransDone;
 
 #else // SITL
@@ -95,17 +98,24 @@ void sonar_read_periodic(void) {
 
 void sonar_read_event( void ) {
 #ifndef SITL
-  if (sonar_i2c_trans.status == I2CTransDone) {
-    if(i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_trans, SONAR_ADDR << 1, 2)) {
-			sonar_data_available = TRUE;
+  if (sonar_i2c_trans.status == I2CTransDone && sonar_status==SONAR_STATUS_PENDING) {
+    if(i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_trans, (SONAR_ADDR << 1) | 1, 2)) {
+			sonar_status = SONAR_STATUS_IDLE;
+			uint16_t meas = ((uint16_t)(sonar_i2c_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_trans.buf[1]);	// recieve mesuarment
+			// if the value is 0 the value is invalid
+			if (meas > 0) {
+				sonar_data_available = TRUE;
+				sonar_meas = meas;
+				sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
+			}
 		}
 	}
-	sonar_meas = ((uint16_t)(sonar_i2c_trans.buf[1]) << 8) | (uint16_t)(sonar_i2c_trans.buf[0]);	// recieve mesuarment
-	// send read-command 0x51
-	sonar_distance = (float)sonar_meas * sonar_scale + sonar_offset;
   sonar_i2c_trans.status = I2CTransDone;
 #endif
 #ifdef SENSOR_SYNC_SEND_SONAR
-	DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
+	if(sonar_data_available) {
+		DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &sonar_meas, &sonar_distance);
+		sonar_data_available = FALSE;
+	}
 #endif
 }
