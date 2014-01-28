@@ -317,7 +317,11 @@ void ins_update_sonar() {
   static float last_offset = 0.;
   // new value filtered with median_filter
   ins_impl.sonar_alt = update_median_filter(&ins_impl.sonar_median, sonar_meas);
-  float sonar = (ins_impl.sonar_alt - ins_impl.sonar_offset) * INS_SONAR_SENS;
+  float sonar = (ins_impl.sonar_alt - ins_impl.sonar_offset)
+#ifdef INS_SONAR_SENS
+		* INS_SONAR_SENS
+#endif
+ 	;
 
 #ifdef INS_SONAR_VARIANCE_THRESHOLD
   /* compute variance of error between sonar and baro alt */

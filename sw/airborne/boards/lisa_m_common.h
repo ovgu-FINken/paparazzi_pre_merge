@@ -56,7 +56,7 @@
  * Spektrum
  */
 /* The line that is pulled low at power up to initiate the bind process */
-#define SPEKTRUM_BIND_PIN GPIO3
+#define SPEKTRUM_BIND_PIN GPIO12
 #define SPEKTRUM_BIND_PIN_PORT GPIOC
 
 #define SPEKTRUM_UART1_RCC_REG &RCC_APB2ENR

@@ -647,7 +647,7 @@ void radio_control_spektrum_try_bind(void) {
 
   /* exit if the BIND_PIN is high, it needs to
      be pulled low at startup to initiate bind */
-  if (gpio_get(SPEKTRUM_BIND_PIN_PORT, SPEKTRUM_BIND_PIN) != 0)
+  if (gpio_get(SPEKTRUM_BIND_PIN_PORT, SPEKTRUM_BIND_PIN) == 0)
     return;
 
   /* bind initiated, initialise the delay timer */
