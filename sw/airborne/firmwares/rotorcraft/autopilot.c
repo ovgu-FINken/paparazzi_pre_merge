@@ -530,6 +530,7 @@ void autopilot_on_rc_frame(void)
     AP_MODE_OF_PPRZ(radio_control.values[RADIO_MODE], new_autopilot_mode);
 
     /* don't enter NAV mode if GPS is lost (this also prevents mode oscillations) */
+#if USE_GPS
     if (!(new_autopilot_mode == AP_MODE_NAV && GpsIsLost())) {
       /* always allow to switch to manual */
       if (new_autopilot_mode == MODE_MANUAL) {
@@ -545,6 +546,9 @@ void autopilot_on_rc_frame(void)
         autopilot_set_mode(new_autopilot_mode);
       }
     }
+#elif
+    autopilot_set_mode(new_autopilot_mode);
+#endif
   }
 
   /* an arming sequence is used to start/stop motors.

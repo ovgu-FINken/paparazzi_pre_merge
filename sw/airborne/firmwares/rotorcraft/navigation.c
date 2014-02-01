@@ -208,6 +208,7 @@ static inline void UNUSED nav_advance_carrot(void)
 void nav_run(void)
 {
 
+#ifdef USE_ATTITUDE_BLOCKS
 #if GUIDANCE_H_USE_REF
   // if GUIDANCE_H_USE_REF, CARROT_DIST is not used
   VECT2_COPY(navigation_carrot, navigation_target);
@@ -216,6 +217,7 @@ void nav_run(void)
 #endif
 
   nav_set_altitude();
+#endif
 }
 
 void nav_circle(struct EnuCoor_i *wp_center, int32_t radius)
