@@ -4,8 +4,22 @@
   <waypoints>
     <waypoint name="HOME" x="0.0" y="120.0" alt="250."/>
   </waypoints>
+	<header>
+		#include "sonar/sonar_i2c.h"
+	</header>
+	
+	<exceptions>
+		<exception cond="30 > sonar_meas" deroute="foo"/>
+	</exceptions>
 
-  <blocks>
+
+<blocks>
+		<block name="bar">
+			<attitude pitch="0" roll="0" throttle="0.1" until="FALSE" vmode="throttle"/>
+		</block>
+		<block name="foo">
+			<attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+		</block>
   </blocks>
 </flight_plan>
 
