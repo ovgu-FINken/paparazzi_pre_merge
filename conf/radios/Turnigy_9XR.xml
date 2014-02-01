@@ -48,6 +48,6 @@
  <channel ctl="2" function="THROTTLE"    min="1000" neutral="1000" max="2000" average="0"/>
  <channel ctl="3" function="PITCH"       min="2000" neutral="1500" max="1000" average="0"/>
  <channel ctl="4" function="YAW"         min="1000" neutral="1500" max="2000" average="0"/>
- <channel ctl="5" function="KILL_SWITCH" min="2000" neutral="1750" max="1500" average="0"/>
+ <channel ctl="5" function="KILL_SWITCH" min="2000" neutral="1500" max="1000" average="0"/>
  <channel ctl="6" function="MODE"        min="1000" neutral="1500" max="2000" average="1"/>
 </radio>
