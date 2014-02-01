@@ -15,10 +15,10 @@
 
 <blocks>
 		<block name="bar">
-			<attitude pitch="0" roll="0" throttle="0.1" until="FALSE" vmode="throttle"/>
+			<attitude pitch="0" roll="0" throttle="0.4" until="FALSE" vmode="throttle"/>
 		</block>
 		<block name="foo">
-			<attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+			<attitude pitch="0" roll="0" throttle="0.3" until="FALSE" vmode="throttle"/>
 		</block>
   </blocks>
 </flight_plan>
