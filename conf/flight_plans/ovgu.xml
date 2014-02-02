@@ -9,16 +9,28 @@
 	</header>
 	
 	<exceptions>
-		<exception cond="30 > sonar_values.front" deroute="foo"/>
+		<exception cond="30 > sonar_values.front" deroute="front"/>
+		<exception cond="30 > sonar_values.back" deroute="back"/>
+		<exception cond="30 > sonar_values.right" deroute="right"/>
+		<exception cond="30 > sonar_values.left" deroute="left"/>
 	</exceptions>
 
 
 <blocks>
-		<block name="foo">
-			<attitude pitch="-2" roll="0" throttle="0.6" until="sonar_values.front > 40" vmode="throttle"/>
+		<block name="front">
+			<attitude pitch="-1" roll="0" throttle="0.6" until="sonar_values.front > 40" vmode="throttle"/>
 		</block>
-		<block name="bar">
-			<attitude pitch="2" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/>
+		<block name="back">
+			<attitude pitch="1" roll="0" throttle="0.6" until="sonar_values.back > 40" vmode="throttle"/>
+		</block>
+		<block name="left">
+			<attitude pitch="0" roll="-1" throttle="0.6" until="sonar_values.left > 40" vmode="throttle"/>
+		</block>
+		<block name="right">
+			<attitude pitch="0" roll="1" throttle="0.6" until="sonar_values.right > 40" vmode="throttle"/>
+		</block>
+		<block name="default">
+			<attitude pitch="0" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/>
 		</block>
   </blocks>
 </flight_plan>
