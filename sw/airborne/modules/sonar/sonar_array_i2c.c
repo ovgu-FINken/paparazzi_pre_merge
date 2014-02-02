@@ -28,6 +28,7 @@
 #include "mcu_periph/uart.h"
 #include "messages.h"
 #include "subsystems/datalink/downlink.h"
+#include "subsystems/datalink/telemetry.h"
 
 /** Sonar offset.
  *  Offset value in m (float)
@@ -100,6 +101,8 @@ void sonar_array_i2c_init(void) {
 
 	sonar_i2c_read_trans.status = I2CTransDone;
 	sonar_i2c_write_trans.status = I2CTransDone;
+	// register telemetry
+	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
 }
 
 
@@ -166,3 +169,14 @@ void sonar_array_i2c_event( void ) {
   sonar_i2c_read_trans.status = I2CTransDone;
 #endif
 }
+
+void send_sonar_array_telemetry(void) {
+	DOWNLINK_SEND_SONAR_ARRAY(DefaultChannel, DefaultDevice,
+	&sonar_values.front,
+	&sonar_values.right,
+	&sonar_values.back,
+	&sonar_values.left,
+	&sonar_values.down);
+}
+
+

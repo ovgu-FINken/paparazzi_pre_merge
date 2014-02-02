@@ -1906,7 +1906,14 @@
     <field name="msg" type="char[]"/>
   </message>
 
-  <!--216 is free -->
+  <message name="SONAR_ARRAY" id="216">
+      <field name="sonar_front" type="uint16" alt_unit="cm"/>
+      <field name="sonar_right" type="uint16" alt_unit="cm"/>
+      <field name="sonar_back" type="uint16" alt_unit="cm"/>
+      <field name="sonar_left" type="uint16" alt_unit="cm"/>
+      <field name="sonar_down" type="uint16" alt_unit="cm"/>
+  </message>
+
   <!--217 is free -->
 
   <message name="BEBOP_ACTUATORS" id="218">

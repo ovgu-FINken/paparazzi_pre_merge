@@ -54,5 +54,6 @@ extern void sonar_array_i2c_init(void);
 extern void sonar_array_i2c_periodic(void);
 extern void sonar_array_i2c_event(void);
 
+extern void send_sonar_array_telemetry(void);
 
 #endif
