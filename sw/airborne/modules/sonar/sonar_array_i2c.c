@@ -142,6 +142,16 @@ void sonar_array_i2c_event( void ) {
 	}
   sonar_i2c_read_front_trans.status = I2CTransDone;
 
+	if (sonar_i2c_read_right_trans.status == I2CTransDone) {
+		i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_right_trans, (SONAR_ADDR_RIGHT << 1) | 1, 2);
+		uint16_t meas = ((uint16_t)(sonar_i2c_read_right_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_read_right_trans.buf[1]);	// recieve mesuarment
+		if(meas > 0) {
+			sonar_values.right = meas;
+			sonar_data_available.right = TRUE;
+		}
+	}
+  sonar_i2c_read_right_trans.status = I2CTransDone;
+
 	if (sonar_i2c_read_back_trans.status == I2CTransDone) {
 		i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_back_trans, (SONAR_ADDR_BACK << 1) | 1, 2);
 		uint16_t meas = ((uint16_t)(sonar_i2c_read_back_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_read_back_trans.buf[1]);	// recieve mesuarment
@@ -151,6 +161,26 @@ void sonar_array_i2c_event( void ) {
 		}
 	}
   sonar_i2c_read_back_trans.status = I2CTransDone;
+
+	if (sonar_i2c_read_left_trans.status == I2CTransDone) {
+		i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_left_trans, (SONAR_ADDR_LEFT << 1) | 1, 2);
+		uint16_t meas = ((uint16_t)(sonar_i2c_read_left_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_read_left_trans.buf[1]);	// recieve mesuarment
+		if(meas > 0) {
+			sonar_values.left = meas;
+			sonar_data_available.left = TRUE;
+		}
+	}
+  sonar_i2c_read_left_trans.status = I2CTransDone;
+
+	if (sonar_i2c_read_down_trans.status == I2CTransDone) {
+		i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_down_trans, (SONAR_ADDR_DOWN << 1) | 1, 2);
+		uint16_t meas = ((uint16_t)(sonar_i2c_read_down_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_read_down_trans.buf[1]);	// recieve mesuarment
+		if(meas > 0) {
+			sonar_values.down = meas;
+			sonar_data_available.down = TRUE;
+		}
+	}
+  sonar_i2c_read_down_trans.status = I2CTransDone;
 #endif
 }
 
