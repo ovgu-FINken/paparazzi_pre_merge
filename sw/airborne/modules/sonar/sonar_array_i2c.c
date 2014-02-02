@@ -119,18 +119,7 @@ void sonar_send_command(uint8_t i2c_addr) {
 	sonar_i2c_write_trans.status = I2CTransDone;
 }
 
-/** Read I2C value to update sonar measurement and request new value
- */
-void sonar_array_i2c_periodic(void) {
-#ifndef SITL
-	sonar_index = (sonar_index + 1) % 6;
-	sonar_send_command(read_order[sonar_index]);
-#else // SITL
-#warn "SITL not implemented for sonar_array_i2c yet"
-#endif // SITL
-}
-
-void sonar_array_i2c_event( void ) {
+void query_all_sensors( void ) {
 #ifndef SITL
 	if (sonar_i2c_read_front_trans.status == I2CTransDone) {
 		i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_front_trans, (SONAR_ADDR_FRONT << 1) | 1, 2);
@@ -182,6 +171,23 @@ void sonar_array_i2c_event( void ) {
 	}
   sonar_i2c_read_down_trans.status = I2CTransDone;
 #endif
+}
+
+/** Read I2C value to update sonar measurement and request new value
+ */
+void sonar_array_i2c_periodic(void) {
+#ifndef SITL
+	sonar_index = (sonar_index + 1) % 6;
+	sonar_send_command(read_order[sonar_index]);
+
+	query_all_sensors();
+#else // SITL
+#warn "SITL not implemented for sonar_array_i2c yet"
+#endif // SITL
+}
+
+void sonar_array_i2c_event( void ) {
+	// i guess it it not possible to query verything so often
 }
 
 void send_sonar_array_telemetry(void) {
