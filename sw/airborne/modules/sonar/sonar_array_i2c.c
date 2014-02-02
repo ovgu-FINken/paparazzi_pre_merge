@@ -68,7 +68,7 @@
 #define SONAR_ADDR_DOWN 0x75
 #endif
 
-static const char[] read_order =  {SONAR_ADDR_DOWN, SONAR_ADDR_FRONT, SONAR_ADDR_RIGHT, SONAR_ADDR_DOWN, SONAR_ADDR_BACK, SONAR_ADDR_LEFT};
+static const char read_order[] =  {SONAR_ADDR_DOWN, SONAR_ADDR_FRONT, SONAR_ADDR_RIGHT, SONAR_ADDR_DOWN, SONAR_ADDR_BACK, SONAR_ADDR_LEFT};
 
 float sonar_distance;
 uint8_t sonar_status;
@@ -106,7 +106,7 @@ void sonar_array_i2c_init(void) {
 /** sonar_send_command
  *	send take_range_reading command (0x51) to the sonar sensors to trigger the range readin
  */
-void sonar_send_command(uint_8t i2c_addr) {
+void sonar_send_command(uint8_t i2c_addr) {
 	if (sonar_i2c_write_trans.status == I2CTransDone) {
 		sonar_i2c_write_trans.buf[0] = 0x51;
 		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_write_trans, i2c_addr << 1, 1); // 7-Bit Adress + write Bit
@@ -128,15 +128,15 @@ void sonar_array_i2c_periodic(void) {
 #endif // SITL
 }
 
-void sonar_read_event( void ) {
+void sonar_array_i2c_event( void ) {
 #ifndef SITL
 	if (sonar_status == SONAR_STATUS_PENDING && sonar_i2c_read_trans.status == I2CTransDone) {
     if(i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_trans, (read_order[sonar_index] << 1) | 1, 2)) {
 			sonar_status = SONAR_STATUS_IDLE;
-			uint16_t meas = ((uint16_t)(sonar_i2c_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_trans.buf[1]);	// recieve mesuarment
+			uint16_t meas = ((uint16_t)(sonar_i2c_read_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_read_trans.buf[1]);	// recieve mesuarment
 
 			if(meas > 0) {
-				switch(sonr_index) {
+				switch(sonar_index) {
 					case 1:
 						sonar_values.front = meas;
 						sonar_data_available.front = TRUE;
@@ -153,7 +153,7 @@ void sonar_read_event( void ) {
 						sonar_values.left = meas;
 						sonar_data_available.left = TRUE;
 						break;
-					case default:
+					default:
 						sonar_values.down = meas;
 						sonar_data_available.down = TRUE;
 				}
