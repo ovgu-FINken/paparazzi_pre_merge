@@ -79,7 +79,11 @@ struct sonar_data_available_s sonar_data_available;
 #define SONAR_STATUS_IDLE 0
 #define SONAR_STATUS_PENDING 1
 
-struct i2c_transaction sonar_i2c_read_trans;
+struct i2c_transaction sonar_i2c_read_front_trans;
+struct i2c_transaction sonar_i2c_read_right_trans;
+struct i2c_transaction sonar_i2c_read_back_trans;
+struct i2c_transaction sonar_i2c_read_left_trans;
+struct i2c_transaction sonar_i2c_read_down_trans;
 struct i2c_transaction sonar_i2c_write_trans;
 
 void sonar_array_i2c_init(void) {
@@ -99,11 +103,6 @@ void sonar_array_i2c_init(void) {
 	sonar_values.left  = 0;
 	sonar_values.down  = 0;
 
-	sonar_i2c_read_trans.buf[0] = 0;
-	sonar_i2c_read_trans.buf[1] = 0;
-
-	sonar_i2c_read_trans.status = I2CTransDone;
-	sonar_i2c_write_trans.status = I2CTransDone;
 	// register telemetry
 	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
 }
@@ -115,7 +114,7 @@ void sonar_array_i2c_init(void) {
 void sonar_send_command(uint8_t i2c_addr) {
 	if (sonar_i2c_write_trans.status == I2CTransDone) {
 		sonar_i2c_write_trans.buf[0] = 0x51;
-		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_write_trans, i2c_addr << 1, 1); // 7-Bit Adress + write Bit
+		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_write_trans, (i2c_addr << 1) & ~0x01, 1); // 7-Bit Adress + write Bit (last bit set to 0)
 	}
 	sonar_i2c_write_trans.status = I2CTransDone;
 }
@@ -133,37 +132,25 @@ void sonar_array_i2c_periodic(void) {
 
 void sonar_array_i2c_event( void ) {
 #ifndef SITL
-	if (sonar_i2c_read_trans.status == I2CTransDone) {
-    i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_trans, (read_order[sonar_index] << 1) | 1, 2);
-
-		uint16_t meas = ((uint16_t)(sonar_i2c_read_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_read_trans.buf[1]);	// recieve mesuarment
-
+	if (sonar_i2c_read_front_trans.status == I2CTransDone) {
+		i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_front_trans, (SONAR_ADDR_FRONT << 1) | 1, 2);
+		uint16_t meas = ((uint16_t)(sonar_i2c_read_front_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_read_front_trans.buf[1]);	// recieve mesuarment
 		if(meas > 0) {
-			switch(sonar_index) {
-				case 1:
-					sonar_values.front = meas;
-					sonar_data_available.front = TRUE;
-					break;
-				case 2:
-					sonar_values.right = meas;
-					sonar_data_available.right = TRUE;
-					break;
-				case 4:
-					sonar_values.back = meas;
-					sonar_data_available.back = TRUE;
-					break;
-				case 5:
-					sonar_values.left = meas;
-					sonar_data_available.left = TRUE;
-					break;
-				default:
-					sonar_values.down = meas;
-					sonar_data_available.down = TRUE;
-			}
-			sonar_status = SONAR_STATUS_IDLE;
+			sonar_values.front = meas;
+			sonar_data_available.front = TRUE;
 		}
 	}
-  sonar_i2c_read_trans.status = I2CTransDone;
+  sonar_i2c_read_front_trans.status = I2CTransDone;
+
+	if (sonar_i2c_read_back_trans.status == I2CTransDone) {
+		i2c_receive(&SONAR_I2C_DEV, &sonar_i2c_read_back_trans, (SONAR_ADDR_BACK << 1) | 1, 2);
+		uint16_t meas = ((uint16_t)(sonar_i2c_read_back_trans.buf[0]) << 8) | (uint16_t)(sonar_i2c_read_back_trans.buf[1]);	// recieve mesuarment
+		if(meas > 0) {
+			sonar_values.back = meas;
+			sonar_data_available.back = TRUE;
+		}
+	}
+  sonar_i2c_read_back_trans.status = I2CTransDone;
 #endif
 }
 
