@@ -1889,7 +1889,13 @@
     <field name="ref_zd"    type="int32" alt_unit="m/s"  alt_unit_coef="0.0000019"/>
   </message>
 
- <!--214 is free -->
+	<message name="SONAR_ARRAY" id="214">
+		<field name="sonar_front" type="uint16" alt_unit="cm"/>
+		<field name="sonar_right" type="uint16" alt_unit="cm"/>
+		<field name="sonar_back" type="uint16" alt_unit="cm"/>
+		<field name="sonar_left" type="uint16" alt_unit="cm"/>
+		<field name="sonar_down" type="uint16" alt_unit="cm"/>
+	</message>
  <!--215 is free -->
  <!--216 is free -->
  <!--217 is free -->
