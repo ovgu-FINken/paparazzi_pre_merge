@@ -1,24 +1,24 @@
 <!-- DOCTYPE flight_plan SYSTEM "flight_plan.dtd" -->
 
-<flight_plan NAME="Dummy" LON0="1.27289" MAX_DIST_FROM_HOME="1000" GROUND_ALT="185" SECURITY_HEIGHT="25" QFU="270" ALT="250" LAT0="43.46223">
+<flight_plan NAME="Fink" LON0="1.27289" MAX_DIST_FROM_HOME="1000" GROUND_ALT="185" SECURITY_HEIGHT="25" QFU="270" ALT="250" LAT0="43.46223">
   <waypoints>
     <waypoint name="HOME" x="0.0" y="120.0" alt="250."/>
   </waypoints>
 	<header>
-		#include "sonar/sonar_i2c.h"
+		#include "sonar/sonar_array_i2c.h"
 	</header>
 	
 	<exceptions>
-		<exception cond="30 > sonar_meas" deroute="foo"/>
+		<exception cond="30 > sonar_values.front" deroute="foo"/>
 	</exceptions>
 
 
 <blocks>
-		<block name="bar">
-			<attitude pitch="0" roll="0" throttle="0.4" until="FALSE" vmode="throttle"/>
-		</block>
 		<block name="foo">
-			<attitude pitch="0" roll="0" throttle="0.3" until="FALSE" vmode="throttle"/>
+			<attitude pitch="-2" roll="0" throttle="0.6" until="sonar_values.front > 40" vmode="throttle"/>
+		</block>
+		<block name="bar">
+			<attitude pitch="2" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/>
 		</block>
   </blocks>
 </flight_plan>
