@@ -56,5 +56,6 @@ extern void sonar_array_i2c_event(void);
 
 extern void send_sonar_array_telemetry(void);
 void query_all_sensors(void);
+void query_sensor( uint16_t* value, uint8_t i2c_addr, struct i2c_transaction* transaction);
 
 #endif
