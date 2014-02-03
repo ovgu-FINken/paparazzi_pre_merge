@@ -399,7 +399,7 @@ void nav_init_stage(void)
   VECT3_COPY(nav_last_point, *stateGetPositionEnu_i());
   stage_time = 0;
   nav_circle_radians = 0;
-  horizontal_mode = HORIZONTAL_MODE_WAYPOINT;
+  //horizontal_mode = HORIZONTAL_MODE_WAYPOINT;
 }
 
 #include <stdio.h>
