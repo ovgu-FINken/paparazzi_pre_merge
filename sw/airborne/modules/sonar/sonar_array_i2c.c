@@ -56,15 +56,19 @@
 #ifndef SONAR_ADDR_FRONT
 #define SONAR_ADDR_FRONT 0x71
 #endif
+
 #ifndef SONAR_ADDR_RIGHT
 #define SONAR_ADDR_RIGHT 0x72
 #endif
+
 #ifndef SONAR_ADDR_BACK
 #define SONAR_ADDR_BACK 0x73
 #endif
+
 #ifndef SONAR_ADDR_LEFT
 #define SONAR_ADDR_LEFT 0x74
 #endif
+
 #ifndef SONAR_ADDR_DOWN
 #define SONAR_ADDR_DOWN 0x75
 #endif
@@ -90,6 +94,16 @@ void sonar_array_i2c_init(void) {
 	sonar_index = 0;
 	sonar_status = SONAR_STATUS_IDLE;
 
+	sonar_i2c_read_front_trans.buf[0] = 0;
+	sonar_i2c_read_front_trans.buf[1] = 0;
+  sonar_i2c_read_right_trans.buf[0] = 0;
+  sonar_i2c_read_right_trans.buf[1] = 0;
+  sonar_i2c_read_back_trans.buf[0] = 0;
+  sonar_i2c_read_back_trans.buf[1] = 0;
+  sonar_i2c_read_left_trans.buf[0] = 0;
+  sonar_i2c_read_left_trans.buf[1] = 0;
+  sonar_i2c_read_down_trans.buf[0] = 0;
+  sonar_i2c_read_down_trans.buf[1] = 0;
 
 	sonar_data_available.front = FALSE;
 	sonar_data_available.right = FALSE;
