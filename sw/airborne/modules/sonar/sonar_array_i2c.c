@@ -54,11 +54,11 @@
  * 	same as RIGHT, LEFT, BACK ... 
  */
 #ifndef SONAR_ADDR_FRONT
-#define SONAR_ADDR_FRONT 0x72
+#define SONAR_ADDR_FRONT 0x71
 #endif
 
 #ifndef SONAR_ADDR_RIGHT
-#define SONAR_ADDR_RIGHT 0x71
+#define SONAR_ADDR_RIGHT 0x72
 #endif
 
 #ifndef SONAR_ADDR_BACK
@@ -79,6 +79,7 @@ float sonar_distance;
 uint8_t sonar_status;
 uint8_t sonar_index;
 struct sonar_values_s sonar_values;
+struct sonar_values_s sonar_values_old;
 struct sonar_data_available_s sonar_data_available;
 #define SONAR_STATUS_IDLE 0
 #define SONAR_STATUS_PENDING 1
@@ -134,11 +135,12 @@ void sonar_send_command(uint8_t i2c_addr) {
 }
 
 
-void query_sensor( uint16_t* value, uint8_t i2c_addr, struct i2c_transaction* transaction) {
+void query_sensor( uint16_t* value, uint16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction) {
 	if(transaction->status == I2CTransDone) {
 		i2c_receive(&SONAR_I2C_DEV, transaction, (i2c_addr << 1) | 1, 2);
 		uint16_t meas = ((uint16_t)(transaction->buf[0]) << 8) | (uint16_t)(transaction->buf[1]);	// recieve mesuarment
 		if(meas > 0) {
+			*old_value = *value;
 			*value = meas;
 		}
 	}
@@ -147,11 +149,11 @@ void query_sensor( uint16_t* value, uint8_t i2c_addr, struct i2c_transaction* tr
 
 void query_all_sensors( void ) {
 #ifndef SITL
-	query_sensor(&sonar_values.front, SONAR_ADDR_FRONT, &sonar_i2c_read_front_trans);
-	query_sensor(&sonar_values.right, SONAR_ADDR_RIGHT, &sonar_i2c_read_right_trans);
-	query_sensor(&sonar_values.back, SONAR_ADDR_BACK, &sonar_i2c_read_back_trans);
-	query_sensor(&sonar_values.left, SONAR_ADDR_LEFT, &sonar_i2c_read_left_trans);
-	query_sensor(&sonar_values.down, SONAR_ADDR_DOWN, &sonar_i2c_read_down_trans);
+	query_sensor(&sonar_values.front,&sonar_values_old.front, SONAR_ADDR_FRONT, &sonar_i2c_read_front_trans);
+	query_sensor(&sonar_values.right,&sonar_values_old.right, SONAR_ADDR_RIGHT, &sonar_i2c_read_right_trans);
+	query_sensor(&sonar_values.back ,&sonar_values_old.back , SONAR_ADDR_BACK, &sonar_i2c_read_back_trans);
+	query_sensor(&sonar_values.left ,&sonar_values_old.left , SONAR_ADDR_LEFT, &sonar_i2c_read_left_trans);
+	query_sensor(&sonar_values.down ,&sonar_values_old.down , SONAR_ADDR_DOWN, &sonar_i2c_read_down_trans);
 #endif
 }
 
@@ -168,9 +170,38 @@ void sonar_array_i2c_periodic(void) {
 #endif // SITL
 }
 
-void sonar_array_i2c_event( void ) {
+#ifndef SONAR_FAILSAVE_RANGE
+#define SONAR_FAILSAVE_RANGE 200
+#endif
+
+#ifndef SONAR_FAILSAVE_P
+#define SONAR_FAILSAVE_P 0.2
+#endif
+
+#ifndef SONAR_FAILSAVE_D
+#define SONAR_FAILSAVE_D 0.0
+#endif
+
+float sonar_failsave_pitch( void ) {
+	if (sonar_values.front > sonar_values.back) {
+		return ( (SONAR_FAILSAVE_RANGE - sonar_values.back) * SONAR_FAILSAVE_P / SONAR_FAILSAVE_RANGE - (sonar_values_old.back - sonar_values.back) * SONAR_FAILSAVE_D);
+	} else {
+		return -( (SONAR_FAILSAVE_RANGE - sonar_values.front) * SONAR_FAILSAVE_P / SONAR_FAILSAVE_RANGE - (sonar_values_old.front - sonar_values.front) * SONAR_FAILSAVE_D);
+	}
+}
+
+float sonar_failsave_roll( void ) {
+	if (sonar_values.left > sonar_values.right) {
+		return -( (SONAR_FAILSAVE_RANGE - sonar_values.right) * SONAR_FAILSAVE_P / SONAR_FAILSAVE_RANGE - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D); 
+	} else {
+		return ( (SONAR_FAILSAVE_RANGE - sonar_values.left) * SONAR_FAILSAVE_P / SONAR_FAILSAVE_RANGE - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D); 
+	}
+
+}
+void sonar_array_i2c_event( void ) { 
 	// i guess it it not possible to query verything so often
 }
+
 
 void send_sonar_array_telemetry(void) {
 	DOWNLINK_SEND_SONAR_ARRAY(DefaultChannel, DefaultDevice,
