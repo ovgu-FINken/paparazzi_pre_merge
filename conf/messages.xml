@@ -1914,7 +1914,15 @@
       <field name="sonar_down" type="uint16" alt_unit="cm"/>
   </message>
 
-  <!--217 is free -->
+  <message name="SONAR_ARRAY" id="217">
+      <field name="sonar_front" type="uint16" alt_unit="cm"/>
+      <field name="sonar_right" type="uint16" alt_unit="cm"/>
+      <field name="sonar_back" type="uint16" alt_unit="cm"/>
+      <field name="sonar_left" type="uint16" alt_unit="cm"/>
+      <field name="sonar_down" type="uint16" alt_unit="cm"/>
+      <field name="sonar_failsave_pitch" type="float" alt_unit="deg"/>
+      <field name="sonar_failsave_roll" type="float" alt_unit="deg"/>
+  </message>
 
   <message name="BEBOP_ACTUATORS" id="218">
     <field name="cmd_thrust" type="int32"/>
