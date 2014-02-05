@@ -1895,6 +1895,8 @@
 		<field name="sonar_back" type="uint16" alt_unit="cm"/>
 		<field name="sonar_left" type="uint16" alt_unit="cm"/>
 		<field name="sonar_down" type="uint16" alt_unit="cm"/>
+		<field name="sonar_failsave_pitch" type="float" alt_unit="deg"/>
+		<field name="sonar_failsave_roll" type="float" alt_unit="deg"/>
 	</message>
  <!--215 is free -->
  <!--216 is free -->

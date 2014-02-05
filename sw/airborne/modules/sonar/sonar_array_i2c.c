@@ -76,6 +76,8 @@
 static const char read_order[] =  { SONAR_ADDR_FRONT, SONAR_ADDR_RIGHT, SONAR_ADDR_DOWN, SONAR_ADDR_BACK, SONAR_ADDR_LEFT};
 
 float sonar_distance;
+float sonar_fail_telemetry_pitch;
+float sonar_fail_telemetry_roll;
 uint8_t sonar_status;
 uint8_t sonar_index;
 struct sonar_values_s sonar_values;
@@ -175,26 +177,38 @@ void sonar_array_i2c_periodic(void) {
 #endif
 
 #ifndef SONAR_FAILSAVE_P
-#define SONAR_FAILSAVE_P 0.2
+#define SONAR_FAILSAVE_P 0.10
 #endif
 
 #ifndef SONAR_FAILSAVE_D
-#define SONAR_FAILSAVE_D 0.0
+#define SONAR_FAILSAVE_D 0.001
 #endif
 
 float sonar_failsave_pitch( void ) {
 	if (sonar_values.front > sonar_values.back) {
-		return ( (SONAR_FAILSAVE_RANGE - sonar_values.back) * SONAR_FAILSAVE_P / SONAR_FAILSAVE_RANGE - (sonar_values_old.back - sonar_values.back) * SONAR_FAILSAVE_D);
+		float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.back) * SONAR_FAILSAVE_P /*- (sonar_values_old.back - sonar_values.back) * SONAR_FAILSAVE_D*/);
+		if(out > 0)
+			return -out;
+		return 0.0;
 	} else {
-		return -( (SONAR_FAILSAVE_RANGE - sonar_values.front) * SONAR_FAILSAVE_P / SONAR_FAILSAVE_RANGE - (sonar_values_old.front - sonar_values.front) * SONAR_FAILSAVE_D);
+		float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.front) * SONAR_FAILSAVE_P/* - (sonar_values_old.front - sonar_values.front) * SONAR_FAILSAVE_D*/);
+		if(out > 0)
+			return out;
+		return 0.0;
 	}
 }
 
 float sonar_failsave_roll( void ) {
 	if (sonar_values.left > sonar_values.right) {
-		return -( (SONAR_FAILSAVE_RANGE - sonar_values.right) * SONAR_FAILSAVE_P / SONAR_FAILSAVE_RANGE - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D); 
+		float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.right) * SONAR_FAILSAVE_P /* - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D*/); 
+		if(out > 0)
+			return -out;
+		return 0.0;
 	} else {
-		return ( (SONAR_FAILSAVE_RANGE - sonar_values.left) * SONAR_FAILSAVE_P / SONAR_FAILSAVE_RANGE - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D); 
+		float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.left) * SONAR_FAILSAVE_P/* - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D*/); 
+		if(out > 0)
+			return out;
+		return 0.0;
 	}
 
 }
@@ -202,14 +216,17 @@ void sonar_array_i2c_event( void ) {
 	// i guess it it not possible to query verything so often
 }
 
-
 void send_sonar_array_telemetry(void) {
+	sonar_fail_telemetry_pitch = sonar_failsave_pitch();
+	sonar_fail_telemetry_roll = sonar_failsave_roll();
 	DOWNLINK_SEND_SONAR_ARRAY(DefaultChannel, DefaultDevice,
 	&sonar_values.front,
 	&sonar_values.right,
 	&sonar_values.back,
 	&sonar_values.left,
-	&sonar_values.down);
+	&sonar_values.down,
+	&sonar_fail_telemetry_pitch,
+	&sonar_fail_telemetry_roll);
 }
 
 

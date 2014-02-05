@@ -7,26 +7,32 @@
 	<header>
 		#include "sonar/sonar_array_i2c.h"
 	</header>
-	
+<!--
 	<exceptions>
-		<exception cond="(200 > sonar_values.back || 200 > sonar_values.front ) && ((sonar_values.right > sonar_values.back && sonar_values.left > sonar_values.back) || (sonar_values.right > sonar_values.front && sonar_values.left > sonar_values.front))" deroute="failsave_pitch"/>
-		<exception cond="(200 > sonar_values.right || 200 > sonar_values.left )" deroute="failsave_roll"/>
+		<exception cond="(100 > sonar_values.back || 100 > sonar_values.front ) && ((sonar_values.right > sonar_values.back && sonar_values.left > sonar_values.back) || (sonar_values.right > sonar_values.front && sonar_values.left > sonar_values.front))" deroute="failsave_pitch"/>
+		<exception cond="(100 > sonar_values.right || 100 > sonar_values.left )" deroute="failsave_roll"/>
 	</exceptions>
-
-
+/-->
+<!--
 	<blocks>
 		<block name="failsave_pitch">
-			<attitude pitch="sonar_failsave_pitch()" roll="0" throttle="0.6" until="sonar_values.back > 200" vmode="throttle"/>
+			<attitude pitch="sonar_failsave_pitch()" roll="0" throttle="0.6" until="sonar_values.back > 100" vmode="throttle"/>
 			<deroute block="default"/>
 		</block>
 		<block name="failsave_roll">
-			<attitude pitch="0" roll="sonar_failsave_roll()" throttle="0.6" until="sonar_values.right > 200" vmode="throttle"/>
+			<attitude pitch="0" roll="sonar_failsave_roll()" throttle="0.6" until="sonar_values.right > 100" vmode="throttle"/>
 			<deroute block="default"/>
 		</block>
 		<block name="default">
 			<attitude pitch="0" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
 		</block>
-
+/-->
+  <blocks>
+		<block name="default">
+			<attitude pitch="sonar_failsave_pitch()" roll="sonar_failsave_roll()" throttle="0.6" until="FALSE" vmode="throttle"/> 
+		</block>
+		
+  </blocks>
 <!--
 		<block name="start">
 			<for var="i" from="3" to="10">
@@ -62,6 +68,5 @@
 			<attitude pitch="0" roll="0" throttle="0.0" until="FALSE" vmode="throttle"/>
 		</block>
 /-->
-  </blocks>
 </flight_plan>
 
