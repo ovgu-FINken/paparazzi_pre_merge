@@ -82,7 +82,10 @@ uint8_t sonar_status;
 uint8_t sonar_index;
 struct sonar_values_s sonar_values;
 struct sonar_values_s sonar_values_old;
+struct sonar_values_s sonar_errors_old;
 struct sonar_data_available_s sonar_data_available;
+struct sonar_values_s sonar_errors;
+struct sonar_values_s sonar_errors_old;
 #define SONAR_STATUS_IDLE 0
 #define SONAR_STATUS_PENDING 1
 
@@ -120,6 +123,17 @@ void sonar_array_i2c_init(void) {
 	sonar_values.left  = 0;
 	sonar_values.down  = 0;
 
+	sonar_errors.front = 0;
+	sonar_errors.right = 0;
+	sonar_errors.back  = 0;
+	sonar_errors.left  = 0;
+	sonar_errors.down  = 0;
+
+	sonar_errors_old.front = 0;
+	sonar_errors_old.right = 0;
+	sonar_errors_old.back  = 0;
+	sonar_errors_old.left  = 0;
+	sonar_errors_old.down  = 0;
 	// register telemetry
 	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
 }
@@ -185,32 +199,84 @@ void sonar_array_i2c_periodic(void) {
 #endif
 
 float sonar_failsave_pitch( void ) {
+	/*
 	if (sonar_values.front > sonar_values.back) {
-		float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.back) * SONAR_FAILSAVE_P /*- (sonar_values_old.back - sonar_values.back) * SONAR_FAILSAVE_D*/);
+		float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.back) * SONAR_FAILSAVE_P - (sonar_values_old.back - sonar_values.back) * SONAR_FAILSAVE_D);
 		if(out > 0)
 			return -out;
 		return 0.0;
 	} else {
-		float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.front) * SONAR_FAILSAVE_P/* - (sonar_values_old.front - sonar_values.front) * SONAR_FAILSAVE_D*/);
+		float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.front) * SONAR_FAILSAVE_P - (sonar_values_old.front - sonar_values.front) * SONAR_FAILSAVE_D);
 		if(out > 0)
 			return out;
 		return 0.0;
 	}
+	*/
+	sonar_errors.front = SONAR_FAILSAVE_RANGE - sonar_values.front;
+	if(sonar_errors.front < 0) {
+		sonar_errors.front = 0;
+	}
+
+	sonar_errors.back = SONAR_FAILSAVE_RANGE - sonar_values.back;
+	if(sonar_errors.back < 0) {
+		sonar_errors.back = 0;
+	}
+
+	sonar_errors_old.front = SONAR_FAILSAVE_RANGE - sonar_values.front;
+	if(sonar_errors_old.front < 0) {
+		sonar_errors_old.front = 0;
+	}
+
+	sonar_errors_old.back = SONAR_FAILSAVE_RANGE - sonar_values.back;
+	if(sonar_errors_old.back < 0) {
+		sonar_errors_old.back = 0;
+	}
+
+	float e = sonar_error.front - sonar_error.back;
+	float de = e - sonar_error_old.front - sonar_error_old.back;
+
+	float y = e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D;
+	return y;
 }
 
 float sonar_failsave_roll( void ) {
+	/*
 	if (sonar_values.left > sonar_values.right) {
-		float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.right) * SONAR_FAILSAVE_P /* - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D*/); 
+		float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.right) * SONAR_FAILSAVE_P  - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D); 
 		if(out > 0)
 			return -out;
 		return 0.0;
 	} else {
-		float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.left) * SONAR_FAILSAVE_P/* - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D*/); 
+		float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.left) * SONAR_FAILSAVE_P - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D); 
 		if(out > 0)
 			return out;
 		return 0.0;
+	*/
+	sonar_errors.right = SONAR_FAILSAVE_RANGE - sonar_values.right;
+	if(sonar_errors.right < 0) {
+		sonar_errors.right = 0;
 	}
 
+	sonar_errors.left = SONAR_FAILSAVE_RANGE - sonar_values.left;
+	if(sonar_errors.left < 0) {
+		sonar_errors.left = 0;
+	}
+
+	sonar_errors_old.right = SONAR_FAILSAVE_RANGE - sonar_values.right;
+	if(sonar_errors_old.right < 0) {
+		sonar_errors_old.right = 0;
+	}
+
+	sonar_errors_old.left = SONAR_FAILSAVE_RANGE - sonar_values.left;
+	if(sonar_errors_old.left < 0) {
+		sonar_errors_old.left = 0;
+	}
+
+	float e = sonar_error.right - sonar_error.left;
+	float de = e - sonar_error_old.right - sonar_error_old.left;
+
+	float y = -1.0 * (e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D);
+	return y;
 }
 void sonar_array_i2c_event( void ) { 
 	// i guess it it not possible to query verything so often
