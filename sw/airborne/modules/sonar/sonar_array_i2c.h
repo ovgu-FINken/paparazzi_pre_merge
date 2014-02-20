@@ -31,11 +31,11 @@
 #include "mcu_periph/i2c.h"
 
 struct sonar_values_s {
-	uint16_t front;
-	uint16_t right;
-	uint16_t back;
-	uint16_t left;
-	uint16_t down;
+	int16_t front;
+	int16_t right;
+	int16_t back;
+	int16_t left;
+	int16_t down;
 };
 extern struct sonar_values_s sonar_values;
 
@@ -56,7 +56,7 @@ extern void sonar_array_i2c_event(void);
 
 extern void send_sonar_array_telemetry(void);
 void query_all_sensors(void);
-void query_sensor( uint16_t* value, uint16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction);
+void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction);
 
 extern float sonar_failsave_pitch( void );
 extern float sonar_failsave_roll( void );

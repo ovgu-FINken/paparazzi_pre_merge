@@ -82,7 +82,6 @@ uint8_t sonar_status;
 uint8_t sonar_index;
 struct sonar_values_s sonar_values;
 struct sonar_values_s sonar_values_old;
-struct sonar_values_s sonar_errors_old;
 struct sonar_data_available_s sonar_data_available;
 struct sonar_values_s sonar_errors;
 struct sonar_values_s sonar_errors_old;
@@ -151,10 +150,10 @@ void sonar_send_command(uint8_t i2c_addr) {
 }
 
 
-void query_sensor( uint16_t* value, uint16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction) {
+void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction) {
 	if(transaction->status == I2CTransDone) {
 		i2c_receive(&SONAR_I2C_DEV, transaction, (i2c_addr << 1) | 1, 2);
-		uint16_t meas = ((uint16_t)(transaction->buf[0]) << 8) | (uint16_t)(transaction->buf[1]);	// recieve mesuarment
+		int16_t meas = (int16_t) (((uint16_t)(transaction->buf[0]) << 8) | (uint16_t)(transaction->buf[1]));	// recieve mesuarment
 		if(meas > 0) {
 			*old_value = *value;
 			*value = meas;
@@ -232,8 +231,8 @@ float sonar_failsave_pitch( void ) {
 		sonar_errors_old.back = 0;
 	}
 
-	float e = sonar_error.front - sonar_error.back;
-	float de = e - sonar_error_old.front - sonar_error_old.back;
+	float e = sonar_errors.front - sonar_errors.back;
+	float de = e - sonar_errors_old.front - sonar_errors_old.back;
 
 	float y = e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D;
 	return y;
@@ -272,8 +271,8 @@ float sonar_failsave_roll( void ) {
 		sonar_errors_old.left = 0;
 	}
 
-	float e = sonar_error.right - sonar_error.left;
-	float de = e - sonar_error_old.right - sonar_error_old.left;
+	float e = sonar_errors.right - sonar_errors.left;
+	float de = e - sonar_errors_old.right - sonar_errors_old.left;
 
 	float y = -1.0 * (e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D);
 	return y;
