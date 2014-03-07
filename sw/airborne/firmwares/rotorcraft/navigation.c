@@ -183,6 +183,7 @@ static inline void nav_advance_carrot(void) {
 
 void nav_run(void) {
 
+#ifdef USE_ATTITUDE_BLOCKS
 #if GUIDANCE_H_USE_REF
   // if GUIDANCE_H_USE_REF, CARROT_DIST is not used
   VECT2_COPY(navigation_carrot, navigation_target);
@@ -191,6 +192,7 @@ void nav_run(void) {
 #endif
 
   nav_set_altitude();
+#endif
 }
 
 void nav_circle(uint8_t wp_center, int32_t radius) {
@@ -329,7 +331,7 @@ void nav_init_stage( void ) {
   INT32_VECT3_COPY(nav_last_point, *stateGetPositionEnu_i());
   stage_time = 0;
   nav_circle_radians = 0;
-  horizontal_mode = HORIZONTAL_MODE_WAYPOINT;
+  //horizontal_mode = HORIZONTAL_MODE_WAYPOINT;
 }
 
 #include <stdio.h>
