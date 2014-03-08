@@ -190,12 +190,19 @@ void sonar_array_i2c_periodic(void) {
 #endif
 
 #ifndef SONAR_FAILSAVE_P
-#define SONAR_FAILSAVE_P 0.10
+#define SONAR_FAILSAVE_P -1
 #endif
 
 #ifndef SONAR_FAILSAVE_D
-#define SONAR_FAILSAVE_D 0.001
+#define SONAR_FAILSAVE_D -0.1
 #endif
+
+#ifndef SONAR_FAILSAVE_I
+#define SONAR_FAILSAVE_I -0.4
+#endif
+
+double e_front_sum=0;
+double e_front_old=0;
 
 float sonar_failsave_pitch( void ) {
 	/*
@@ -210,7 +217,7 @@ float sonar_failsave_pitch( void ) {
 			return out;
 		return 0.0;
 	}
-	*/
+	
 	sonar_errors.front = SONAR_FAILSAVE_RANGE - sonar_values.front;
 	if(sonar_errors.front < 0) {
 		sonar_errors.front = 0;
@@ -236,6 +243,21 @@ float sonar_failsave_pitch( void ) {
 
 	float y = e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D;
 	return y;
+	*/
+	
+	double saveDistanz=200;
+	double Ta=0.066;	
+
+	double e_front= (saveDistanz - sonar_values.front);
+	e_front_sum = e_front_sum + e_front;
+
+	float out = e_front * SONAR_FAILSAVE_P + 
+	((e_front - e_front_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_front_sum;
+
+	e_front_old= e_front;
+
+	double pitchangle=out;
+	return pitchangle;
 }
 
 float sonar_failsave_roll( void ) {
