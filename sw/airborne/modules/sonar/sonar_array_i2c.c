@@ -30,6 +30,7 @@
 #include "subsystems/datalink/downlink.h"
 #include "subsystems/datalink/telemetry.h"
 
+
 /** Sonar offset.
  *  Offset value in m (float)
  *  distance mesured by the i2c sensor
@@ -190,19 +191,21 @@ void sonar_array_i2c_periodic(void) {
 #endif
 
 #ifndef SONAR_FAILSAVE_P
-#define SONAR_FAILSAVE_P -1
+#define SONAR_FAILSAVE_P 0.5
 #endif
 
 #ifndef SONAR_FAILSAVE_D
-#define SONAR_FAILSAVE_D -0.1
+#define SONAR_FAILSAVE_D 0.1
 #endif
 
 #ifndef SONAR_FAILSAVE_I
-#define SONAR_FAILSAVE_I -0.4
+#define SONAR_FAILSAVE_I 0.09
 #endif
 
 double e_front_sum=0;
 double e_front_old=0;
+double e_back_sum=0;
+double e_back_old=0;
 
 float sonar_failsave_pitch( void ) {
 	/*
@@ -244,19 +247,54 @@ float sonar_failsave_pitch( void ) {
 	float y = e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D;
 	return y;
 	*/
-	
-	double saveDistanz=200;
+
+// New PID control
+
+	// Sonar Winkel korrektur
+	//doule distanz_correct=0;
+	//distanz_correct=cos(pitchangle)*sonar_values.front
+
+	double saveDistanz=40;
 	double Ta=0.066;	
 
+	// Distanz front
 	double e_front= (saveDistanz - sonar_values.front);
 	e_front_sum = e_front_sum + e_front;
 
-	float out = e_front * SONAR_FAILSAVE_P + 
+	float out_front = e_front * SONAR_FAILSAVE_P + 
 	((e_front - e_front_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_front_sum;
 
 	e_front_old= e_front;
 
-	double pitchangle=out;
+	if(sonar_values.front>60)
+	{
+	out_front=0;
+	e_front_sum=0;
+	e_front_old=e_front;
+	}
+
+	// Distanz back
+	double e_back= (saveDistanz - sonar_values.back);
+	e_back_sum = e_back_sum + e_back;
+
+	float out_back = e_back * SONAR_FAILSAVE_P + 
+	((e_back - e_back_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_back_sum;
+
+	e_back_old= e_back;
+	if(sonar_values.back>60)
+	{
+	out_back=0;
+	e_back_sum=0;
+	e_back_old=e_back;
+	}
+
+	// Differenz between back and front
+	double pitchangle=0;
+	if(sonar_values.front<=60 || sonar_values.back<=60)
+	{
+	   pitchangle=out_front-out_back;
+	}
+
 	return pitchangle;
 }
 
@@ -297,6 +335,7 @@ float sonar_failsave_roll( void ) {
 	float de = e - sonar_errors_old.right - sonar_errors_old.left;
 
 	float y = -1.0 * (e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D);
+y=0;
 	return y;
 }
 void sonar_array_i2c_event( void ) { 
