@@ -191,7 +191,7 @@ void sonar_array_i2c_periodic(void) {
 #endif
 
 #ifndef SONAR_FAILSAVE_P
-#define SONAR_FAILSAVE_P 0.5
+#define SONAR_FAILSAVE_P 0.4
 #endif
 
 #ifndef SONAR_FAILSAVE_D
@@ -199,13 +199,36 @@ void sonar_array_i2c_periodic(void) {
 #endif
 
 #ifndef SONAR_FAILSAVE_I
-#define SONAR_FAILSAVE_I 0.09
+#define SONAR_FAILSAVE_I 0.0
+#endif
+
+/////// Throttel
+#ifndef SONAR_FAILSAVE_P_DOWN
+#define SONAR_FAILSAVE_P_DOWN 0.4
+#endif
+
+#ifndef SONAR_FAILSAVE_D_DOWN
+#define SONAR_FAILSAVE_D_DOWN 0.1
+#endif
+
+#ifndef SONAR_FAILSAVE_I_DOWN
+#define SONAR_FAILSAVE_I_DOWN 0.0
 #endif
 
 double e_front_sum=0;
 double e_front_old=0;
 double e_back_sum=0;
 double e_back_old=0;
+
+double e_left_sum=0;
+double e_left_old=0;
+
+double e_right_sum=0;
+double e_right_old=0;
+
+double e_down_sum=0;
+double e_down_old=0;
+
 
 float sonar_failsave_pitch( void ) {
 	/*
@@ -254,8 +277,8 @@ float sonar_failsave_pitch( void ) {
 	//doule distanz_correct=0;
 	//distanz_correct=cos(pitchangle)*sonar_values.front
 
-	double saveDistanz=40;
-	double Ta=0.066;	
+	double saveDistanz=100;
+	double Ta=0.05;	
 
 	// Distanz front
 	double e_front= (saveDistanz - sonar_values.front);
@@ -266,7 +289,7 @@ float sonar_failsave_pitch( void ) {
 
 	e_front_old= e_front;
 
-	if(sonar_values.front>60)
+	if(sonar_values.front>120)
 	{
 	out_front=0;
 	e_front_sum=0;
@@ -281,7 +304,7 @@ float sonar_failsave_pitch( void ) {
 	((e_back - e_back_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_back_sum;
 
 	e_back_old= e_back;
-	if(sonar_values.back>60)
+	if(sonar_values.back>120)
 	{
 	out_back=0;
 	e_back_sum=0;
@@ -290,13 +313,53 @@ float sonar_failsave_pitch( void ) {
 
 	// Differenz between back and front
 	double pitchangle=0;
-	if(sonar_values.front<=60 || sonar_values.back<=60)
+	if(sonar_values.front<=120 || sonar_values.back<=120)
 	{
 	   pitchangle=out_front-out_back;
 	}
 
 	return pitchangle;
 }
+
+float sonar_throttel( void )
+{
+	double saveDistanz=100;
+	double Ta=0.066;	
+
+	// Distanz down
+	double e_down= (saveDistanz - sonar_values.down);
+	e_down_sum = e_down_sum + e_down;
+
+	float out_down = e_down * SONAR_FAILSAVE_P_DOWN + 
+	((e_down - e_down_old) * SONAR_FAILSAVE_D_DOWN / Ta) + SONAR_FAILSAVE_I_DOWN * Ta * e_down_sum;
+
+	e_down_old= e_down;
+
+	if(sonar_values.down<21)
+	{
+	out_down=0;
+	e_down_sum=0;
+	e_down_old=e_down;
+	}
+
+	
+	float throttel=0;
+	throttel=out_down+0.42;
+
+	if(throttel>0.7)
+	{
+	return 0.7;
+	}
+	if(throttel<0.0)
+	{
+	return 0.0;
+	}
+
+
+	return throttel;
+	
+}
+
 
 float sonar_failsave_roll( void ) {
 	/*
@@ -310,7 +373,7 @@ float sonar_failsave_roll( void ) {
 		if(out > 0)
 			return out;
 		return 0.0;
-	*/
+	
 	sonar_errors.right = SONAR_FAILSAVE_RANGE - sonar_values.right;
 	if(sonar_errors.right < 0) {
 		sonar_errors.right = 0;
@@ -335,8 +398,51 @@ float sonar_failsave_roll( void ) {
 	float de = e - sonar_errors_old.right - sonar_errors_old.left;
 
 	float y = -1.0 * (e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D);
-y=0;
+	y=0;
 	return y;
+*/
+	double saveDistanz=100;
+	double Ta=0.05;	
+
+	// Distanz left
+	double e_left= (saveDistanz - sonar_values.left);
+	e_left_sum = e_left_sum + e_left;
+
+	float out_left = e_left * SONAR_FAILSAVE_P + 
+	((e_left - e_left_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_left_sum;
+
+	e_left_old= e_left;
+
+	if(sonar_values.left>120)
+	{
+	out_left=0;
+	e_left_sum=0;
+	e_left_old=e_left;
+	}
+
+	// Distanz right
+	double e_right= (saveDistanz - sonar_values.right);
+	e_right_sum = e_right_sum + e_right;
+
+	float out_right = e_right * SONAR_FAILSAVE_P + 
+	((e_right - e_right_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_right_sum;
+
+	e_right_old= e_right;
+	if(sonar_values.right>120)
+	{
+	out_right=0;
+	e_right_sum=0;
+	e_right_old=e_right;
+	}
+
+	// Differenz between back and front
+	double roll=0;
+	if(sonar_values.left<=120 || sonar_values.right<=120)
+	{
+	   roll=out_left-out_right;
+	}
+
+	return roll;
 }
 void sonar_array_i2c_event( void ) { 
 	// i guess it it not possible to query verything so often
