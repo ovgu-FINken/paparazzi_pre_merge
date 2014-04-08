@@ -102,14 +102,14 @@ void sonar_array_i2c_init(void) {
 
 	sonar_i2c_read_front_trans.buf[0] = 0;
 	sonar_i2c_read_front_trans.buf[1] = 0;
-  sonar_i2c_read_right_trans.buf[0] = 0;
-  sonar_i2c_read_right_trans.buf[1] = 0;
-  sonar_i2c_read_back_trans.buf[0] = 0;
-  sonar_i2c_read_back_trans.buf[1] = 0;
-  sonar_i2c_read_left_trans.buf[0] = 0;
-  sonar_i2c_read_left_trans.buf[1] = 0;
-  sonar_i2c_read_down_trans.buf[0] = 0;
-  sonar_i2c_read_down_trans.buf[1] = 0;
+	sonar_i2c_read_right_trans.buf[0] = 0;
+	sonar_i2c_read_right_trans.buf[1] = 0;
+	sonar_i2c_read_back_trans.buf[0] = 0;
+	sonar_i2c_read_back_trans.buf[1] = 0;
+	sonar_i2c_read_left_trans.buf[0] = 0;
+	sonar_i2c_read_left_trans.buf[1] = 0;
+	sonar_i2c_read_down_trans.buf[0] = 0;
+	sonar_i2c_read_down_trans.buf[1] = 0;
 
 	sonar_data_available.front = FALSE;
 	sonar_data_available.right = FALSE;
@@ -160,7 +160,7 @@ void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct 
 			*value = meas;
 		}
 	}
-  transaction->status = I2CTransDone;
+	transaction->status = I2CTransDone;
 }
 
 void query_all_sensors( void ) {
@@ -174,7 +174,7 @@ void query_all_sensors( void ) {
 }
 
 /** Read I2C value to update sonar measurement and request new value
- */
+*/
 void sonar_array_i2c_periodic(void) {
 #ifndef SITL
 	sonar_index = (sonar_index + 1) % 5;
@@ -232,90 +232,88 @@ double e_down_old=0;
 
 float sonar_failsave_pitch( void ) {
 	/*
-	if (sonar_values.front > sonar_values.back) {
-		float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.back) * SONAR_FAILSAVE_P - (sonar_values_old.back - sonar_values.back) * SONAR_FAILSAVE_D);
-		if(out > 0)
-			return -out;
-		return 0.0;
-	} else {
-		float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.front) * SONAR_FAILSAVE_P - (sonar_values_old.front - sonar_values.front) * SONAR_FAILSAVE_D);
-		if(out > 0)
-			return out;
-		return 0.0;
-	}
-	
-	sonar_errors.front = SONAR_FAILSAVE_RANGE - sonar_values.front;
-	if(sonar_errors.front < 0) {
-		sonar_errors.front = 0;
-	}
+		 if (sonar_values.front > sonar_values.back) {
+		 float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.back) * SONAR_FAILSAVE_P - (sonar_values_old.back - sonar_values.back) * SONAR_FAILSAVE_D);
+		 if(out > 0)
+		 return -out;
+		 return 0.0;
+		 } else {
+		 float out = ( (SONAR_FAILSAVE_RANGE - sonar_values.front) * SONAR_FAILSAVE_P - (sonar_values_old.front - sonar_values.front) * SONAR_FAILSAVE_D);
+		 if(out > 0)
+		 return out;
+		 return 0.0;
+		 }
 
-	sonar_errors.back = SONAR_FAILSAVE_RANGE - sonar_values.back;
-	if(sonar_errors.back < 0) {
-		sonar_errors.back = 0;
-	}
+		 sonar_errors.front = SONAR_FAILSAVE_RANGE - sonar_values.front;
+		 if(sonar_errors.front < 0) {
+		 sonar_errors.front = 0;
+		 }
 
-	sonar_errors_old.front = SONAR_FAILSAVE_RANGE - sonar_values.front;
-	if(sonar_errors_old.front < 0) {
-		sonar_errors_old.front = 0;
-	}
+		 sonar_errors.back = SONAR_FAILSAVE_RANGE - sonar_values.back;
+		 if(sonar_errors.back < 0) {
+		 sonar_errors.back = 0;
+		 }
 
-	sonar_errors_old.back = SONAR_FAILSAVE_RANGE - sonar_values.back;
-	if(sonar_errors_old.back < 0) {
-		sonar_errors_old.back = 0;
-	}
+		 sonar_errors_old.front = SONAR_FAILSAVE_RANGE - sonar_values.front;
+		 if(sonar_errors_old.front < 0) {
+		 sonar_errors_old.front = 0;
+		 }
 
-	float e = sonar_errors.front - sonar_errors.back;
-	float de = e - sonar_errors_old.front - sonar_errors_old.back;
+		 sonar_errors_old.back = SONAR_FAILSAVE_RANGE - sonar_values.back;
+		 if(sonar_errors_old.back < 0) {
+		 sonar_errors_old.back = 0;
+		 }
 
-	float y = e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D;
-	return y;
-	*/
+		 float e = sonar_errors.front - sonar_errors.back;
+		 float de = e - sonar_errors_old.front - sonar_errors_old.back;
 
-// New PID control
+		 float y = e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D;
+		 return y;
+		 */
+
+	// New PID control
 
 	// Sonar Winkel korrektur
 	//doule distanz_correct=0;
 	//distanz_correct=cos(pitchangle)*sonar_values.front
 
 	double saveDistanz=100;
-	double Ta=0.05;	
+	double Ta=0.166;	
 
 	// Distanz front
 	double e_front= (saveDistanz - sonar_values.front);
 	e_front_sum = e_front_sum + e_front;
+	e_front_old = (saveDistanz - sonar_values_old.front);
 
 	float out_front = e_front * SONAR_FAILSAVE_P + 
-	((e_front - e_front_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_front_sum;
-
-	e_front_old= e_front;
+		((e_front - e_front_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_front_sum;
 
 	if(sonar_values.front>120)
 	{
-	out_front=0;
-	e_front_sum=0;
-	e_front_old=e_front;
+		out_front=0;
+		e_front_sum=0;
 	}
 
 	// Distanz back
 	double e_back= (saveDistanz - sonar_values.back);
 	e_back_sum = e_back_sum + e_back;
+	e_back_old = (saveDistanz - sonar_values_old.back);
+
 
 	float out_back = e_back * SONAR_FAILSAVE_P + 
-	((e_back - e_back_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_back_sum;
+		((e_back - e_back_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_back_sum;
 
-	e_back_old= e_back;
 	if(sonar_values.back>120)
 	{
-	out_back=0;
-	e_back_sum=0;
-	e_back_old=e_back;
+		out_back=0;
+		e_back_sum=0;
 	}
 
 	// Differenz between back and front
 	double pitchangle=0;
 	if(sonar_values.front<=120 || sonar_values.back<=120)
 	{
-	   pitchangle=out_front-out_back;
+		pitchangle=out_front-out_back;
 	}
 
 	return pitchangle;
@@ -331,76 +329,76 @@ float sonar_throttel( void )
 	e_down_sum = e_down_sum + e_down;
 
 	float out_down = e_down * SONAR_FAILSAVE_P_DOWN + 
-	((e_down - e_down_old) * SONAR_FAILSAVE_D_DOWN / Ta) + SONAR_FAILSAVE_I_DOWN * Ta * e_down_sum;
+		((e_down - e_down_old) * SONAR_FAILSAVE_D_DOWN / Ta) + SONAR_FAILSAVE_I_DOWN * Ta * e_down_sum;
 
 	e_down_old= e_down;
 
 	if(sonar_values.down<21)
 	{
-	out_down=0;
-	e_down_sum=0;
-	e_down_old=e_down;
+		out_down=0;
+		e_down_sum=0;
+		e_down_old=e_down;
 	}
 
-	
+
 	float throttel=0;
 	throttel=out_down+0.42;
 
 	if(throttel>0.7)
 	{
-	return 0.7;
+		return 0.7;
 	}
 	if(throttel<0.0)
 	{
-	return 0.0;
+		return 0.0;
 	}
 
 
 	return throttel;
-	
+
 }
 
 
 float sonar_failsave_roll( void ) {
 	/*
-	if (sonar_values.left > sonar_values.right) {
-		float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.right) * SONAR_FAILSAVE_P  - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D); 
-		if(out > 0)
-			return -out;
-		return 0.0;
-	} else {
-		float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.left) * SONAR_FAILSAVE_P - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D); 
-		if(out > 0)
-			return out;
-		return 0.0;
-	
-	sonar_errors.right = SONAR_FAILSAVE_RANGE - sonar_values.right;
-	if(sonar_errors.right < 0) {
-		sonar_errors.right = 0;
-	}
+		 if (sonar_values.left > sonar_values.right) {
+		 float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.right) * SONAR_FAILSAVE_P  - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D); 
+		 if(out > 0)
+		 return -out;
+		 return 0.0;
+		 } else {
+		 float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.left) * SONAR_FAILSAVE_P - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D); 
+		 if(out > 0)
+		 return out;
+		 return 0.0;
 
-	sonar_errors.left = SONAR_FAILSAVE_RANGE - sonar_values.left;
-	if(sonar_errors.left < 0) {
-		sonar_errors.left = 0;
-	}
+		 sonar_errors.right = SONAR_FAILSAVE_RANGE - sonar_values.right;
+		 if(sonar_errors.right < 0) {
+		 sonar_errors.right = 0;
+		 }
 
-	sonar_errors_old.right = SONAR_FAILSAVE_RANGE - sonar_values.right;
-	if(sonar_errors_old.right < 0) {
-		sonar_errors_old.right = 0;
-	}
+		 sonar_errors.left = SONAR_FAILSAVE_RANGE - sonar_values.left;
+		 if(sonar_errors.left < 0) {
+		 sonar_errors.left = 0;
+		 }
 
-	sonar_errors_old.left = SONAR_FAILSAVE_RANGE - sonar_values.left;
-	if(sonar_errors_old.left < 0) {
-		sonar_errors_old.left = 0;
-	}
+		 sonar_errors_old.right = SONAR_FAILSAVE_RANGE - sonar_values.right;
+		 if(sonar_errors_old.right < 0) {
+		 sonar_errors_old.right = 0;
+		 }
 
-	float e = sonar_errors.right - sonar_errors.left;
-	float de = e - sonar_errors_old.right - sonar_errors_old.left;
+		 sonar_errors_old.left = SONAR_FAILSAVE_RANGE - sonar_values.left;
+		 if(sonar_errors_old.left < 0) {
+		 sonar_errors_old.left = 0;
+		 }
 
-	float y = -1.0 * (e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D);
-	y=0;
-	return y;
-*/
+		 float e = sonar_errors.right - sonar_errors.left;
+		 float de = e - sonar_errors_old.right - sonar_errors_old.left;
+
+		 float y = -1.0 * (e * SONAR_FAILSAVE_P - de * SONAR_FAILSAVE_D);
+		 y=0;
+		 return y;
+		 */
 	double saveDistanz=100;
 	double Ta=0.05;	
 
@@ -409,15 +407,15 @@ float sonar_failsave_roll( void ) {
 	e_left_sum = e_left_sum + e_left;
 
 	float out_left = e_left * SONAR_FAILSAVE_P + 
-	((e_left - e_left_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_left_sum;
+		((e_left - e_left_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_left_sum;
 
 	e_left_old= e_left;
 
 	if(sonar_values.left>120)
 	{
-	out_left=0;
-	e_left_sum=0;
-	e_left_old=e_left;
+		out_left=0;
+		e_left_sum=0;
+		e_left_old=e_left;
 	}
 
 	// Distanz right
@@ -425,21 +423,21 @@ float sonar_failsave_roll( void ) {
 	e_right_sum = e_right_sum + e_right;
 
 	float out_right = e_right * SONAR_FAILSAVE_P + 
-	((e_right - e_right_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_right_sum;
+		((e_right - e_right_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_right_sum;
 
 	e_right_old= e_right;
 	if(sonar_values.right>120)
 	{
-	out_right=0;
-	e_right_sum=0;
-	e_right_old=e_right;
+		out_right=0;
+		e_right_sum=0;
+		e_right_old=e_right;
 	}
 
 	// Differenz between back and front
 	double roll=0;
 	if(sonar_values.left<=120 || sonar_values.right<=120)
 	{
-	   roll=out_left-out_right;
+		roll=out_left-out_right;
 	}
 
 	return roll;
@@ -452,13 +450,13 @@ void send_sonar_array_telemetry(void) {
 	sonar_fail_telemetry_pitch = sonar_failsave_pitch();
 	sonar_fail_telemetry_roll = sonar_failsave_roll();
 	DOWNLINK_SEND_SONAR_ARRAY(DefaultChannel, DefaultDevice,
-	&sonar_values.front,
-	&sonar_values.right,
-	&sonar_values.back,
-	&sonar_values.left,
-	&sonar_values.down,
-	&sonar_fail_telemetry_pitch,
-	&sonar_fail_telemetry_roll);
+			&sonar_values.front,
+			&sonar_values.right,
+			&sonar_values.back,
+			&sonar_values.left,
+			&sonar_values.down,
+			&sonar_fail_telemetry_pitch,
+			&sonar_fail_telemetry_roll);
 }
 
 
