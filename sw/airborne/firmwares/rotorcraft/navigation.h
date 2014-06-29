@@ -34,7 +34,7 @@
 
 #include "subsystems/navigation/common_flight_plan.h"
 
-#define NAV_FREQ 16
+#define NAV_FREQ 64
 // FIXME use periodic FREQ
 #define NAV_PRESCALER (512/NAV_FREQ)
 

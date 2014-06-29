@@ -39,12 +39,17 @@
     <!--define name="KILL_ON_GROUND_DETECT" value="TRUE"/-->
   </firmware>
 	<modules>
-		<load name="sonar_i2c.xml">
+		<load name="sonar_array_i2c.xml">
 			<define name="SONAR_I2C_DEV" value="i2c2"/> 
-			<define name="INS_SONAR_MAX_RANGE" value="6"/> 
 			<define name="USE_I2C2" />	
 		</load>
+		<load name="mavlink_decoder.xml">
+			<configure name="MAVLINK_PORT" value="UART1" />
+			<configure name="MAVLINK_BAUD" value="B115200" />
+		</load>
+		<load name="px4flow.xml" /> 
 	</modules>
+	
 
 	<!--
     ^Front^
