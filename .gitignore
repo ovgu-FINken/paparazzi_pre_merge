@@ -180,3 +180,7 @@ tests/results/*
 sw/logalizer/plotprofile.dSYM/Contents/Resources/DWARF/plotprofile
 
 sw/logalizer/plotprofile.dSYM/Contents/Info.plist
+
+sw/ground_segment/joystick/test_stick.dSYM
+
+sw/logalizer/openlog2tlm.dSYM
