@@ -29,7 +29,7 @@
 /-->
   <blocks>
 		<block name="default">
-			<attitude pitch="sonar_failsave_pitch()" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
+			<attitude pitch="0" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
 		</block>
 		
   </blocks>

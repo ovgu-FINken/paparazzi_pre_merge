@@ -160,20 +160,20 @@
     <define name="REF_ZETA_R"   value="0.85"/>
     <define name="REF_MAX_R"    value="360." unit="deg/s"/>
     <define name="REF_MAX_RDOT" value="RadOfDeg(1800.)"/>
+	
+		<!-- feedback -->
+		<define name="PHI_PGAIN"  value="210"/>
+		<define name="PHI_DGAIN"  value="160"/>
+		<define name="PHI_IGAIN"  value="30"/>
+		 
+		<define name="THETA_PGAIN"  value="210"/>
+		<define name="THETA_DGAIN"  value="160"/>
+		<define name="THETA_IGAIN"  value="30"/>
 
-    <!-- feedback -->
-    <define name="PHI_PGAIN"  value="312"/>
-    <define name="PHI_DGAIN"  value="264"/>
-    <define name="PHI_IGAIN"  value="30"/>
-
-    <define name="THETA_PGAIN"  value="312"/>
-    <define name="THETA_DGAIN"  value="264"/>
-    <define name="THETA_IGAIN"  value="30"/>
-
-    <define name="PSI_PGAIN"  value="360"/>
-    <define name="PSI_DGAIN"  value="312"/>
-    <define name="PSI_IGAIN"  value="0"/>
-
+		<define name="PSI_PGAIN"  value="330"/>
+		<define name="PSI_DGAIN"  value="170"/>
+		<define name="PSI_IGAIN"  value="10"/>
+									  
     <!-- feedforward -->
     <define name="PHI_DDGAIN"   value=" 0"/>
     <define name="THETA_DDGAIN" value=" 0"/>
