@@ -1,0 +1,23 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="rgb-sensor" dir="rgb_sensor">
+  <doc>
+    <description>
+      I2C RGB sensor driver
+    </description>
+  </doc>
+
+  <header>
+    <file name="tcs34725_i2c.h"/>
+  </header>
+  <init fun="tcs34725_i2c_init()"/>
+  <periodic fun="tcs34725_read_periodic()" freq="1."/>
+  <event fun="tcs34725_read_event()"/>
+
+  <makefile>
+    <file name="tcs34725_i2c.c"/>
+  </makefile>
+  <makefile target="ap">
+    <define name="SENSOR_SYNC_SEND_SONAR"/>
+  </makefile>
+</module>
