@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2014  Sebastian Mai
- * 
+ *
  * This file is part of paparazzi.
  *
  * paparazzi is free software; you can redistribute it and/or modify
@@ -30,6 +30,8 @@
 #include "subsystems/datalink/downlink.h"
 #include "subsystems/datalink/telemetry.h"
 
+#include <math.h>
+
 
 /** Sonar offset.
  *  Offset value in m (float)
@@ -52,7 +54,7 @@
 
 /** SONAR_ADDR_FRONT
  * 	adress for the front Sensor
- * 	same as RIGHT, LEFT, BACK ... 
+ * 	same as RIGHT, LEFT, BACK ...
  */
 #ifndef SONAR_ADDR_FRONT
 #define SONAR_ADDR_FRONT 0x71
@@ -156,8 +158,12 @@ void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct 
 		i2c_receive(&SONAR_I2C_DEV, transaction, (i2c_addr << 1) | 1, 2);
 		int16_t meas = (int16_t) (((uint16_t)(transaction->buf[0]) << 8) | (uint16_t)(transaction->buf[1]));	// recieve mesuarment
 		if(meas > 0) {
-			*old_value = *value;
-			*value = meas;
+			if(abs(old_value - meas) < 200) {
+				*old_value = *value;
+				*value = meas;
+			} else {
+				*value = old_value;
+			}
 		}
 	}
 	transaction->status = I2CTransDone;
@@ -278,14 +284,14 @@ float sonar_failsave_pitch( void ) {
 	//distanz_correct=cos(pitchangle)*sonar_values.front
 
 	double saveDistanz=100;
-	double Ta=0.166;	
+	double Ta=0.166;
 
 	// Distanz front
 	double e_front= (saveDistanz - sonar_values.front);
 	e_front_sum = e_front_sum + e_front;
 	e_front_old = (saveDistanz - sonar_values_old.front);
 
-	float out_front = e_front * SONAR_FAILSAVE_P + 
+	float out_front = e_front * SONAR_FAILSAVE_P +
 		((e_front - e_front_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_front_sum;
 
 	if(sonar_values.front>120)
@@ -300,7 +306,7 @@ float sonar_failsave_pitch( void ) {
 	e_back_old = (saveDistanz - sonar_values_old.back);
 
 
-	float out_back = e_back * SONAR_FAILSAVE_P + 
+	float out_back = e_back * SONAR_FAILSAVE_P +
 		((e_back - e_back_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_back_sum;
 
 	if(sonar_values.back>120)
@@ -322,13 +328,13 @@ float sonar_failsave_pitch( void ) {
 float sonar_throttel( void )
 {
 	double saveDistanz=100;
-	double Ta=0.066;	
+	double Ta=0.066;
 
 	// Distanz down
 	double e_down= (saveDistanz - sonar_values.down);
 	e_down_sum = e_down_sum + e_down;
 
-	float out_down = e_down * SONAR_FAILSAVE_P_DOWN + 
+	float out_down = e_down * SONAR_FAILSAVE_P_DOWN +
 		((e_down - e_down_old) * SONAR_FAILSAVE_D_DOWN / Ta) + SONAR_FAILSAVE_I_DOWN * Ta * e_down_sum;
 
 	e_down_old= e_down;
@@ -362,12 +368,12 @@ float sonar_throttel( void )
 float sonar_failsave_roll( void ) {
 	/*
 		 if (sonar_values.left > sonar_values.right) {
-		 float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.right) * SONAR_FAILSAVE_P  - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D); 
+		 float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.right) * SONAR_FAILSAVE_P  - (sonar_values_old.right - sonar_values.right) * SONAR_FAILSAVE_D);
 		 if(out > 0)
 		 return -out;
 		 return 0.0;
 		 } else {
-		 float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.left) * SONAR_FAILSAVE_P - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D); 
+		 float out = ( (SONAR_FAILSAVE_RANGE - 1.0 * sonar_values.left) * SONAR_FAILSAVE_P - (sonar_values_old.left - sonar_values.left) * SONAR_FAILSAVE_D);
 		 if(out > 0)
 		 return out;
 		 return 0.0;
@@ -400,13 +406,13 @@ float sonar_failsave_roll( void ) {
 		 return y;
 		 */
 	double saveDistanz=100;
-	double Ta=0.05;	
+	double Ta=0.05;
 
 	// Distanz left
 	double e_left= (saveDistanz - sonar_values.left);
 	e_left_sum = e_left_sum + e_left;
 
-	float out_left = e_left * SONAR_FAILSAVE_P + 
+	float out_left = e_left * SONAR_FAILSAVE_P +
 		((e_left - e_left_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_left_sum;
 
 	e_left_old= e_left;
@@ -422,7 +428,7 @@ float sonar_failsave_roll( void ) {
 	double e_right= (saveDistanz - sonar_values.right);
 	e_right_sum = e_right_sum + e_right;
 
-	float out_right = e_right * SONAR_FAILSAVE_P + 
+	float out_right = e_right * SONAR_FAILSAVE_P +
 		((e_right - e_right_old) * SONAR_FAILSAVE_D / Ta) + SONAR_FAILSAVE_I * Ta * e_right_sum;
 
 	e_right_old= e_right;
@@ -442,7 +448,7 @@ float sonar_failsave_roll( void ) {
 
 	return roll;
 }
-void sonar_array_i2c_event( void ) { 
+void sonar_array_i2c_event( void ) {
 	// i guess it it not possible to query verything so often
 }
 
@@ -458,5 +464,3 @@ void send_sonar_array_telemetry(void) {
 			&sonar_fail_telemetry_pitch,
 			&sonar_fail_telemetry_roll);
 }
-
-
