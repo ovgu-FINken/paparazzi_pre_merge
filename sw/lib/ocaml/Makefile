@@ -24,7 +24,7 @@
 Q=@
 
 
-OCAMLC=ocamlfind ocamlc -cc gcc
+OCAMLC=ocamlfind ocamlc
 OCAMLOPT=ocamlfind ocamlopt
 OCAMLDEP=ocamlfind ocamldep
 OCAMLLEX=ocamllex
