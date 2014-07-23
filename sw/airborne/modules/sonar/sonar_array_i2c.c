@@ -157,14 +157,14 @@ void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct 
 	if(transaction->status == I2CTransDone) {
 		i2c_receive(&SONAR_I2C_DEV, transaction, (i2c_addr << 1) | 1, 2);
 		int16_t meas = (int16_t) (((uint16_t)(transaction->buf[0]) << 8) | (uint16_t)(transaction->buf[1]));	// recieve mesuarment
-		if(meas > 0) {
-			if(abs(*old_value - meas) < 200) {
-				*old_value = *value;
-				*value = meas;
-			} else {
-				*value = *old_value;
-			}
+
+		if(meas > 0 && meas < 400) {
+			*old_value = *value;
+			*value = meas;
+		} else {
+			*value = *old_value;
 		}
+		
 	}
 	transaction->status = I2CTransDone;
 }
