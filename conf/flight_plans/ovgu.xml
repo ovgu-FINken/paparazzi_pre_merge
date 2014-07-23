@@ -6,6 +6,7 @@
   </waypoints>
 	<header>
 		#include "sonar/sonar_array_i2c.h"
+		#include "nav/nav_finken.h"
 	</header>
 <!--
 	<exceptions>
@@ -13,6 +14,12 @@
 		<exception cond="(100 > sonar_values.right || 100 > sonar_values.left )" deroute="failsave_roll"/>
 	</exceptions>
 /-->
+  <blocks>
+		<block name="default">
+			<attitude pitch="sonar_failsave_pitch()" roll="sonar_failsave_roll()" throttle="0.6" until="FALSE" vmode="throttle"/> 
+		</block>
+		
+  </blocks>
 <!--
 	<blocks>
 		<block name="failsave_pitch">
@@ -27,12 +34,6 @@
 			<attitude pitch="0" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
 		</block>
 /-->
-  <blocks>
-		<block name="default">
-			<attitude pitch="sonar_failsave_pitch()" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
-		</block>
-		
-  </blocks>
 <!--
 		<block name="start">
 			<for var="i" from="3" to="10">
