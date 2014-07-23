@@ -37,7 +37,9 @@ struct sonar_values_s {
 	int16_t left;
 	int16_t down;
 };
+
 extern struct sonar_values_s sonar_values;
+extern struct sonar_values_s sonar_values_old;
 
 struct sonar_data_available_s {
 	bool_t front;
@@ -57,8 +59,5 @@ extern void sonar_array_i2c_event(void);
 extern void send_sonar_array_telemetry(void);
 void query_all_sensors(void);
 void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction);
-
-extern float sonar_failsave_pitch( void );
-extern float sonar_failsave_roll( void );
 
 #endif
