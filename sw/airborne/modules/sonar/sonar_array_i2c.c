@@ -166,14 +166,14 @@ void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct 
 		i2c_receive(&SONAR_I2C_DEV, transaction, (i2c_addr << 1) | 1, 2);
 		int16_t meas = (int16_t) (((uint16_t)(transaction->buf[0]) << 8) | (uint16_t)(transaction->buf[1]));	// recieve mesuarment
 
-		*old_value = *value;
-		*value = meas;
-		/*if(meas > 0 && meas < 400) {
+		//*old_value = *value;
+		//*value = meas;
+		if(meas > 0 && meas < 400) {
 			*old_value = *value;
 			*value = meas;
 		} else {
 			*value = *old_value;
-		}*/
+		}
 
 	}
 	transaction->status = I2CTransDone;
@@ -243,11 +243,11 @@ void send_sonar_array_telemetry(void) {
 	sonar_fail_telemetry_pitch = sonar_failsave_pitch();
 	sonar_fail_telemetry_roll = sonar_failsave_roll();
 	DOWNLINK_SEND_SONAR_ARRAY(DefaultChannel, DefaultDevice,
-			&sonar_values.front,
-			&sonar_values.right,
-			&sonar_values.back,
-			&sonar_values.left,
-			&sonar_values.down,
+			&sonar_values_filtered.front,
+			&sonar_values_filtered.right,
+			&sonar_values_filtered.back,
+			&sonar_values_filtered.left,
+			&sonar_values_filtered.down,
 			&sonar_fail_telemetry_pitch,
 			&sonar_fail_telemetry_roll);
 }
