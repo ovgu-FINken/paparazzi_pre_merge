@@ -84,7 +84,7 @@ float sonar_fail_telemetry_roll;
 uint8_t sonar_status;
 uint8_t sonar_index;
 struct sonar_values_s sonar_values;
-struct sonar_valuse_s sonar_values_filtered;
+struct sonar_values_s sonar_values_filtered;
 struct sonar_values_s sonar_values_filtered_old;
 uint8_t sonar_values_old_index;
 struct sonar_values_s sonar_values_old[SONAR_VALUES_OLD_SIZE];
