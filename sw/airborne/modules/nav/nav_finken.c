@@ -44,7 +44,7 @@
 #endif
 
 #ifndef SONAR_FAILSAVE_D
-#define SONAR_FAILSAVE_D 0.1
+#define SONAR_FAILSAVE_D 0.0
 #endif
 
 #ifndef SONAR_FAILSAVE_I
@@ -75,9 +75,9 @@ float sonar_failsave_pitch() {
 	double t_a = 0.166;
 
 	// Distance front
-	double e_front = saveDistanz - sonar_values_filtered.front;
+	double e_front = SONAR_FAILSAVE_RANGE - sonar_values_filtered.front;
 	e_front_sum    = e_front_sum + e_front;
-	e_front_old    = saveDistanz - sonar_values_filtered_old.front;
+	e_front_old    = SONAR_FAILSAVE_RANGE - sonar_values_filtered_old.front;
 
 	float out_front = e_front * SONAR_FAILSAVE_P +
 		((e_front - e_front_old) * SONAR_FAILSAVE_D / t_a) +
