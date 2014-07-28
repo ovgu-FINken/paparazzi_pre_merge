@@ -39,7 +39,7 @@ struct sonar_values_s {
 };
 
 extern struct sonar_values_s sonar_values;
-extern struct sonar_valuse_s sonar_values_filtered;
+extern struct sonar_values_s sonar_values_filtered;
 extern struct sonar_values_s sonar_values_filtered_old;
 
 #define SONAR_VALUES_OLD_SIZE 8
