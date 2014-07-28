@@ -39,7 +39,11 @@ struct sonar_values_s {
 };
 
 extern struct sonar_values_s sonar_values;
-extern struct sonar_values_s sonar_values_old;
+extern struct sonar_valuse_s sonar_values_filtered;
+extern struct sonar_values_s sonar_values_filtered_old;
+
+#define SONAR_VALUES_OLD_SIZE 8
+extern struct sonar_values_s sonar_values_old[SONAR_VALUES_OLD_SIZE];
 
 struct sonar_data_available_s {
 	bool_t front;

@@ -84,7 +84,11 @@ float sonar_fail_telemetry_roll;
 uint8_t sonar_status;
 uint8_t sonar_index;
 struct sonar_values_s sonar_values;
-struct sonar_values_s sonar_values_old;
+struct sonar_valuse_s sonar_values_filtered;
+struct sonar_values_s sonar_values_filtered_old;
+uint8_t sonar_values_old_index;
+struct sonar_values_s sonar_values_old[SONAR_VALUES_OLD_SIZE];
+
 struct sonar_data_available_s sonar_data_available;
 #define SONAR_STATUS_IDLE 0
 #define SONAR_STATUS_PENDING 1
@@ -123,8 +127,25 @@ void sonar_array_i2c_init(void) {
 	sonar_values.left  = 0;
 	sonar_values.down  = 0;
 
+	sonar_values_filtered.front = 0;
+	sonar_values_filtered.right = 0;
+	sonar_values_filtered.back  = 0;
+	sonar_values_filtered.left  = 0;
+	sonar_values_filtered.down  = 0;
+
 	// register telemetry
 	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
+
+	sonar_values_old_index = 0;
+
+	int i = 0;
+	for(; i < SONAR_VALUES_OLD_SIZE; i++) {
+		sonar_values_old[i].front = 0;
+		sonar_values_old[i].right = 0;
+		sonar_values_old[i].back = 0;
+		sonar_values_old[i].left = 0;
+		sonar_values_old[i].down = 0;
+	}
 }
 
 
@@ -145,25 +166,60 @@ void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct 
 		i2c_receive(&SONAR_I2C_DEV, transaction, (i2c_addr << 1) | 1, 2);
 		int16_t meas = (int16_t) (((uint16_t)(transaction->buf[0]) << 8) | (uint16_t)(transaction->buf[1]));	// recieve mesuarment
 
-		if(meas > 0 && meas < 400) {
+		*old_value = *value;
+		*value = meas;
+		/*if(meas > 0 && meas < 400) {
 			*old_value = *value;
 			*value = meas;
 		} else {
 			*value = *old_value;
-		}
-		
+		}*/
+
 	}
 	transaction->status = I2CTransDone;
 }
 
 void query_all_sensors( void ) {
 #ifndef SITL
-	query_sensor(&sonar_values.front,&sonar_values_old.front, SONAR_ADDR_FRONT, &sonar_i2c_read_front_trans);
-	query_sensor(&sonar_values.right,&sonar_values_old.right, SONAR_ADDR_RIGHT, &sonar_i2c_read_right_trans);
-	query_sensor(&sonar_values.back ,&sonar_values_old.back , SONAR_ADDR_BACK, &sonar_i2c_read_back_trans);
-	query_sensor(&sonar_values.left ,&sonar_values_old.left , SONAR_ADDR_LEFT, &sonar_i2c_read_left_trans);
-	query_sensor(&sonar_values.down ,&sonar_values_old.down , SONAR_ADDR_DOWN, &sonar_i2c_read_down_trans);
+	query_sensor(&sonar_values.front, &sonar_values_old[sonar_values_old_index].front, SONAR_ADDR_FRONT, &sonar_i2c_read_front_trans);
+	query_sensor(&sonar_values.right, &sonar_values_old[sonar_values_old_index].right, SONAR_ADDR_RIGHT, &sonar_i2c_read_right_trans);
+	query_sensor(&sonar_values.back, &sonar_values_old[sonar_values_old_index].back, SONAR_ADDR_BACK, &sonar_i2c_read_back_trans);
+	query_sensor(&sonar_values.left, &sonar_values_old[sonar_values_old_index].left, SONAR_ADDR_LEFT, &sonar_i2c_read_left_trans);
+	query_sensor(&sonar_values.down, &sonar_values_old[sonar_values_old_index].down, SONAR_ADDR_DOWN, &sonar_i2c_read_down_trans);
+
+	sonar_values_old_index = (sonar_values_old_index + 1) % SONAR_VALUES_OLD_SIZE;
 #endif
+}
+
+/** Filter the sensor values with the mean filter */
+void filter_all_sensor_values() {
+	int i = 0;
+	struct sonar_values_s sum;
+	sum.front = 0;
+	sum.right = 0;
+	sum.back = 0;
+	sum.left = 0;
+	sum.down = 0;
+
+	for(; i < SONAR_VALUES_OLD_SIZE; i++) {
+		sum.front += sonar_values_old[i].front;
+		sum.right += sonar_values_old[i].right;
+		sum.back += sonar_values_old[i].back;
+		sum.left += sonar_values_old[i].left;
+		sum.down += sonar_values_old[i].down;
+	}
+
+	sonar_values_filtered_old.front = sonar_values_filtered.front;
+	sonar_values_filtered_old.right = sonar_values_filtered.right;
+	sonar_values_filtered_old.back = sonar_values_filtered.back;
+	sonar_values_filtered_old.left = sonar_values_filtered.left;
+	sonar_values_filtered_old.down = sonar_values_filtered.down;
+
+	sonar_values_filtered.front = sum.front / SONAR_VALUES_OLD_SIZE;
+	sonar_values_filtered.right = sum.right / SONAR_VALUES_OLD_SIZE;
+	sonar_values_filtered.back = sum.back / SONAR_VALUES_OLD_SIZE;
+	sonar_values_filtered.left = sum.left / SONAR_VALUES_OLD_SIZE;
+	sonar_values_filtered.down = sum.down / SONAR_VALUES_OLD_SIZE;
 }
 
 /** Read I2C value to update sonar measurement and request new value
@@ -174,11 +230,12 @@ void sonar_array_i2c_periodic(void) {
 	sonar_send_command(read_order[sonar_index]);
 
 	query_all_sensors();
+	filter_all_sensor_values();
 #else // SITL
 #warn "SITL not implemented for sonar_array_i2c yet"
 #endif // SITL
 }
-void sonar_array_i2c_event( void ) { 
+void sonar_array_i2c_event( void ) {
 	// i guess it it not possible to query verything so often
 }
 
