@@ -36,15 +36,15 @@
 #include "modules/sonar/sonar_array_i2c.h"
 
 #ifndef SONAR_FAILSAVE_RANGE
-#define SONAR_FAILSAVE_RANGE 150
+#define SONAR_FAILSAVE_RANGE 120
 #endif
 
 #ifndef SONAR_FAILSAVE_P
-#define SONAR_FAILSAVE_P 0.4
+#define SONAR_FAILSAVE_P 0.3
 #endif
 
 #ifndef SONAR_FAILSAVE_D
-#define SONAR_FAILSAVE_D 0.0
+#define SONAR_FAILSAVE_D 0.03
 #endif
 
 #ifndef SONAR_FAILSAVE_I
@@ -83,7 +83,7 @@ float sonar_failsave_pitch() {
 		((e_front - e_front_old) * SONAR_FAILSAVE_D / t_a) +
 		SONAR_FAILSAVE_I * t_a * e_front_sum;
 
-	if(sonar_values_filtered.front > 120)
+	if(sonar_values_filtered.front > SONAR_FAILSAVE_RANGE)
 	{
 		out_front   = 0;
 		e_front_sum = 0;
@@ -98,7 +98,7 @@ float sonar_failsave_pitch() {
 		((e_back - e_back_old) * SONAR_FAILSAVE_D / t_a) +
 		SONAR_FAILSAVE_I * t_a * e_back_sum;
 
-	if(sonar_values_filtered.back > 120)
+	if(sonar_values_filtered.back > SONAR_FAILSAVE_RANGE)
 	{
 		out_back   = 0;
 		e_back_sum = 0;
@@ -106,7 +106,7 @@ float sonar_failsave_pitch() {
 
 	// Difference between back and front
 	double pitchangle = 0;
-	if(sonar_values_filtered.front <= 120 || sonar_values_filtered.back <= 120)
+	if(sonar_values_filtered.front <= SONAR_FAILSAVE_RANGE || sonar_values_filtered.back <= SONAR_FAILSAVE_RANGE)
 	{
 		pitchangle = out_front - out_back;
 	}
@@ -115,7 +115,7 @@ float sonar_failsave_pitch() {
 }
 
 float sonar_failsave_roll() {
-	double t_a = 0.05;
+	double t_a = 0.166;
 
 	// Distanz left
 	double e_left = SONAR_FAILSAVE_RANGE - sonar_values_filtered.left;
@@ -127,7 +127,7 @@ float sonar_failsave_roll() {
 
 	e_left_old = e_left;
 
-	if(sonar_values_filtered.left > 120)
+	if(sonar_values_filtered.left > SONAR_FAILSAVE_RANGE)
 	{
 		out_left   = 0;
 		e_left_sum = 0;
@@ -143,7 +143,7 @@ float sonar_failsave_roll() {
 		SONAR_FAILSAVE_I * t_a * e_right_sum;
 
 	e_right_old = e_right;
-	if(sonar_values_filtered.right > 120)
+	if(sonar_values_filtered.right > SONAR_FAILSAVE_RANGE)
 	{
 		out_right   = 0;
 		e_right_sum = 0;
@@ -152,7 +152,7 @@ float sonar_failsave_roll() {
 
 	// Difference between back and front
 	double roll = 0;
-	if(sonar_values_filtered.left <= 120 || sonar_values_filtered.right <= 120)
+	if(sonar_values_filtered.left <= SONAR_FAILSAVE_RANGE || sonar_values_filtered.right <= SONAR_FAILSAVE_RANGE)
 	{
 		roll = out_left - out_right;
 	}
