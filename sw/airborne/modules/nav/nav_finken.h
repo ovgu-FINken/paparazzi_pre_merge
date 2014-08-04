@@ -34,7 +34,7 @@
 
 #include "modules/sonar/sonar_array_i2c.h"
 
-extern float sonar_failsave_pitch( void );
-extern float sonar_failsave_roll( void );
+extern float sonar_failsave_pitch();
+extern float sonar_failsave_roll();
 
 #endif
