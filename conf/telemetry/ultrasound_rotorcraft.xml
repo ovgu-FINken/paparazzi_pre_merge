@@ -23,6 +23,10 @@
       <message name="PX4FLOW"                period="1"/>
     </mode>
 
+    <mode name="finken_model">
+      <message name="FINKEN_SENSOR_MODEL" period="1"/>
+    </mode>
+
     <mode name="ppm">
       <message name="ROTORCRAFT_CMD"           period=".05"/>
       <message name="PPM"                      period="0.5"/>
@@ -138,4 +142,3 @@
   </process>
 
 </telemetry>
-

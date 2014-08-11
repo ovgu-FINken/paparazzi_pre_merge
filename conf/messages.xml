@@ -1906,12 +1906,20 @@
     <field name="msg" type="char[]"/>
   </message>
 
-  <message name="SONAR_ARRAY" id="216">
-      <field name="sonar_front" type="uint16" alt_unit="cm"/>
-      <field name="sonar_right" type="uint16" alt_unit="cm"/>
-      <field name="sonar_back" type="uint16" alt_unit="cm"/>
-      <field name="sonar_left" type="uint16" alt_unit="cm"/>
-      <field name="sonar_down" type="uint16" alt_unit="cm"/>
+  <message name="FINKEN_SENSOR_MODEL" id="216">
+    <field name="distance_z"       type="float" alt_unit="cm"/>
+    <field name="distance_d_front" type="int16" alt_unit="cm"/>
+    <field name="distance_d_rigth" type="int16" alt_unit="cm"/>
+    <field name="distance_d_left"  type="int16" alt_unit="cm"/>
+    <field name="distance_d_back"  type="int16" alt_unit="cm"/>
+    <field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
+    <field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
+    <field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
+    <field name="velocity_alpha"   type="float" alt_unit="m/s"/>
+    <field name="velocity_beta"    type="float" alt_unit="m/s"/>
+    <field name="velocity_theta"   type="float" alt_unit="m/s"/>
+    <field name="velocity_x"       type="float" alt_unit="m/s"/>
+    <field name="velocity_y"       type="float" alt_unit="m/s"/>
   </message>
 
   <message name="SONAR_ARRAY" id="217">
