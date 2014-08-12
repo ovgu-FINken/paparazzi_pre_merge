@@ -1912,12 +1912,12 @@
     <field name="distance_d_rigth" type="int16" alt_unit="cm"/>
     <field name="distance_d_left"  type="int16" alt_unit="cm"/>
     <field name="distance_d_back"  type="int16" alt_unit="cm"/>
-    <!--<field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
+    <field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
     <field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
     <field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
     <field name="velocity_alpha"   type="float" alt_unit="m/s"/>
     <field name="velocity_beta"    type="float" alt_unit="m/s"/>
-    <field name="velocity_theta"   type="float" alt_unit="m/s"/>-->
+    <field name="velocity_theta"   type="float" alt_unit="m/s"/>
     <field name="velocity_x"       type="float" alt_unit="m/s"/>
     <field name="velocity_y"       type="float" alt_unit="m/s"/>
   </message>
@@ -1979,7 +1979,10 @@
     <field name="AMSL_GPS" type="float" unit="ft" alt_unit="m"/>
   </message>
 
- <!--224 is free -->
+  <message name="FINKEN_ENVIRONMENT_MODEL" id="224">
+    <field name="alpha"            type="float" alt_unit="degree"/>
+    <field name="distance"         type="int16" alt_unit="cm"/>
+  </message>
 
   <message name="VIDEO_SYNC" id="225">
     <field name="id" type="uint8"/>
@@ -1995,7 +1998,12 @@
     <field name="t" type="uint32"/>
   </message>
 
- <!--228 is free -->
+  <message name="FINKEN_SYSTEM_MODEL" id="228">
+    <field name="distance_z"       type="float" alt_unit="cm"/>
+    <field name="velocity_theta"   type="float" alt_unit="m/s"/>
+    <field name="velocity_x"       type="float" alt_unit="m/s"/>
+    <field name="velocity_y"       type="float" alt_unit="m/s"/>
+  </message>
  <!--229 is free -->
 
   <message name="AHRS_ARDRONE2" id="230">

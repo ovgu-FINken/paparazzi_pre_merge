@@ -30,12 +30,15 @@
 #include "std.h"
 
 struct environment_model_s {
-  float   *alpha;
-  int16_t *distance;
+  float   alpha;
+  int16_t distance;
 };
 
 extern struct environment_model_s finken_environment_model;
 
 extern void finken_environment_model_init();
+extern void finken_environment_model_periodic();
+
+extern void send_finken_environment_model_telemetry();
 
 #endif
