@@ -37,10 +37,29 @@ void finken_environment_model_init() {
 
 void finken_environment_model_periodic()
 {
-  // DO MATH
+  int16_t distance = finken_sensor_model.distance_d_front;
+  float alpha = 0.0;
 
-  finken_environment_model.alpha    = 0.0;
-  finken_environment_model.distance = 0;
+  if(finken_sensor_model.distance_d_right > distance)
+  {
+    distance = finken_sensor_model.distance_d_right;
+    alpha = 90.0;
+  }
+
+  if(finken_sensor_model.distance_d_back > distance)
+  {
+    distance = finken_sensor_model.distance_d_back;
+    alpha = 180.0;
+  }
+
+  if(finken_sensor_model.distance_d_left > distance)
+  {
+    distance = finken_sensor_model.distance_d_left;
+    alpha = 270.0;
+  }
+
+  finken_environment_model.distance = distance;
+  finken_environment_model.alpha    = alpha;
 }
 
 void send_finken_environment_model_telemetry()

@@ -40,12 +40,10 @@ void finken_system_model_init() {
 
 void finken_system_model_periodic()
 {
-  // DO MATH
-
-  finken_system_model.distance_z     = 0.0;
-  finken_system_model.velocity_theta = 0.0;
-  finken_system_model.velocity_x     = 0.0;
-  finken_system_model.velocity_y     = 0.0;
+  finken_system_model.distance_z     = finken_sensor_model.distance_z;
+  finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
+  finken_system_model.velocity_x     = finken_sensor_model.velocity_x;
+  finken_system_model.velocity_y     = finken_sensor_model.velocity_y;
 }
 
 void send_finken_system_model_telemetry()
