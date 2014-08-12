@@ -20,4 +20,42 @@
  *
  */
 
+#include "modules/finken_model/finken_model_system.h"
+#include "subsystems/datalink/telemetry.h"
 
+/* input */
+#include "modules/finken_model/finken_model_sensors.h"
+#include "modules/finken_model/finken_model_environment.h"
+
+struct system_model_s finken_system_model;
+
+void finken_system_model_init() {
+  finken_system_model.distance_z     = 0.0;
+  finken_system_model.velocity_theta = 0.0;
+  finken_system_model.velocity_x     = 0.0;
+  finken_system_model.velocity_y     = 0.0;
+
+  register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_system_model_telemetry);
+}
+
+void finken_system_model_periodic()
+{
+  // DO MATH
+
+  finken_system_model.distance_z     = 0.0;
+  finken_system_model.velocity_theta = 0.0;
+  finken_system_model.velocity_x     = 0.0;
+  finken_system_model.velocity_y     = 0.0;
+}
+
+void send_finken_system_model_telemetry()
+{
+  DOWNLINK_SEND_FINKEN_SYSTEM_MODEL(
+    DefaultChannel,
+    DefaultDevice,
+    &finken_system_model.distance_z,
+    &finken_system_model.velocity_theta,
+    &finken_system_model.velocity_x,
+    &finken_system_model.velocity_y
+  );
+}

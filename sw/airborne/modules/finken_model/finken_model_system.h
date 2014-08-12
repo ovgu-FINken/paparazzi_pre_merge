@@ -23,3 +23,24 @@
 /** @file finken_model_system.h
  *  @brief module for the system
  */
+
+#ifndef FINKEN_MODEL_ENVIRONMENT_H
+#define FINKEN_MODEL_ENVIRONMENT_H
+
+#include "std.h"
+
+struct system_model_s {
+  float distance_z;
+  float velocity_theta;
+  float velocity_x;
+  float velocity_y;
+};
+
+extern struct system_model_s finken_system_model;
+
+extern void finken_system_model_init();
+extern void finken_system_model_periodic();
+
+extern void send_finken_system_model_telemetry();
+
+#endif
