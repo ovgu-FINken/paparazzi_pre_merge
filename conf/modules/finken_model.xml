@@ -3,7 +3,7 @@
 <module name="finken_model">
   <doc>
     <description>
-			The mathematical model of the Finken.
+      The mathematical model of the Finken.
     </description>
   </doc>
   <header>
@@ -11,9 +11,10 @@
     <file name="finken_model_environment.h"/>
     <file name="finken_model_system.h"/>
   </header>
+  <init fun="finken_sensor_model_init()"/>
   <makefile>
     <file name="finken_model_sensors.c"/>
     <file name="finken_model_environment.c"/>
-    <file name="finken_model_system.h"/>
+    <file name="finken_model_system.c"/>
   </makefile>
 </module>

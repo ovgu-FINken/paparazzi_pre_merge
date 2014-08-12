@@ -35,12 +35,12 @@ struct sensor_model_s {
   int16_t *distance_d_right;
   int16_t *distance_d_back;
   int16_t *distance_d_left;
-  float   *acceleration_x;
-  float   *acceleration_y;
-  float   *acceleration_z;
-  float   *velocity_alpha;
-  float   *velocity_beta;
-  float   *velocity_theta;
+//  float   *acceleration_x;
+//  float   *acceleration_y;
+//  float   *acceleration_z;
+//  float   *velocity_alpha;
+//  float   *velocity_beta;
+//  float   *velocity_theta;
   float   *velocity_x;
   float   *velocity_y;
 };
@@ -48,5 +48,6 @@ struct sensor_model_s {
 extern struct sensor_model_s finken_sensor_model;
 
 extern void finken_sensor_model_init();
+extern void send_finken_sensor_model_telemetry();
 
 #endif
