@@ -23,3 +23,19 @@
 /** @file finken_model_environment.h
  *  @brief module for calculation of the environment
  */
+
+#ifndef FINKEN_MODEL_ENVIRONMENT_H
+#define FINKEN_MODEL_ENVIRONMENT_H
+
+#include "std.h"
+
+struct environment_model_s {
+  float   *alpha;
+  int16_t *distance;
+};
+
+extern struct environment_model_s finken_environment_model;
+
+extern void finken_environment_model_init();
+
+#endif
