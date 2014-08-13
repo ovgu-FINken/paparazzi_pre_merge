@@ -27,6 +27,20 @@
 #include "modules/finken_model/finken_model_sensors.h"
 #include "modules/finken_model/finken_model_environment.h"
 
+
+// TODO: sane values
+#ifndef FINKEN_SYSTEM_P
+#define FINKEN_SYSTEM_P 0.1
+#endif
+
+#ifndef FINKEN_SYSTEM_I
+#define FINKEN_SYSTEM_I 0.00
+#endif
+
+#ifndef FINKEN_SYSTEM_UPDATE_FREQ
+#define FINKEN_SYSTEM_UPDATE_FREQ 1
+#endif
+
 struct system_model_s finken_system_model;
 struct actuators_model_s finken_actuators_set_point;
 
@@ -66,11 +80,36 @@ void send_finken_system_model_telemetry()
     &finken_system_model.distance_z,
     &finken_system_model.velocity_theta,
     &finken_system_model.velocity_x,
-    &finken_system_model.velocity_y
+    &finken_system_model.velocity_y,
+    &finken_actuators_set_point.alpha,
+    &finken_actuators_set_point.beta
   );
 }
 
+/* 
+ * Use finken_system_set_point to calculate new actuator settings
+ *
+ */
 void update_actuators_set_point()
 {
 	
+/* 
+ * Use finken_system_set_point to calculate new actuator settings
+ *
+ */
+float sum_error_x = 0;
+float sum_error_y = 0;
+void update_actuators_set_point()
+{
+	float error_x = finken_system_model.velocity_x - finken_system_set_point.velocity_x;
+	sum_error_x += error_x;
+
+	finken_actuators_set_point.beta = (error_x * FINKEN_SYSTEM_P + sum_error_x * FINKEN_SYSTEM_I) * FINKEN_SYSTEM_UPDATE_FREQ;
+
+	float error_y = finken_system_model.velocity_y - finken_system_set_point.velocity_y;
+	sum_error_y += error_y;
+
+	finken_actuators_set_point.alpha = (error_y * FINKEN_SYSTEM_P + sum_error_y * FINKEN_SYSTEM_I) * FINKEN_SYSTEM_UPDATE_FREQ;
+
+	// TODO:Thrust, Theta
 }

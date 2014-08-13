@@ -44,19 +44,19 @@ void finken_environment_model_periodic(){
   int16_t distance = finken_sensor_model.distance_d_front;
   float alpha = 0.0;
 
-  if(finken_sensor_model.distance_d_right > distance)
+  if(finken_sensor_model.distance_d_right < distance)
   {
     distance = finken_sensor_model.distance_d_right;
     alpha = 90.0;
   }
 
-  if(finken_sensor_model.distance_d_back > distance)
+  if(finken_sensor_model.distance_d_back < distance)
   {
     distance = finken_sensor_model.distance_d_back;
     alpha = 180.0;
   }
 
-  if(finken_sensor_model.distance_d_left > distance)
+  if(finken_sensor_model.distance_d_left < distance)
   {
     distance = finken_sensor_model.distance_d_left;
     alpha = 270.0;
