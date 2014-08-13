@@ -28,7 +28,7 @@
 #define FINKEN_MODEL_SYSTEM_H
 
 #include "std.h"
-#include "modules/finken_model_actuators.h"
+#include "modules/finken_model/finken_model_actuators.h"
 
 struct system_model_s {
   float distance_z;
