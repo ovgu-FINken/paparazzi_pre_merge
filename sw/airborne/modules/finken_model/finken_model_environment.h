@@ -28,6 +28,7 @@
 #define FINKEN_MODEL_ENVIRONMENT_H
 
 #include "std.h"
+#include "modules/finken_model/finken_model_system.h"
 
 struct environment_model_s {
   float   alpha;
@@ -35,6 +36,7 @@ struct environment_model_s {
 };
 
 extern struct environment_model_s finken_environment_model;
+extern struct system_model_s finken_system_set_point;
 
 extern void finken_environment_model_init();
 extern void finken_environment_model_periodic();
