@@ -28,6 +28,7 @@
 #include "modules/finken_model/finken_model_environment.h"
 
 struct system_model_s finken_system_model;
+struct actuators_model_s finken_actuators_set_point;
 
 void finken_system_model_init() {
   finken_system_model.distance_z     = 0.0;
@@ -35,10 +36,21 @@ void finken_system_model_init() {
   finken_system_model.velocity_x     = 0.0;
   finken_system_model.velocity_y     = 0.0;
 
+	finken_actuators_set_point.alpha  = 0.0;
+	finken_actuators_set_point.beta   = 0.0;
+	finken_actuators_set_point.theta  = 0.0;
+	finken_actuators_set_point.thrust = 0.0;
+
   register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_system_model_telemetry);
 }
 
 void finken_system_model_periodic()
+{
+	update_finken_system_model();
+	update_actuators_set_point();
+}
+
+void update_finken_system_model()
 {
   finken_system_model.distance_z     = finken_sensor_model.distance_z;
   finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
@@ -56,4 +68,9 @@ void send_finken_system_model_telemetry()
     &finken_system_model.velocity_x,
     &finken_system_model.velocity_y
   );
+}
+
+void update_actuators_set_point()
+{
+	
 }
