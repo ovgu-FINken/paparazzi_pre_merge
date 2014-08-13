@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Andreas Pfohl
+ * Copyright (C) 2014 Sebastian Mai
  *
  * This file is part of paparazzi.
  *
@@ -20,30 +20,14 @@
  *
  */
 
-/** @file finken_model_system.h
- *  @brief module for the system
- */
+#include "modules/finken_model/finken_model_actuators.h"
 
-#ifndef FINKEN_MODEL_SYSTEM_H
-#define FINKEN_MODEL_SYSTEM_H
+struct actuators_model_s finken_actuators_model;
 
-#include "std.h"
-#include "modules/finken_model_actuators.h"
+void finken_actuators_model_init() {
+	finken_actuators_model.alpha = 0;
+	finken_actuators_model.beta  = 0;
+	finken_actuators_model.theta = 0;
+	finken_actuators_model.thrust= 0;
+}
 
-struct system_model_s {
-  float distance_z;
-  float velocity_theta;
-  float velocity_x;
-  float velocity_y;
-};
-
-extern struct system_model_s finken_system_model;
-extern struct actuators_model_s finken_actuators_set_point;
-
-extern void finken_system_model_init();
-extern void finken_system_model_periodic();
-void update_finken_system_model();
-
-extern void send_finken_system_model_telemetry();
-
-#endif
