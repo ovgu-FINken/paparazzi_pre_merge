@@ -24,8 +24,8 @@
  *  @brief module for the system
  */
 
-#ifndef FINKEN_MODEL_ENVIRONMENT_H
-#define FINKEN_MODEL_ENVIRONMENT_H
+#ifndef FINKEN_MODEL_SYSTEM_H
+#define FINKEN_MODEL_SYSTEM_H
 
 #include "std.h"
 
