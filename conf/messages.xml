@@ -2003,6 +2003,8 @@
     <field name="velocity_theta"   type="float" alt_unit="m/s"/>
     <field name="velocity_x"       type="float" alt_unit="m/s"/>
     <field name="velocity_y"       type="float" alt_unit="m/s"/>
+    <field name="alpha"            type="float" alt_unit="degree"/>
+    <field name="beta"             type="float" alt_unit="degree"/>
   </message>
  <!--229 is free -->
 
