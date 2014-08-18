@@ -80,16 +80,12 @@ void send_finken_system_model_telemetry()
     &finken_system_model.distance_z,
     &finken_system_model.velocity_theta,
     &finken_system_model.velocity_x,
-    &finken_system_model.velocity_y,
-    &finken_actuators_set_point.alpha,
-    &finken_actuators_set_point.beta
+    &finken_system_model.velocity_y
   );
 }
 
-	
-/* 
+/*
  * Use finken_system_set_point to calculate new actuator settings
- *
  */
 float sum_error_x = 0;
 float sum_error_y = 0;
