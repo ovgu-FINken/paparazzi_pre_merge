@@ -2006,7 +2006,13 @@
     <field name="alpha"            type="float" alt_unit="degree"/>
     <field name="beta"             type="float" alt_unit="degree"/>
   </message>
- <!--229 is free -->
+
+  <message name="FINKEN_ACTUATORS_MODEL" id="229">
+    <field name="alpha"  type="float" alt_unit="degree"/>
+    <field name="beta"   type="float" alt_unit="degree"/>
+    <field name="theta"  type="float" alt_unit="degree"/>
+    <field name="thrust" type="float" alt_unit="degree"/>
+  </message>
 
   <message name="AHRS_ARDRONE2" id="230">
     <field name="state" type="uint32" />
