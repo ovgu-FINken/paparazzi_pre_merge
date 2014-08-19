@@ -30,6 +30,9 @@
 
 struct sensor_model_s finken_sensor_model;
 
+float acceleration_offset_x;
+float acceleration_offset_y;
+
 void finken_sensor_model_init()
 {
   finken_sensor_model.distance_z       = 0.0;
@@ -58,8 +61,15 @@ void finken_sensor_model_periodic()
   finken_sensor_model.distance_d_left  = sonar_values.left;
 
 	struct NedCoor_f* accel = stateGetAccelNed_f();
-  finken_sensor_model.acceleration_x   = accel->x;
-  finken_sensor_model.acceleration_y   = accel->y;
+	if(acceleration_offset_x == 0) {
+		acceleration_offset_x = -1.0 * accel->x;
+	}
+	if(acceleration_offset_y == 0) {
+		acceleration_offset_y = -1.0 * accel->y;
+	}
+
+  finken_sensor_model.acceleration_x   = accel->x + acceleration_offset_x;
+  finken_sensor_model.acceleration_y   = accel->y + acceleration_offset_y;
   finken_sensor_model.acceleration_z   = accel->z;
 
   finken_sensor_model.velocity_alpha   = 0.0;
