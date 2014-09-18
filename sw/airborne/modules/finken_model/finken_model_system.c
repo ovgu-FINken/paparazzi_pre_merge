@@ -37,6 +37,18 @@
 #define FINKEN_SYSTEM_I 0.00
 #endif
 
+#ifndef FINKEN_THRUST_P
+#define FINKEN_THRUST_P 0.1
+#endif
+
+#ifndef FINKEN_THRUST_I
+#define FINKEN_THRUST_I 0.00
+#endif
+
+#ifndef FINKEN_THRUST_DEFAULT
+#define FINKEN_THRUST_DEFAULT 0.45
+#endif
+
 #ifndef FINKEN_SYSTEM_UPDATE_FREQ
 #define FINKEN_SYSTEM_UPDATE_FREQ 1
 #endif
@@ -89,6 +101,7 @@ void send_finken_system_model_telemetry()
  */
 float sum_error_x = 0;
 float sum_error_y = 0;
+float sum_error_z = 0;
 void update_actuators_set_point()
 {
 	float error_x = finken_system_model.velocity_x - finken_system_set_point.velocity_x;
@@ -100,6 +113,11 @@ void update_actuators_set_point()
 	sum_error_y += error_y;
 
 	finken_actuators_set_point.alpha = (error_y * FINKEN_SYSTEM_P + sum_error_y * FINKEN_SYSTEM_I) * FINKEN_SYSTEM_UPDATE_FREQ;
+
+	float error_z = finken_system_model.distance_z - finken_system_set_point.distance_z;
+	sum_error_z += error_z;
+
+	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + (error_z * FINKEN_THRUST_P + sum_error_z * FINKEN_THRUST_I) * FINKEN_SYSTEM_UPDATE_FREQ;
 
 	// TODO:Thrust, Theta
 }
