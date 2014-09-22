@@ -38,7 +38,7 @@
 #endif
 
 #ifndef FINKEN_SYSTEM_UPDATE_FREQ
-#define FINKEN_SYSTEM_UPDATE_FREQ 1
+#define FINKEN_SYSTEM_UPDATE_FREQ 30
 #endif
 
 #ifndef FINKEN_PREDICTION_STRENGTH
@@ -74,8 +74,8 @@ void update_finken_system_model()
   finken_system_model.distance_z     = finken_sensor_model.distance_z;
   finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
 
-	float velocity_prediction_x = finken_system_model.velocity_x + finken_sensor_model.acceleration_x * FINKEN_SYSTEM_UPDATE_FREQ;
-	float velocity_prediction_y = finken_system_model.velocity_y + finken_sensor_model.acceleration_y * FINKEN_SYSTEM_UPDATE_FREQ;
+	float velocity_prediction_x = finken_system_model.velocity_x + finken_sensor_model.acceleration_x / FINKEN_SYSTEM_UPDATE_FREQ;
+	float velocity_prediction_y = finken_system_model.velocity_y + finken_sensor_model.acceleration_y / FINKEN_SYSTEM_UPDATE_FREQ;
 
 	finken_system_model.velocity_x = FINKEN_PREDICTION_STRENGTH * velocity_prediction_x + (1 - FINKEN_PREDICTION_STRENGTH) * finken_sensor_model.velocity_x;
 	finken_system_model.velocity_y = FINKEN_PREDICTION_STRENGTH * velocity_prediction_y + (1 - FINKEN_PREDICTION_STRENGTH) * finken_sensor_model.velocity_y;
