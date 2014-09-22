@@ -21,13 +21,27 @@
  */
 
 #include "modules/finken_model/finken_model_actuators.h"
+#include "subsystems/datalink/telemetry.h"
 
 struct actuators_model_s finken_actuators_model;
 
 void finken_actuators_model_init() {
-	finken_actuators_model.alpha = 0;
-	finken_actuators_model.beta  = 0;
-	finken_actuators_model.theta = 0;
-	finken_actuators_model.thrust= 0;
+	finken_actuators_model.alpha  = 0;
+	finken_actuators_model.beta   = 0;
+	finken_actuators_model.theta  = 0;
+	finken_actuators_model.thrust = 0;
+
+	register_periodic_telemetry(DefaultPeriodic, "FINKEN_ACTUATORS_MODEL", send_finken_actuators_model_telemetry);
 }
 
+void send_finken_actuators_model_telemetry()
+{
+	DOWNLINK_SEND_FINKEN_ACTUATORS_MODEL(
+		DefaultChannel,
+		DefaultDevice,
+		&finken_actuators_model.alpha,
+		&finken_actuators_model.beta,
+		&finken_actuators_model.theta,
+		&finken_actuators_model.thrust
+	);
+}

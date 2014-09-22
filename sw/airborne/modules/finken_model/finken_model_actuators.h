@@ -27,7 +27,6 @@
 #ifndef FINKEN_MODEL_ACTUATORS_H
 #define FINKEN_MODEL_ACTUATORS_H
 
-
 struct actuators_model_s {
 	float alpha;
 	float beta;
@@ -35,10 +34,10 @@ struct actuators_model_s {
 	float thrust;
 };
 
-
 extern struct actuators_model_s finken_actuators_model;
 
 extern void finken_actuators_model_init();
-// extern void send_finken_actuators_model_telemetry();
+
+extern void send_finken_actuators_model_telemetry();
 
 #endif

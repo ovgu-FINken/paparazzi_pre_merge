@@ -1925,11 +1925,14 @@
     <field name="velocity_theta"   type="float" alt_unit="m/s"/>
     <field name="velocity_x"       type="float" alt_unit="m/s"/>
     <field name="velocity_y"       type="float" alt_unit="m/s"/>
-    <field name="alpha"            type="float" alt_unit="degree"/>
-    <field name="beta"             type="float" alt_unit="degree"/>
   </message>
 
-  <!--218 is free -->
+  <message name="FINKEN_ACTUATORS_MODEL" id="218">
+    <field name="alpha"  type="float" alt_unit="degree"/>
+    <field name="beta"   type="float" alt_unit="degree"/>
+    <field name="theta"  type="float" alt_unit="degree"/>
+    <field name="thrust" type="float" alt_unit="degree"/>
+  </message>
 
   <message name="WEATHER" id="219">
     <field name="p_amb" type="float" unit="Pa" alt_unit="mBar" alt_unit_coef="0.01"/>
