@@ -28,6 +28,7 @@
 #include "messages.h"
 #include "subsystems/datalink/downlink.h"
 #include "subsystems/datalink/telemetry.h"
+#include "modules/datalink/mavlink_encoder.h"
 
 /** Sonar offset.
  *  Offset value in m (float)
@@ -70,6 +71,9 @@
 
 static const char read_order[] = { SONAR_ADDR_FRONT, SONAR_ADDR_RIGHT, SONAR_ADDR_BACK, SONAR_ADDR_LEFT };
 
+struct mavlink_message_s mav_msg;
+uint8_t mavlink_payload;
+
 float sonar_distance;
 float sonar_fail_telemetry_pitch;
 float sonar_fail_telemetry_roll;
@@ -111,10 +115,16 @@ void sonar_array_i2c_init()
 	sonar_values.back  = 0;
 	sonar_values.left  = 0;
 
+	mav_msg.len = 1;
+	mav_msg.seq = 0;
+	mav_msg.sys_id = 0;
+	mav_msg.comp_id = 0;
+	mav_msg.msg_id = 239;
+	mav_msg.payload = &mavlink_payload;
+
 	// register telemetry
 	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
 }
-
 
 /** sonar_send_command
  *	send take_range_reading command (0x51) to the sonar sensors to trigger the range readin
@@ -124,7 +134,6 @@ void sonar_send_command(uint8_t i2c_addr)
 	sonar_i2c_write_trans.buf[0] = 0x51;
 	i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_write_trans, (i2c_addr << 1) & ~0x01, 1); // 7-Bit Adress + write Bit (last bit set to 0)
 }
-
 
 void query_sensor(int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction)
 {
@@ -160,6 +169,8 @@ void sonar_array_i2c_periodic()
 	if(sonar_index > 3)	// biggist index of sonar sensors
 		sonar_index = 0;
 	sonar_send_command(read_order[sonar_index]);
+	mavlink_payload = 0xff;
+	mavlink_message_send(&mav_msg);
 
 	query_all_sensors();
 #else // SITL
