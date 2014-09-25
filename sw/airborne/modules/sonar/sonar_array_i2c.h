@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014  Sebastian Mai
+ * Copyright (C) 2014  Sebastian Mai, Andreas Pfohl
  *
  * This file is part of paparazzi.
  *
@@ -17,7 +17,6 @@
  * along with paparazzi; see the file COPYING.  If not, write to
  * the Free Software Foundation, 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
- *
  */
 
 /** @file sonar_array_i2c.h
@@ -35,29 +34,27 @@ struct sonar_values_s {
 	int16_t right;
 	int16_t back;
 	int16_t left;
-	int16_t down;
 };
-
-extern struct sonar_values_s sonar_values;
-extern struct sonar_values_s sonar_values_old;
 
 struct sonar_data_available_s {
 	bool_t front;
 	bool_t right;
 	bool_t back;
 	bool_t left;
-	bool_t down;
 };
 
-void sonar_send_command(uint8_t i2c_addr);
+extern struct sonar_values_s sonar_values;
+extern struct sonar_values_s sonar_values_old;
+
 extern struct sonar_data_aviable_s sonar_data_aviable;
 
-extern void sonar_array_i2c_init(void);
-extern void sonar_array_i2c_periodic(void);
-extern void sonar_array_i2c_event(void);
+extern void sonar_array_i2c_init();
+extern void sonar_array_i2c_periodic();
+extern void sonar_array_i2c_event();
+extern void send_sonar_array_telemetry();
 
-extern void send_sonar_array_telemetry(void);
-void query_all_sensors(void);
-void query_sensor( int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction);
+void sonar_send_command(uint8_t i2c_addr);
+void query_all_sensors();
+void query_sensor(int16_t *value, int16_t *old_value, uint8_t i2c_addr, struct i2c_transaction *transaction);
 
 #endif
