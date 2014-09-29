@@ -1925,8 +1925,9 @@
     <field name="velocity_theta"   type="float" alt_unit="m/s"/>
     <field name="velocity_x"       type="float" alt_unit="m/s"/>
     <field name="velocity_y"       type="float" alt_unit="m/s"/>
-    <field name="alpha"            type="float" alt_unit="degree"/>
-    <field name="beta"             type="float" alt_unit="degree"/>
+    <field name="alpha_setpoint"            type="float" alt_unit="degree"/>
+		<field name="beta_setpoint"             type="float" alt_unit="degree"/>
+    <field name="thrust_setpoint"            type="float" alt_unit="degree"/>
   </message>
 
   <!--218 is free -->
