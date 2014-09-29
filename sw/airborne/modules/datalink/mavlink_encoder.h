@@ -50,7 +50,6 @@ static inline void mavlink_message_send(struct mavlink_message_s *msg)
 	uint8_t *payload = msg->payload;
 	uint16_t checksum;
 	mavlink_crc_init(&checksum);
-	mavlink_crc_accumulate(STXMAV, &checksum);
 	mavlink_crc_accumulate(msg->len, &checksum);
 	mavlink_crc_accumulate(msg->seq, &checksum);
 	mavlink_crc_accumulate(msg->sys_id, &checksum);
@@ -60,9 +59,11 @@ static inline void mavlink_message_send(struct mavlink_message_s *msg)
 	{
 		mavlink_crc_accumulate(*payload++, &checksum);
 	}
+	mavlink_crc_accumulate(62, &checksum);
 
   length = msg->len;
 	payload = msg->payload;
+
 	MavlinkTransmit(STXMAV);
 	MavlinkTransmit(msg->len);
 	MavlinkTransmit(msg->seq);
@@ -73,8 +74,8 @@ static inline void mavlink_message_send(struct mavlink_message_s *msg)
 	{
 		MavlinkTransmit(*payload++);
 	}
+	MavlinkTransmit((uint8_t)(checksum & 0xff));
 	MavlinkTransmit((uint8_t)(checksum >> 8));
-	MavlinkTransmit((uint8_t)(checksum));
 }
 
 #endif /* MAVLINK_ENCODER_H */

@@ -117,8 +117,8 @@ void sonar_array_i2c_init()
 
 	mav_msg.len = 1;
 	mav_msg.seq = 0;
-	mav_msg.sys_id = 0;
-	mav_msg.comp_id = 0;
+	mav_msg.sys_id = 81;
+	mav_msg.comp_id = 50;
 	mav_msg.msg_id = 239;
 	mav_msg.payload = &mavlink_payload;
 
@@ -171,6 +171,7 @@ void sonar_array_i2c_periodic()
 	sonar_send_command(read_order[sonar_index]);
 	mavlink_payload = 0xff;
 	mavlink_message_send(&mav_msg);
+	mav_msg.seq++;
 
 	query_all_sensors();
 #else // SITL
