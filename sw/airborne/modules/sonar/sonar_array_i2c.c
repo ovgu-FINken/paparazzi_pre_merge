@@ -121,12 +121,8 @@ void sonar_array_i2c_init()
  */
 void sonar_send_command(uint8_t i2c_addr)
 {
-	if (sonar_i2c_write_trans.status == I2CTransDone)
-	{
-		sonar_i2c_write_trans.buf[0] = 0x51;
-		i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_write_trans, (i2c_addr << 1) & ~0x01, 1); // 7-Bit Adress + write Bit (last bit set to 0)
-	}
-	sonar_i2c_write_trans.status = I2CTransDone;
+	sonar_i2c_write_trans.buf[0] = 0x51;
+	i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_write_trans, (i2c_addr << 1) & ~0x01, 1); // 7-Bit Adress + write Bit (last bit set to 0)
 }
 
 
