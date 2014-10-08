@@ -54,5 +54,26 @@ extern bool_t optical_flow_available;
 extern void px4flow_init(void);
 extern void px4flow_downlink(void);
 
+#ifdef USE_SONAR
+/** Raw sonar value.
+ */
+extern uint16_t sonar_meas;
+
+/** New data available.
+ */
+extern bool_t sonar_data_available;
+
+/** Sonar distance in m.
+ */
+extern float sonar_distance;
+
+#define SonarEvent(_handler) { \
+  if (sonar_data_available) { \
+    _handler(); \
+    sonar_data_available = FALSE; \
+  } \
+}
+
+#endif /* USE_SONAR */
 #endif /* PX4FLOW_H */
 

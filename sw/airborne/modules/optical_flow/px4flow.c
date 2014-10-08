@@ -30,8 +30,17 @@
 #include "modules/datalink/mavlink_decoder.h"
 #include <string.h>
 
+#ifdef USE_SONAR
+#define SONAR_SCALE 0.01
+#define SONAR_OFFSET 0
+#endif /* USE_SONAR */
+
 struct mavlink_optical_flow optical_flow;
 bool_t optical_flow_available;
+
+uint16_t sonar_meas;
+bool_t sonar_data_available;
+float sonar_distance;
 
 // message ID in Mavlink (v1.0)
 #define MAVLINK_OPTICAL_FLOW_MSG_ID 100
@@ -44,6 +53,11 @@ struct mavlink_msg_req req;
 // callback function on message reception
 static void decode_optical_flow_msg(struct mavlink_message * msg __attribute__ ((unused))) {
   optical_flow_available = TRUE;
+#ifdef USE_SONAR
+	sonar_data_available = TRUE;
+	sonar_meas = (uint16_t) optical_flow.ground_distance * 100;
+	sonar_distance = ground_distance;
+#endif /* USE_SONAR */
 }
 
 /** Initialization function

@@ -29,20 +29,6 @@
 #include "subsystems/datalink/downlink.h"
 #include "subsystems/datalink/telemetry.h"
 
-/** Sonar offset.
- *  Offset value in m (float)
- *  distance mesured by the i2c sensor
- */
-#ifndef SONAR_OFFSET
-#define SONAR_OFFSET 0.
-#endif
-
-/** Sonar scale.
- *  Scaling factor to compute real distances(float)
- */
-#ifndef SONAR_SCALE
-#define SONAR_SCALE 1.0000
-#endif
 
 #ifndef SONAR_I2C_DEV
 #define SONAR_I2C_DEV i2c2
