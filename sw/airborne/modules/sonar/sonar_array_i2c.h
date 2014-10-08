@@ -36,17 +36,9 @@ struct sonar_values_s {
 	int16_t left;
 };
 
-struct sonar_data_available_s {
-	bool_t front;
-	bool_t right;
-	bool_t back;
-	bool_t left;
-};
 
 extern struct sonar_values_s sonar_values;
 extern struct sonar_values_s sonar_values_old;
-
-extern struct sonar_data_aviable_s sonar_data_aviable;
 
 extern void sonar_array_i2c_init();
 extern void sonar_array_i2c_periodic();

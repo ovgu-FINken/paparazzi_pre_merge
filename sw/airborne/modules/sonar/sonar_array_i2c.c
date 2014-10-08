@@ -63,7 +63,6 @@ uint8_t sonar_status;
 uint8_t sonar_index;
 struct sonar_values_s sonar_values;
 struct sonar_values_s sonar_values_old;
-struct sonar_data_available_s sonar_data_available;
 #define SONAR_STATUS_IDLE 0
 #define SONAR_STATUS_PENDING 1
 
@@ -86,11 +85,6 @@ void sonar_array_i2c_init()
 	sonar_i2c_read_back_trans.buf[1] = 0;
 	sonar_i2c_read_left_trans.buf[0] = 0;
 	sonar_i2c_read_left_trans.buf[1] = 0;
-
-	sonar_data_available.front = FALSE;
-	sonar_data_available.right = FALSE;
-	sonar_data_available.back  = FALSE;
-	sonar_data_available.left  = FALSE;
 
 	sonar_values.front = 0;
 	sonar_values.right = 0;
