@@ -38,7 +38,7 @@
 #endif
 
 #ifndef FINKEN_THRUST_P
-#define FINKEN_THRUST_P 0.01
+#define FINKEN_THRUST_P 0.015
 #endif
 
 #ifndef FINKEN_THRUST_I
@@ -46,7 +46,7 @@
 #endif
 
 #ifndef FINKEN_THRUST_DEFAULT
-#define FINKEN_THRUST_DEFAULT 0.50
+#define FINKEN_THRUST_DEFAULT 0.55
 #endif
 
 #ifndef FINKEN_SYSTEM_UPDATE_FREQ
@@ -78,7 +78,10 @@ void finken_system_model_periodic()
 
 void update_finken_system_model()
 {
-  finken_system_model.distance_z     = finken_sensor_model.distance_z;
+	if(finken_sensor_model.distance_z < 2.5) {
+		finken_system_model.distance_z     = finken_sensor_model.distance_z;
+	}
+	
   finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
   finken_system_model.velocity_x     = finken_sensor_model.velocity_x;
   finken_system_model.velocity_y     = finken_sensor_model.velocity_y;
@@ -121,6 +124,12 @@ void update_actuators_set_point()
 	sum_error_z += error_z;
 
 	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + (error_z * FINKEN_THRUST_P + sum_error_z * FINKEN_THRUST_I) * FINKEN_SYSTEM_UPDATE_FREQ;
+
+	if(finken_actuators_set_point.thrust < 0.2)
+		finken_actuators_set_point.thrust = 0.2;
+	else if(finken_actuators_set_point.thrust > 1.0)
+		finken_actuators_set_point.thrust = 1.0;
+
 
 	// TODO: Theta
 }
