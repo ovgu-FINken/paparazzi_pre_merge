@@ -1951,6 +1951,10 @@
   </message>
 
  <!--222 is free -->
+  <message name="FINKEN_IR_ADC" id="222">
+    <field name="ir_distance" type="float" alt_unit="cm"/>
+  </message>
+
  <!--223 is free -->
  <!--224 is free -->
  <!--225 is free -->
