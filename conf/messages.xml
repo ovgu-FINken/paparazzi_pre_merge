@@ -2141,7 +2141,7 @@
 
   <message name="FINKEN_IR_ADC" id="245">
       <field name="ir_distance" type="float" alt_unit="cm"/>
-      <field name="ir_measurement" type="uint16t"/>
+      <field name="ir_measurement" type="uint16"/>
   </message>
   <!-- 246 is free -->
 

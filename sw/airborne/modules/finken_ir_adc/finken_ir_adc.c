@@ -28,7 +28,7 @@ void update_ir_distance_from_measurement(void) {
 void finken_ir_adc_periodic(void) {
     ir_measurement = ir_adc.sum / ir_adc.av_nb_sample;
     ir_data_available = TRUE;
-        ir_distance = compute_ir_distance_from_measurement();
+		update_ir_distance_from_measurement();
 }
 
 void send_finken_ir_adc_telemetry(void) {
