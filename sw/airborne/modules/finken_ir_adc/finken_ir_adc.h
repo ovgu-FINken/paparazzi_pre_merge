@@ -7,6 +7,7 @@ extern uint16_t ir_measurement;
 extern float ir_distance;
 extern bool_t ir_data_available;
 
+inline void compute_ir_distance_from_measurement(void);
 extern void finken_ir_adc_init(void);
 extern void finken_ir_adc_periodic(void);
 

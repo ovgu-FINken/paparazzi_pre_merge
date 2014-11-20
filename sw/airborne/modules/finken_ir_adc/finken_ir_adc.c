@@ -21,14 +21,19 @@ void finken_ir_adc_init(void) {
     register_periodic_telemetry(DefaultPeriodic, "FINKEN_IR_ADC", send_finken_ir_adc_telemetry);
 }
 
+void update_ir_distance_from_measurement(void) {
+    ir_distance = ir_measurement;
+}
+
 void finken_ir_adc_periodic(void) {
     ir_measurement = ir_adc.sum / ir_adc.av_nb_sample;
     ir_data_available = TRUE;
-    ir_distance = ir_measurement;
+        ir_distance = compute_ir_distance_from_measurement();
 }
 
 void send_finken_ir_adc_telemetry(void) {
   DOWNLINK_SEND_FINKEN_IR_ADC(DefaultChannel, DefaultDevice,
-    &ir_distance
+    &ir_distance,
+    &ir_measurement
   );
 }
