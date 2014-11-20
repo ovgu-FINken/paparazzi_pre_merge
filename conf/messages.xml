@@ -1953,6 +1953,7 @@
  <!--222 is free -->
   <message name="FINKEN_IR_ADC" id="222">
     <field name="ir_distance" type="float" alt_unit="cm"/>
+    <field name="ir_measurement" type="uint16t"/>
   </message>
 
  <!--223 is free -->
