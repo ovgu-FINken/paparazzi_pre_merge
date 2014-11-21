@@ -21,9 +21,9 @@ void finken_ir_adc_init(void) {
     register_periodic_telemetry(DefaultPeriodic, "FINKEN_IR_ADC", send_finken_ir_adc_telemetry);
 }
 
-#define IR_SAMPLE_SIZE 5
-static uint16_t ir_in_samples[IR_SAMPLE_SIZE] = {1,2,3,4,5};
-static float		ir_out_samples[IR_SAMPLE_SIZE] = {0.1,0.2,0.3,0.4,0.5};
+#define IR_SAMPLE_SIZE 6
+static uint16_t ir_in_samples[IR_SAMPLE_SIZE] = {800, 830, 900, 1150, 1650, 2700};
+static float		ir_out_samples[IR_SAMPLE_SIZE] = {130, 100, 80, 60, 40, 20};
 
 void update_ir_distance_from_measurement(void) {
 	if(ir_measurement <= ir_in_samples[0]) {
@@ -35,11 +35,12 @@ void update_ir_distance_from_measurement(void) {
 		return;
 	}
 	int i = 0;
-	while(ir_measurement <= ir_in_samples[++i]) {
+	while(ir_measurement > ir_in_samples[++i]) {
 		void;
 	}
-	float x = (float) (ir_measurement - ir_in_samples[i - 1]) / ir_in_samples[i];
-	ir_distance = ir_out_samples[i - 1] + x * (ir_out_samples[i] - ir_out_samples[i - 1]);
+	// w: something in range [0;1], for position in interval between i - 1 and i
+	float w = (float) (ir_measurement - ir_in_samples[i - 1]) / (ir_in_samples[i] - ir_in_samples[i - 1]);
+	ir_distance = (1.0 - w) * ir_out_samples[i - 1] + w * ir_out_samples[i];
 }
 
 void finken_ir_adc_periodic(void) {
