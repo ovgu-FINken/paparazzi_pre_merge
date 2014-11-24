@@ -1894,7 +1894,6 @@
 		<field name="sonar_right" type="uint16" alt_unit="cm"/>
 		<field name="sonar_back" type="uint16" alt_unit="cm"/>
 		<field name="sonar_left" type="uint16" alt_unit="cm"/>
-		<field name="sonar_down" type="uint16" alt_unit="cm"/>
 		<field name="sonar_failsave_pitch" type="float" alt_unit="deg"/>
 		<field name="sonar_failsave_roll" type="float" alt_unit="deg"/>
 	</message>
@@ -1930,7 +1929,12 @@
     <field name="thrust_setpoint"            type="float" alt_unit="degree"/>
   </message>
 
-  <!--218 is free -->
+  <message name="FINKEN_ACTUATORS_MODEL" id="218">
+    <field name="alpha"  type="float" alt_unit="degree"/>
+    <field name="beta"   type="float" alt_unit="degree"/>
+    <field name="theta"  type="float" alt_unit="degree"/>
+    <field name="thrust" type="float" alt_unit="degree"/>
+  </message>
 
   <message name="WEATHER" id="219">
     <field name="p_amb" type="float" unit="Pa" alt_unit="mBar" alt_unit_coef="0.01"/>
@@ -1950,6 +1954,11 @@
   </message>
 
  <!--222 is free -->
+  <message name="FINKEN_IR_ADC" id="222">
+    <field name="ir_distance" type="float" alt_unit="cm"/>
+    <field name="ir_measurement" type="uint16"/>
+  </message>
+
  <!--223 is free -->
  <!--224 is free -->
  <!--225 is free -->

@@ -102,10 +102,8 @@ void send_finken_system_model_telemetry()
   );
 }
 
-	
-/* 
+/*
  * Use finken_system_set_point to calculate new actuator settings
- *
  */
 float sum_error_x = 0;
 float sum_error_y = 0;
