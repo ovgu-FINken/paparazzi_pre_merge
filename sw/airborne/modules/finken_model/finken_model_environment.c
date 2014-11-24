@@ -25,6 +25,7 @@
 
 /* input */
 #include "modules/finken_model/finken_model_sensors.h"
+#include <math.h>
 
 struct environment_model_s finken_environment_model;
 struct system_model_s finken_system_set_point;
@@ -42,28 +43,62 @@ void finken_environment_model_init() {
 
 void finken_environment_model_periodic(){
   int16_t distance = finken_sensor_model.distance_d_front;
-  float alpha = 0.0;
+  uint16_t alpha_offset = 0;
+	if(finken_sensor_model.distance_d_left < finken_sensor_model.distance_d_right) {
+		alpha_offset = 270;
+	}
 
   if(finken_sensor_model.distance_d_right < distance)
   {
     distance = finken_sensor_model.distance_d_right;
-    alpha = 90.0;
+    alpha_offset = 90;
+		if(finken_sensor_model.distance_d_front < finken_sensor_model.distance_d_back) {
+			alpha_offset = 0;
+		}
   }
 
   if(finken_sensor_model.distance_d_back < distance)
   {
     distance = finken_sensor_model.distance_d_back;
-    alpha = 180.0;
+    alpha_offset = 180;
+		if(finken_sensor_model.distance_d_right < finken_sensor_model.distance_d_left) {
+			alpha_offset = 90;
+		}
   }
 
   if(finken_sensor_model.distance_d_left < distance)
   {
     distance = finken_sensor_model.distance_d_left;
-    alpha = 270.0;
+    alpha_offset = 270;
+		if(finken_sensor_model.distance_d_back < finken_sensor_model.distance_d_front) {
+			alpha_offset = 180;
+		}
   }
 
-  finken_environment_model.distance = distance;
-  finken_environment_model.alpha    = alpha;
+	
+	float alpha;
+	switch(alpha_offset) {
+		case 0:
+			alpha = atan((float)(finken_sensor_model.distance_d_left) / finken_sensor_model.distance_d_front);
+			finken_environment_model.distance = sin(alpha) * finken_sensor_model.distance_d_left;
+			finken_environment_model.alpha = alpha_offset + alpha;
+			break;
+		case 90:
+			alpha = atan((float)(finken_sensor_model.distance_d_front) / finken_sensor_model.distance_d_right);
+			finken_environment_model.distance = sin(alpha) * finken_sensor_model.distance_d_front;
+			finken_environment_model.alpha = alpha_offset + alpha;
+			break;
+		case 120:
+			alpha = atan((float)(finken_sensor_model.distance_d_right) / finken_sensor_model.distance_d_back);
+			finken_environment_model.distance = sin(alpha) * finken_sensor_model.distance_d_right;
+			finken_environment_model.alpha = alpha_offset + alpha;
+			break;
+		case 240:
+			alpha = atan((float)(finken_sensor_model.distance_d_back) / finken_sensor_model.distance_d_left);
+			finken_environment_model.distance = sin(alpha) * finken_sensor_model.distance_d_back;
+			finken_environment_model.alpha = alpha_offset + alpha;
+			break;
+	}
 }
 
 void send_finken_environment_model_telemetry()
