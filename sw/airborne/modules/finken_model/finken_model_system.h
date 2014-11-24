@@ -40,10 +40,10 @@ struct system_model_s {
 extern struct system_model_s finken_system_model;
 extern struct actuators_model_s finken_actuators_set_point;
 
-extern void finken_system_model_init();
-extern void finken_system_model_periodic();
-void update_finken_system_model();
+extern void finken_system_model_init(void);
+extern void finken_system_model_periodic(void);
+void update_finken_system_model(void);
 
-extern void send_finken_system_model_telemetry();
+extern void send_finken_system_model_telemetry(void);
 
 #endif

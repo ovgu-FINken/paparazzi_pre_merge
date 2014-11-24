@@ -47,9 +47,9 @@ struct sensor_model_s {
 
 extern struct sensor_model_s finken_sensor_model;
 
-extern void finken_sensor_model_init();
-extern void finken_sensor_model_periodic();
+extern void finken_sensor_model_init(void);
+extern void finken_sensor_model_periodic(void);
 
-extern void send_finken_sensor_model_telemetry();
+extern void send_finken_sensor_model_telemetry(void);
 
 #endif

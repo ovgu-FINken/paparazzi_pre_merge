@@ -87,7 +87,7 @@ struct i2c_transaction sonar_i2c_read_back_trans;
 struct i2c_transaction sonar_i2c_read_left_trans;
 struct i2c_transaction sonar_i2c_write_trans;
 
-void sonar_array_i2c_init()
+void sonar_array_i2c_init(void)
 {
 	sonar_index = 0;
 	sonar_status = SONAR_STATUS_IDLE;
@@ -141,7 +141,7 @@ void query_sensor(int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct i
 	transaction->status = I2CTransDone;
 }
 
-void query_all_sensors()
+void query_all_sensors(void)
 {
 #ifndef SITL
 	query_sensor(&sonar_values.front, &sonar_values_old.front, SONAR_ADDR_FRONT, &sonar_i2c_read_front_trans);
@@ -153,7 +153,7 @@ void query_all_sensors()
 
 /** Read I2C value to update sonar measurement and request new value
 */
-void sonar_array_i2c_periodic()
+void sonar_array_i2c_periodic(void)
 {
 #ifndef SITL
 	sonar_index++;
@@ -167,12 +167,12 @@ void sonar_array_i2c_periodic()
 #endif // SITL
 }
 
-void sonar_array_i2c_event()
+void sonar_array_i2c_event(void)
 {
 	// i guess it it not possible to query verything so often
 }
 
-void send_sonar_array_telemetry()
+void send_sonar_array_telemetry(void)
 {
 	sonar_fail_telemetry_pitch = sonar_failsave_pitch();
 	sonar_fail_telemetry_roll = sonar_failsave_roll();

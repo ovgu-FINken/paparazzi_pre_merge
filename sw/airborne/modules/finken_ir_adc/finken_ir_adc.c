@@ -36,7 +36,7 @@ void update_ir_distance_from_measurement(void) {
 	}
 	int i = 0;
 	while(ir_measurement > ir_in_samples[++i]) {
-		void;
+		//void;
 	}
 	// w: something in range [0;1], for position in interval between i - 1 and i
 	float w = (float) (ir_measurement - ir_in_samples[i - 1]) / (ir_in_samples[i] - ir_in_samples[i - 1]);

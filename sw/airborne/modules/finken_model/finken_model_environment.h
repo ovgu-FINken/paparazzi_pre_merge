@@ -38,9 +38,9 @@ struct environment_model_s {
 extern struct environment_model_s finken_environment_model;
 extern struct system_model_s finken_system_set_point;
 
-extern void finken_environment_model_init();
-extern void finken_environment_model_periodic();
+extern void finken_environment_model_init(void);
+extern void finken_environment_model_periodic(void);
 
-extern void send_finken_environment_model_telemetry();
+extern void send_finken_environment_model_telemetry(void);
 
 #endif
