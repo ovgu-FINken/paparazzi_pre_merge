@@ -69,7 +69,7 @@ double e_right_old = 0;
 double e_down_sum  = 0;
 double e_down_old  = 0;
 
-float sonar_failsave_pitch() {
+float sonar_failsave_pitch(void) {
 	// New PID control
 
 	// Sonar angle correctino
@@ -118,7 +118,7 @@ float sonar_failsave_pitch() {
 }
 
 
-float sonar_failsave_roll() {
+float sonar_failsave_roll(void) {
 	double t_a = 0.166;
 
 	// Distanz left

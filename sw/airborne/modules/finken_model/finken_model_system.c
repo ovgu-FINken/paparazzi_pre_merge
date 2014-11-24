@@ -56,7 +56,9 @@
 struct system_model_s finken_system_model;
 struct actuators_model_s finken_actuators_set_point;
 
-void finken_system_model_init() {
+void update_actuators_set_point(void);
+
+void finken_system_model_init(void) {
   finken_system_model.distance_z     = 0.0;
   finken_system_model.velocity_theta = 0.0;
   finken_system_model.velocity_x     = 0.0;
@@ -70,13 +72,13 @@ void finken_system_model_init() {
   register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_system_model_telemetry);
 }
 
-void finken_system_model_periodic()
+void finken_system_model_periodic(void)
 {
 	update_finken_system_model();
 	update_actuators_set_point();
 }
 
-void update_finken_system_model()
+void update_finken_system_model(void)
 {
 	if(finken_sensor_model.distance_z < 2.5) {
 		finken_system_model.distance_z     = finken_sensor_model.distance_z;
@@ -87,7 +89,7 @@ void update_finken_system_model()
   finken_system_model.velocity_y     = finken_sensor_model.velocity_y;
 }
 
-void send_finken_system_model_telemetry()
+void send_finken_system_model_telemetry(void)
 {
   DOWNLINK_SEND_FINKEN_SYSTEM_MODEL(
     DefaultChannel,
@@ -109,6 +111,7 @@ float sum_error_x = 0;
 float sum_error_y = 0;
 float sum_error_z = 0;
 void update_actuators_set_point()
+
 {
 	float error_x = finken_system_model.velocity_x - finken_system_set_point.velocity_x;
 	sum_error_x += error_x;

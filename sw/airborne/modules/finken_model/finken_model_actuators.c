@@ -25,7 +25,7 @@
 
 struct actuators_model_s finken_actuators_model;
 
-void finken_actuators_model_init() {
+void finken_actuators_model_init(void) {
 	finken_actuators_model.alpha  = 0;
 	finken_actuators_model.beta   = 0;
 	finken_actuators_model.theta  = 0;
@@ -34,7 +34,7 @@ void finken_actuators_model_init() {
 	register_periodic_telemetry(DefaultPeriodic, "FINKEN_ACTUATORS_MODEL", send_finken_actuators_model_telemetry);
 }
 
-void send_finken_actuators_model_telemetry()
+void send_finken_actuators_model_telemetry(void)
 {
 	DOWNLINK_SEND_FINKEN_ACTUATORS_MODEL(
 		DefaultChannel,

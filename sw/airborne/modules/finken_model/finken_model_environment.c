@@ -29,7 +29,7 @@
 struct environment_model_s finken_environment_model;
 struct system_model_s finken_system_set_point;
 
-void finken_environment_model_init() {
+void finken_environment_model_init(void) {
   finken_environment_model.alpha    = 0.0;
   finken_environment_model.distance = 0;
 	finken_system_set_point.distance_z     = 0.7;
@@ -40,7 +40,7 @@ void finken_environment_model_init() {
   register_periodic_telemetry(DefaultPeriodic, "FINKEN_ENVIRONMENT_MODEL", send_finken_environment_model_telemetry);
 }
 
-void finken_environment_model_periodic(){
+void finken_environment_model_periodic(void){
   int16_t distance = finken_sensor_model.distance_d_front;
   float alpha = 0.0;
 
@@ -66,7 +66,7 @@ void finken_environment_model_periodic(){
   finken_environment_model.alpha    = alpha;
 }
 
-void send_finken_environment_model_telemetry()
+void send_finken_environment_model_telemetry(void)
 {
   DOWNLINK_SEND_FINKEN_ENVIRONMENT_MODEL(
     DefaultChannel,
