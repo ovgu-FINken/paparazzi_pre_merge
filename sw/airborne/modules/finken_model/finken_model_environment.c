@@ -32,7 +32,7 @@ struct system_model_s finken_system_set_point;
 void finken_environment_model_init() {
   finken_environment_model.alpha    = 0.0;
   finken_environment_model.distance = 0;
-	finken_system_set_point.distance_z     = 1.2;
+	finken_system_set_point.distance_z     = 0.7;
 	finken_system_set_point.velocity_theta = 0.0;
 	finken_system_set_point.velocity_x     = 0.0;
 	finken_system_set_point.velocity_y     = 0.0;
