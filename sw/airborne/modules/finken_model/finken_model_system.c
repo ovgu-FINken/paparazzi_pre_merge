@@ -38,7 +38,7 @@
 #endif
 
 #ifndef FINKEN_THRUST_P
-#define FINKEN_THRUST_P 0.015
+#define FINKEN_THRUST_P 0.045
 #endif
 
 #ifndef FINKEN_THRUST_I
@@ -125,7 +125,7 @@ void update_actuators_set_point(void)
 	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z;
 	sum_error_z += error_z;
 
-	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + (error_z * FINKEN_THRUST_P + sum_error_z * FINKEN_THRUST_I) * FINKEN_SYSTEM_UPDATE_FREQ;
+	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P + sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
 
 	if(finken_actuators_set_point.thrust < 0.2)
 		finken_actuators_set_point.thrust = 0.2;
