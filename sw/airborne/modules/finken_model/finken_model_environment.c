@@ -88,12 +88,12 @@ void finken_environment_model_periodic(){
 			finken_environment_model.distance = sin(alpha) * finken_sensor_model.distance_d_front;
 			finken_environment_model.alpha = alpha_offset + alpha;
 			break;
-		case 120:
+		case 180:
 			alpha = atan((float)(finken_sensor_model.distance_d_right) / finken_sensor_model.distance_d_back);
 			finken_environment_model.distance = sin(alpha) * finken_sensor_model.distance_d_right;
 			finken_environment_model.alpha = alpha_offset + alpha;
 			break;
-		case 240:
+		case 270:
 			alpha = atan((float)(finken_sensor_model.distance_d_back) / finken_sensor_model.distance_d_left);
 			finken_environment_model.distance = sin(alpha) * finken_sensor_model.distance_d_back;
 			finken_environment_model.alpha = alpha_offset + alpha;
