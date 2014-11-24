@@ -22,8 +22,9 @@ void finken_ir_adc_init(void) {
 }
 
 #define IR_SAMPLE_SIZE 6
+// adc-values to distance (in meters!)
 static uint16_t ir_in_samples[IR_SAMPLE_SIZE] = {800, 830, 900, 1150, 1650, 2700};
-static float		ir_out_samples[IR_SAMPLE_SIZE] = {130, 100, 80, 60, 40, 20};
+static float		ir_out_samples[IR_SAMPLE_SIZE] = {1.30, 1.00, .80, .60, .40, .20};
 
 void update_ir_distance_from_measurement(void) {
 	if(ir_measurement <= ir_in_samples[0]) {
