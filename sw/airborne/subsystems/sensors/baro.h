@@ -38,5 +38,6 @@
 
 extern void baro_init(void);
 extern void baro_periodic(void);
+extern void baro_event(void);
 
 #endif /* SUBSYSTEMS_SENSORS_BARO_H */
