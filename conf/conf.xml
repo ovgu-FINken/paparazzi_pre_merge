@@ -62,7 +62,7 @@
   <aircraft
    name="Quad_Lia_ovgu"
    ac_id="164"
-   airframe="airframes/ovgu/quadrotor_lia_ovgu.xml"
+   airframe="airframes/ovgu/teststand.xml"
    radio="radios/spektrum.xml"
    telemetry="telemetry/ultrasound_rotorcraft.xml"
    flight_plan="flight_plans/ovgu_test_height_control.xml"
