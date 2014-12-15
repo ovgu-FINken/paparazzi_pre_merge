@@ -50,7 +50,7 @@ void finken_sensor_model_init(void)
 
 void finken_sensor_model_periodic(void)
 {
-  finken_sensor_model.distance_z       = ir_distance;
+  finken_sensor_model.distance_z       = ir_distance_equalized;
   finken_sensor_model.distance_d_front = sonar_values.front;
   finken_sensor_model.distance_d_right = sonar_values.right;
   finken_sensor_model.distance_d_back  = sonar_values.back;
