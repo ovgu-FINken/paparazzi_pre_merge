@@ -51,7 +51,7 @@
 		<load name="nav_finken.xml" />
         <load name="finken_model.xml" />
         <load name="finken_ir_adc.xml">
-            <configure name="ADC_IR" value="ADC_2"/>
+            <configure name="ADC_IR" value="ADC_3"/>
         </load>
 	</modules>
 
