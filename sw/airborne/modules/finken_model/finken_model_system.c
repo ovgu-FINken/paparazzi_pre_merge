@@ -22,6 +22,7 @@
 
 #include "modules/finken_model/finken_model_system.h"
 #include "subsystems/datalink/telemetry.h"
+#include "subsystems/electrical.h"
 
 /* input */
 #include "modules/finken_model/finken_model_sensors.h"
@@ -41,15 +42,19 @@
 #endif
 
 #ifndef FINKEN_THRUST_P
-#define FINKEN_THRUST_P /* 0.15 */0.15
+#define FINKEN_THRUST_P /* 0.15 */0.10
 #endif
 
 #ifndef FINKEN_THRUST_I
 #define FINKEN_THRUST_I /*  0.05  */0.05
 #endif
 
-#ifndef FINKEN_THRUST_DEFAULT
-#define FINKEN_THRUST_DEFAULT /* 0.48 */0.48
+#ifndef FINKEN_THRUST_DEFAULT // 8.4V
+#define FINKEN_THRUST_DEFAULT /* 0.48 */0.45
+#endif
+
+#ifndef FINKEN_THRUST_LOW // 6.5V
+#define FINKEN_THRUST_LOW 0.6
 #endif
 
 #ifndef FINKEN_SYSTEM_UPDATE_FREQ
@@ -57,7 +62,7 @@
 #endif
 
 #ifndef FINKEN_VERTICAL_VELOCITY_FACTOR
-#define FINKEN_VERTICAL_VELOCITY_FACTOR 0.02
+#define FINKEN_VERTICAL_VELOCITY_FACTOR 0.04
 #endif
 
 struct system_model_s finken_system_model;
@@ -133,6 +138,9 @@ void update_actuators_set_point()
 	finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
 
 	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
+
+	// Kompensate for voltage drop
+	finken_actuators_set_point.thrust += (FINKEN_THRUST_LOW - FINKEN_THRUST_DEFAULT) * (84 - electrical.vsupply) / (84 - 65);
 
 	if(finken_actuators_set_point.thrust < 0.2)
 		finken_actuators_set_point.thrust = 0.2;
