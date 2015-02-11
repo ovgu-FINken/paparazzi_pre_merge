@@ -110,7 +110,7 @@ void update_actuators_set_point()
 	/* front - back */
 	float error_x = finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
 	/* left - right */
-	float error_y = finken_sensor_model.distance_d_left - finkenn_sensor_model.distance_d_right;
+	float error_y = finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
 
 	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
 	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
