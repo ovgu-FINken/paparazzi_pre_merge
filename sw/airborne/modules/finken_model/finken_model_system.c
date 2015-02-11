@@ -107,15 +107,14 @@ float distance_z_old = 0.0;
 
 void update_actuators_set_point()
 {
-	float error_x = finken_system_model.velocity_x - finken_system_set_point.velocity_x;
-	sum_error_x += error_x;
+	/* front - back */
+	float error_x = finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
+	/* left - right */
+	float error_y = finken_sensor_model.distance_d_left - finkenn_sensor_model.distance_d_right;
 
-	finken_actuators_set_point.beta = (error_x * FINKEN_SYSTEM_P + sum_error_x * FINKEN_SYSTEM_I) * FINKEN_SYSTEM_UPDATE_FREQ;
+	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
+	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
 
-	float error_y = finken_system_model.velocity_y - finken_system_set_point.velocity_y;
-	sum_error_y += error_y;
-
-	finken_actuators_set_point.alpha = (error_y * FINKEN_SYSTEM_P + sum_error_y * FINKEN_SYSTEM_I) * FINKEN_SYSTEM_UPDATE_FREQ;
 
 	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z; 
 	if(autopilot_mode == AP_MODE_NAV) 
