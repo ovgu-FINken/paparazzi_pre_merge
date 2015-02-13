@@ -34,7 +34,7 @@
 
 // TODO: sane values
 #ifndef FINKEN_SYSTEM_P
-#define FINKEN_SYSTEM_P 0.05
+#define FINKEN_SYSTEM_P 0.2
 #endif
 
 #ifndef FINKEN_SYSTEM_I
@@ -111,9 +111,9 @@ float distance_z_old = 0.0;
 
 void update_actuators_set_point(void)
 {
-	/* front - back */
-	float error_x =  + finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
-	/* left - right */
+	/* front , back */
+	float error_x =  - finken_sensor_model.distance_d_front + finken_sensor_model.distance_d_back;
+	/* left , right */
 	float error_y = finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
 
 	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
