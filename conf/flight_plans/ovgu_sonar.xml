@@ -10,8 +10,8 @@
   <blocks>
 		<block name="default">
 
-			<!-- 	<attitude pitch="finken_actuators_set_point.alpha" roll="finken_actuators_set_point.beta" throttle="finken_actuators_set_point.thrust" until="FALSE" vmode="throttle"/> -->
-			<attitude pitch="0.0" roll="15.0" throttle="finken_actuators_set_point.thrust" until="FALSE" vmode="throttle"/> 
+			<attitude pitch="finken_actuators_set_point.alpha" roll="finken_actuators_set_point.beta" throttle="finken_actuators_set_point.thrust" until="FALSE" vmode="throttle"/>
+			<!-- <attitude pitch="15.0" roll="0.0" throttle="finken_actuators_set_point.thrust" until="FALSE" vmode="throttle"/>  -->
 		</block>
 		
   </blocks>
