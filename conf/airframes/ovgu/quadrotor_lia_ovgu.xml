@@ -30,7 +30,7 @@
       <configure name="MODEM_PORT"  value="UART3"/>
 		</subsystem>
     <subsystem name="imu"           type="aspirin_v2.1"/>
-    <subsystem name="stabilization" type="int_quat"/>
+    <subsystem name="stabilization" type="int_euler"/>
     <subsystem name="ahrs"          type="int_cmpl_quat">
       <define name="AHRS_GRAVITY_HEURISTIC_FACTOR" value="0"/>
     </subsystem>
@@ -161,17 +161,17 @@
     <define name="REF_MAX_RDOT" value="RadOfDeg(1800.)"/>
 
     <!-- feedback -->
-    <define name="PHI_PGAIN"  value="312"/>
-    <define name="PHI_DGAIN"  value="264"/>
-    <define name="PHI_IGAIN"  value="100"/>
+    <define name="PHI_PGAIN"  value="650"/>
+    <define name="PHI_DGAIN"  value="300"/>
+    <define name="PHI_IGAIN"  value="0"/>
 
-    <define name="THETA_PGAIN"  value="312"/>
-    <define name="THETA_DGAIN"  value="264"/>
-    <define name="THETA_IGAIN"  value="100"/>
+    <define name="THETA_PGAIN"  value="650"/>
+    <define name="THETA_DGAIN"  value="300"/>
+    <define name="THETA_IGAIN"  value="0"/>
 
-    <define name="PSI_PGAIN"  value="560"/>
-    <define name="PSI_DGAIN"  value="312"/>
-    <define name="PSI_IGAIN"  value="10"/>
+    <define name="PSI_PGAIN"  value="4000"/>
+    <define name="PSI_DGAIN"  value="350"/>
+    <define name="PSI_IGAIN"  value="0"/>
 
     <!-- feedforward -->
     <define name="PHI_DDGAIN"   value=" 0"/>
