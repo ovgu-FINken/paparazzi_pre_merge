@@ -37,7 +37,9 @@ struct actuators_model_s {
 extern struct actuators_model_s finken_actuators_model;
 
 extern void finken_actuators_model_init(void);
+extern void finken_actuators_model_periodic(void);
 
 extern void send_finken_actuators_model_telemetry(void);
+extern float compensate_battery_drop(float thrust_setpoint);
 
 #endif
