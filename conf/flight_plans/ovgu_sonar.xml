@@ -13,14 +13,17 @@
       <set value="0" var="kill_throttle"/>
       <set value="0" var="autopilot_flight_time"/>
 			<attitude pitch="0.0" roll="0.0" throttle="0.35" until="stage_time > 3" vmode="throttle" />
-			<attitude pitch="0.0" roll="0.0" throttle="0.50" until="stage_time > 4" vmode="throttle" />
-			<deroute block="default"/>
+			<attitude pitch="0.0" roll="0.0" throttle="0.55" until="stage_time > 4" vmode="throttle" />
+			<deroute block="inair"/>
 		</block>
 
-		<block name="default">
+		<block name="inair">
 			<attitude pitch="finken_actuators_set_point.alpha" roll="finken_actuators_set_point.beta" throttle="finken_actuators_set_point.thrust" until="FALSE" vmode="throttle"/>
 		</block>
 		
+		<block name="default">
+			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="FALSE" vmode="throttle" />
+		</block>
   </blocks>
 </flight_plan>
 
