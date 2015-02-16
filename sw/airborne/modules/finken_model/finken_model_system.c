@@ -22,6 +22,8 @@
 
 #include "modules/finken_model/finken_model_system.h"
 #include "subsystems/datalink/telemetry.h"
+#include "subsystems/electrical.h"
+#include "subsystems/navigation/common_flight_plan.h"
 
 /* input */
 #include "modules/finken_model/finken_model_sensors.h"
@@ -33,7 +35,7 @@
 
 // TODO: sane values
 #ifndef FINKEN_SYSTEM_P
-#define FINKEN_SYSTEM_P 0.1
+#define FINKEN_SYSTEM_P 0.075
 #endif
 
 #ifndef FINKEN_SYSTEM_I
@@ -113,7 +115,7 @@ void update_actuators_set_point(void)
 
 
 	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z;
-	if(autopilot_mode == AP_MODE_NAV)
+	if(autopilot_mode == AP_MODE_NAV && stage_time > 0)
 	{
 		sum_error_z += error_z;
 	}
