@@ -22,7 +22,6 @@
 
 #include "modules/finken_model/finken_model_system.h"
 #include "subsystems/datalink/telemetry.h"
-#include "subsystems/electrical.h"
 #include "subsystems/navigation/common_flight_plan.h"
 
 /* input */
@@ -50,13 +49,6 @@
 #define FINKEN_THRUST_I /*  0.05  */0.05
 #endif
 
-#ifndef FINKEN_THRUST_DEFAULT // 8.4V
-#define FINKEN_THRUST_DEFAULT /* 0.48 */0.45
-#endif
-
-#ifndef FINKEN_THRUST_LOW // 6.5V
-#define FINKEN_THRUST_LOW 0.6
-#endif
 
 #ifndef FINKEN_SYSTEM_UPDATE_FREQ
 #define FINKEN_SYSTEM_UPDATE_FREQ 30
@@ -139,13 +131,6 @@ void update_actuators_set_point()
 
 	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
-	// Kompensate for voltage drop
-	finken_actuators_set_point.thrust += (FINKEN_THRUST_LOW - FINKEN_THRUST_DEFAULT) * (84 - electrical.vsupply) / (84 - 65);
-
-	if(finken_actuators_set_point.thrust < 0.2)
-		finken_actuators_set_point.thrust = 0.2;
-	else if(finken_actuators_set_point.thrust > 1.0)
-		finken_actuators_set_point.thrust = 1.0;
 
 	distance_z_old = finken_system_model.distance_z;
 
