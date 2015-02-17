@@ -22,10 +22,11 @@
 
 #include "modules/finken_model/finken_model_actuators.h"
 #include "subsystems/datalink/telemetry.h"
+#include "subsystems/electrical.h"
 
 struct actuators_model_s finken_actuators_model;
 
-void finken_actuators_model_init() {
+void finken_actuators_model_init(void) {
 	finken_actuators_model.alpha  = 0;
 	finken_actuators_model.beta   = 0;
 	finken_actuators_model.theta  = 0;
@@ -34,7 +35,23 @@ void finken_actuators_model_init() {
 	register_periodic_telemetry(DefaultPeriodic, "FINKEN_ACTUATORS_MODEL", send_finken_actuators_model_telemetry);
 }
 
-void send_finken_actuators_model_telemetry()
+void finken_actuators_model_periodic(void) {
+	finken_actuators_model.alpha = finken_actuators_set_point.alpha;
+	finken_actuators_model.beta = finken_actuators_set_point.beta;
+	finken_actuators_model.theta = finken_actuators_set_point.theta;
+	finken_actuators_model.thrust = compensate_battery_drop(finken_actuators_set_point.thrust);
+
+}
+
+float compensate_battery_drop(float thrust_setpoint) {
+	float thrust = thrust_setpoint + (FINKEN_THRUST_LOW - FINKEN_THRUST_DEFAULT) * (84 - electrical.vsupply) / (84 - 65);
+	if(thrust < 0.2)
+		return 0.2;
+	else if(thrust > 1.0)
+		return 1.0;
+	return thrust;
+}
+void send_finken_actuators_model_telemetry(void)
 {
 	DOWNLINK_SEND_FINKEN_ACTUATORS_MODEL(
 		DefaultChannel,

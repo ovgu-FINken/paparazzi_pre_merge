@@ -48,13 +48,13 @@ extern struct sonar_values_s sonar_values_old;
 
 extern struct sonar_data_aviable_s sonar_data_aviable;
 
-extern void sonar_array_i2c_init();
-extern void sonar_array_i2c_periodic();
-extern void sonar_array_i2c_event();
-extern void send_sonar_array_telemetry();
+extern void sonar_array_i2c_init(void);
+extern void sonar_array_i2c_periodic(void);
+extern void sonar_array_i2c_event(void);
+extern void send_sonar_array_telemetry(void);
 
 void sonar_send_command(uint8_t i2c_addr);
-void query_all_sensors();
+void query_all_sensors(void);
 void query_sensor(int16_t *value, int16_t *old_value, uint8_t i2c_addr, struct i2c_transaction *transaction);
 
 #endif
