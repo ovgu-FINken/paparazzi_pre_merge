@@ -546,7 +546,7 @@ void autopilot_on_rc_frame(void)
         autopilot_set_mode(new_autopilot_mode);
       }
     }
-#elif
+#else
     autopilot_set_mode(new_autopilot_mode);
 #endif
   }

@@ -35,8 +35,6 @@
 #include "subsystems/navigation/common_flight_plan.h"
 
 #define NAV_FREQ 64
-// FIXME use periodic FREQ
-#define NAV_PRESCALER (512/NAV_FREQ)
 
 extern struct EnuCoor_i navigation_target;
 extern struct EnuCoor_i navigation_carrot;
