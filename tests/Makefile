@@ -21,11 +21,11 @@ ifneq ($(JUNIT),)
 	RUNTESTS=use TAP::Harness; TAP::Harness->new({ formatter_class => 'TAP::Formatter::JUnit', verbosity => $(TEST_VERBOSE), merge => 1, } )->runtests(qw($(TEST_FILES)))
 else
 	PERLENV=
-	RUNTESTS=use TAP::Harness;TAP::Harness->new( { verbosity => $(TEST_VERBOSE) } )->runtests(qw($(TEST_FILES)))
+	RUNTESTS=use TAP::Harness;exit(TAP::Harness->new( { verbosity => $(TEST_VERBOSE) } )->runtests(qw($(TEST_FILES)))->failed)
 endif
 
 test:
-	$(Q)$(PERLENV) $(PERL) "-e" "$(RUNTESTS)"
+	$(PERLENV) $(PERL) "-e" "$(RUNTESTS)"
 
 clean:
 	$(Q)rm -rf results/*
