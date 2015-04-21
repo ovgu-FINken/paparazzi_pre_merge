@@ -1907,11 +1907,6 @@
     <field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
     <field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
     <field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
-    <field name="velocity_alpha"   type="float" alt_unit="m/s"/>
-    <field name="velocity_beta"    type="float" alt_unit="m/s"/>
-    <field name="velocity_theta"   type="float" alt_unit="m/s"/>
-    <field name="velocity_x"       type="float" alt_unit="m/s"/>
-    <field name="velocity_y"       type="float" alt_unit="m/s"/>
   </message>
 
   <message name="FINKEN_ENVIRONMENT_MODEL" id="216">
