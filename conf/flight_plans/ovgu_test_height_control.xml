@@ -9,8 +9,8 @@
 	</header>
 	<blocks>
 		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
-      <set value="0" var="kill_throttle"/>
       <set value="0" var="autopilot_flight_time"/>
+			<set value="0.5" var="finken_system_set_point.distance_z"/>
 			<attitude pitch="0.0" roll="0.0" throttle="compensate_battery_drop(0.35)" until="stage_time > 3" vmode="throttle" />
 			<attitude pitch="0.0" roll="0.0" throttle="compensate_battery_drop(0.45)" until="stage_time > 4" vmode="throttle" />
 			<deroute block="inair"/>
@@ -23,6 +23,13 @@
 
 		<block name="default">
 			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="FALSE" vmode="throttle" />
+		</block>
+
+		<block key="l" name="Landing" strip_button="Landing" strip_icon="land-rignt.png">
+			<set value="0.25" var="finken_system_set_point.distance_z"/>
+			<attitude pitch="0.0" roll="0.0" throttle="finken_actuators_model.thrust" until="stage_time > 2" vmode="throttle"/>
+			<attitude pitch="0.0" roll="0.0" throttle="compensate_battery_drop(0.35)" until="stage_time > 3" vmode="throttle" />
+			<deroute block="default"/>
 		</block>
 		
   </blocks>
