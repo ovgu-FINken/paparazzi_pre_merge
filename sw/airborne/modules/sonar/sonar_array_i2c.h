@@ -28,12 +28,15 @@
 
 #include "std.h"
 #include "mcu_periph/i2c.h"
+#include "subsystems/datalink/transport.h"
+#include "mcu_periph/link_device.h"
+#include "subsystems/datalink/telemetry.h"
 
 struct sonar_values_s {
-	int16_t front;
-	int16_t right;
-	int16_t back;
-	int16_t left;
+	uint16_t front;
+	uint16_t right;
+	uint16_t back;
+	uint16_t left;
 };
 
 struct sonar_data_available_s {
@@ -51,10 +54,6 @@ extern struct sonar_data_aviable_s sonar_data_aviable;
 extern void sonar_array_i2c_init(void);
 extern void sonar_array_i2c_periodic(void);
 extern void sonar_array_i2c_event(void);
-extern void send_sonar_array_telemetry(void);
-
-void sonar_send_command(uint8_t i2c_addr);
-void query_all_sensors(void);
-void query_sensor(int16_t *value, int16_t *old_value, uint8_t i2c_addr, struct i2c_transaction *transaction);
+extern void send_sonar_array_telemetry(struct transport_tx *trans, struct link_device *link);
 
 #endif

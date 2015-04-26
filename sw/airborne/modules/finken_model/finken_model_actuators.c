@@ -51,8 +51,10 @@ float compensate_battery_drop(float thrust_setpoint) {
 		return 1.0;
 	return thrust;
 }
-void send_finken_actuators_model_telemetry(void)
+void send_finken_actuators_model_telemetry(struct transport_tx *trans, struct link_device* link)
 {
+	trans=trans;
+	link=link;
 	DOWNLINK_SEND_FINKEN_ACTUATORS_MODEL(
 		DefaultChannel,
 		DefaultDevice,

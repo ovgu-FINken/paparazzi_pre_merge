@@ -21,7 +21,6 @@
  */
 
 #include "modules/finken_model/finken_model_sensors.h"
-#include "subsystems/datalink/telemetry.h"
 
 /* input */
 #include "modules/sonar/sonar_array_i2c.h"
@@ -77,7 +76,9 @@ void finken_sensor_model_periodic(void)
   finken_sensor_model.velocity_y       = 0.0;
 }
 
-void send_finken_sensor_model_telemetry(void) {
+void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_device* link) {
+  trans=trans;
+  link=link;
   DOWNLINK_SEND_FINKEN_SENSOR_MODEL(
     DefaultChannel,
     DefaultDevice,

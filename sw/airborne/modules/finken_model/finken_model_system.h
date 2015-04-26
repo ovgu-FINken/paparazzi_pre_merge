@@ -29,6 +29,9 @@
 
 #include "std.h"
 #include "modules/finken_model/finken_model_actuators.h"
+#include "mcu_periph/link_device.h"
+#include "subsystems/datalink/transport.h"
+#include "subsystems/datalink/telemetry.h"
 
 struct system_model_s {
   float distance_z;
@@ -44,6 +47,6 @@ extern void finken_system_model_init(void);
 extern void finken_system_model_periodic(void);
 void update_finken_system_model(void);
 
-extern void send_finken_system_model_telemetry(void);
+extern void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link);
 
 #endif

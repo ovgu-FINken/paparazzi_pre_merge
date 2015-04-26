@@ -27,7 +27,6 @@
 #include "mcu_periph/uart.h"
 #include "messages.h"
 #include "subsystems/datalink/downlink.h"
-#include "subsystems/datalink/telemetry.h"
 
 /** Sonar offset.
  *  Offset value in m (float)
@@ -119,14 +118,14 @@ void sonar_array_i2c_init(void)
 /** sonar_send_command
  *	send take_range_reading command (0x51) to the sonar sensors to trigger the range readin
  */
-void sonar_send_command(uint8_t i2c_addr)
+static void sonar_send_command(uint8_t i2c_addr)
 {
 	sonar_i2c_write_trans.buf[0] = 0x51;
 	i2c_transmit(&SONAR_I2C_DEV, &sonar_i2c_write_trans, (i2c_addr << 1) & ~0x01, 1); // 7-Bit Adress + write Bit (last bit set to 0)
 }
 
 
-void query_sensor(int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction)
+static void query_sensor(uint16_t* value, uint16_t* old_value, uint8_t i2c_addr, struct i2c_transaction* transaction)
 {
 	if(transaction->status == I2CTransDone)
 	{
@@ -141,7 +140,7 @@ void query_sensor(int16_t* value, int16_t* old_value, uint8_t i2c_addr, struct i
 	transaction->status = I2CTransDone;
 }
 
-void query_all_sensors(void)
+static void query_all_sensors(void)
 {
 #ifndef SITL
 	query_sensor(&sonar_values.front, &sonar_values_old.front, SONAR_ADDR_FRONT, &sonar_i2c_read_front_trans);
@@ -172,8 +171,10 @@ void sonar_array_i2c_event(void)
 	// i guess it it not possible to query verything so often
 }
 
-void send_sonar_array_telemetry(void)
+void send_sonar_array_telemetry(struct transport_tx *trans, struct link_device *link)
 {
+	trans=trans;
+	link=link;
 	sonar_fail_telemetry_pitch = sonar_failsave_pitch();
 	sonar_fail_telemetry_roll = sonar_failsave_roll();
 	DOWNLINK_SEND_SONAR_ARRAY(DefaultChannel, DefaultDevice,
