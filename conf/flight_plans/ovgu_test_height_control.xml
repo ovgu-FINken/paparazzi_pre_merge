@@ -6,6 +6,7 @@
   </waypoints>
 	<header>
 		#include "modules/finken_model/finken_model_system.h"
+		#include "subsystems/electrical.h"
 	</header>
 	<blocks>
 		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
@@ -15,10 +16,9 @@
 			<attitude pitch="0.0" roll="0.0" throttle="compensate_battery_drop(0.45)" until="stage_time > 4" vmode="throttle" />
 			<deroute block="inair"/>
 		</block>
-
 		<block name="inair">
-			<attitude pitch="0.0" roll="0.0" throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle"/>
-			<deroute block="default"/>
+			<attitude pitch="0.0" roll="0.0" throttle="finken_actuators_model.thrust" until="65 > electrical.vsupply" vmode="throttle"/>
+			<deroute block="Landing"/>
 		</block>
 
 		<block name="default">
