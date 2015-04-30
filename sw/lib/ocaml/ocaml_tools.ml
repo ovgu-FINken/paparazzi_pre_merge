@@ -25,8 +25,8 @@
 let pi = 3.14159265358979323846;;
 
 let open_compress file =
-  if Filename.check_suffix file "gz" or Filename.check_suffix file "Z" or
-    Filename.check_suffix file "zip" or Filename.check_suffix file "ZIP" then
+  if Filename.check_suffix file "gz" || Filename.check_suffix file "Z" ||
+    Filename.check_suffix file "zip" || Filename.check_suffix file "ZIP" then
     Unix.open_process_in ("gunzip -c "^file)
   else if Filename.check_suffix file "bz2"  then
     Unix.open_process_in ("bunzip2 -c "^file)
@@ -85,7 +85,7 @@ let make_1st_order_noise_generator = fun ?(init = 0.) k sigma ->
     !x
 
 let shifter = fun n default ->
-  let a = Array.create n default
+  let a = Array.make n default
   and i = ref 0 in
   fun new_value ->
     let old_value = a.(!i) in

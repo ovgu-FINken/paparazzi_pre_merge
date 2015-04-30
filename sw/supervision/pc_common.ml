@@ -59,14 +59,19 @@ let run_and_log = fun log exit_cb com ->
   let io_watch_out = Glib.Io.add_watch [`IN] cb channel_out in
   pid, channel_out, com_stdout, io_watch_out
 
-let strip_prefix = fun dir file ->
+let strip_prefix = fun dir file subdir ->
   let n = String.length dir in
   if not (String.length file > n && String.sub file 0 n = dir) then begin
-    let msg = sprintf "Selected file '%s' should be in '%s'" file dir in
-    GToolbox.message_box ~title:"Error" msg;
-    raise Exit
+    let home = Env.paparazzi_home in
+    let nn = String.length home in
+    if (String.length file > nn && String.sub file 0 nn = home) then begin
+      ".." // String.sub file (nn+1) (String.length file - nn -1)
+    end else
+     let msg = sprintf "Selected file '%s' should be in '%s'" file dir in
+     GToolbox.message_box ~title:"Error" msg;
+     raise Exit
   end else
-    String.sub file (n+1) (String.length file - n - 1)
+    subdir // String.sub file (n+1) (String.length file - n - 1)
 
 
 let choose_xml_file = fun ?(multiple = false) title subdir cb ->
@@ -81,10 +86,10 @@ let choose_xml_file = fun ?(multiple = false) title subdir cb ->
     | `OPEN, _ when multiple ->
       let names = dialog#get_filenames in
       dialog#destroy ();
-      cb (List.map (fun f -> subdir // strip_prefix dir f) names)
+      cb (List.map (fun f -> strip_prefix dir f subdir) names)
     | `OPEN, Some name ->
       dialog#destroy ();
-      cb [subdir // strip_prefix dir name]
+      cb [strip_prefix dir name subdir]
     | _ -> dialog#destroy ()
   end
 
@@ -106,11 +111,15 @@ let run_and_monitor = fun ?(once = false) ?file gui log com_name com args ->
   let (pi, out, unixfd, io_watch) = run_and_log log callback ("exec "^c) in
     pid := pi;
     outchan := unixfd;
+    (* watch for hangup/end on the out io, after small delay call callback to stop/remove prog *)
     let io_watch' = Glib.Io.add_watch ~cond:[`HUP] ~callback:
       (fun _ ->
          (* call with a delay of 200ms, not strictly needed anymore, but seems more pleasing to the eye *)
          ignore (Glib.Timeout.add 200 (fun () -> callback true; false));
-         false) out in
+        (* return true to not automatically remove event source,
+           otherwise will try to remove non existent source in callback, resulting in:
+           GLib-CRITICAL **: Source ID xxx was not found when attempting to remove it *)
+         true) out in
     watches := [ io_watch; io_watch' ] in
 
   let remove_callback = fun () ->
@@ -171,43 +180,20 @@ let conf_is_set = fun home ->
     Sys.file_exists (home // "conf") &&
     Sys.file_exists (home // "data")
 
-let druid = fun home ->
-  let w = GWindow.window ~title:"Configuring Paparazzi" () in
-
-  let  d = GnoDruid.druid ~packing:w#add () in
-
-  ignore (d#connect#cancel (fun () -> exit 1));
-
-  begin
-    let fp = GnoDruid.druid_page_edge ~position:`START ~aa:true ~title:"Configure Paparazzi !!" () in
-    fp#set_text (sprintf "Configuration files need to be installed in your Paparazzi home (%s). To use another directory, please exit this utility, set the PAPARAZZI_HOME variable to the desired folder and restart." home);
-    d#append_page fp;
-    ignore (fp#connect#next
-              (fun _ ->
-                basic_command prerr_endline "" "init";
-                false
-              ))
-
-  end;
-
-  begin
-    let ep = GnoDruid.druid_page_edge ~position:`FINISH ~aa:true ~title:"The end" () in
-    ep#set_text "You are ready. Congratulations!" ;
-    d#append_page ep ;
-
-    ignore (ep#connect#finish
-              (fun _ ->
-                w#destroy ();
-                GMain.quit ()
-              ))
-  end;
-  w#show ();
-  GMain.main ()
+(* This was the place where GnoDruid used to create a wizard configuring your
+ * paparazzi installation. This could be replaced with an implementation using
+ * GtkAssistant instead. The issue tracking this can be found at:
+ * https://github.com/paparazzi/paparazzi/issues/923
+ *)
 
 let _ =
   let home = Env.paparazzi_home in
   if not (conf_is_set home) then
-    druid home
+        printf "ERROR: Configuration files need to be installed in your \
+        Paparazzi home (%s). Run `make init` in the toplevel paparazzi \
+        directory to do that in your Paparazzi home (%s) directory. To \
+        use another directory, set the PAPARAZZI_HOME variable to the \
+        desired folder.\n" home home
 
 let conf_xml_file = conf_dir // "conf.xml"
 let backup_xml_file = conf_xml_file ^ "~"

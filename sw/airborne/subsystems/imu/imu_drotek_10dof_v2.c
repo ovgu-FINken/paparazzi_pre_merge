@@ -33,13 +33,25 @@
  */
 
 #include "subsystems/imu.h"
-
+#include "subsystems/abi.h"
 #include "mcu_periph/i2c.h"
 
 #if !defined DROTEK_2_LOWPASS_FILTER && !defined  DROTEK_2_SMPLRT_DIV
+#if (PERIODIC_FREQUENCY == 60) || (PERIODIC_FREQUENCY == 120)
+/* Accelerometer: Bandwidth 44Hz, Delay 4.9ms
+ * Gyroscope: Bandwidth 42Hz, Delay 4.8ms sampling 1kHz
+ */
 #define DROTEK_2_LOWPASS_FILTER MPU60X0_DLPF_42HZ
 #define DROTEK_2_SMPLRT_DIV 9
-PRINT_CONFIG_MSG("Gyro/Accel output rate is 100Hz")
+PRINT_CONFIG_MSG("Gyro/Accel output rate is 100Hz at 1kHz internal sampling")
+#elif PERIODIC_FREQUENCY == 512
+/* Accelerometer: Bandwidth 260Hz, Delay 0ms
+ * Gyroscope: Bandwidth 256Hz, Delay 0.98ms sampling 8kHz
+ */
+#define DROTEK_2_LOWPASS_FILTER MPU60X0_DLPF_256HZ
+#define DROTEK_2_SMPLRT_DIV 3
+PRINT_CONFIG_MSG("Gyro/Accel output rate is 2kHz at 8kHz internal sampling")
+#endif
 #endif
 PRINT_CONFIG_VAR(DROTEK_2_SMPLRT_DIV)
 PRINT_CONFIG_VAR(DROTEK_2_LOWPASS_FILTER)
@@ -89,10 +101,6 @@ void imu_impl_init(void)
 
   // use hmc mag via passthrough
   imu_drotek2.mpu.config.i2c_bypass = TRUE;
-
-  imu_drotek2.gyro_valid = FALSE;
-  imu_drotek2.accel_valid = FALSE;
-  imu_drotek2.mag_valid = FALSE;
 }
 
 void imu_periodic(void)
@@ -108,6 +116,8 @@ void imu_periodic(void)
 
 void imu_drotek2_event(void)
 {
+  uint32_t now_ts = get_sys_time_usec();
+
   // If the MPU6050 I2C transaction has succeeded: convert the data
   mpu60x0_i2c_event(&imu_drotek2.mpu);
 
@@ -127,8 +137,10 @@ void imu_drotek2_event(void)
 #endif
 
     imu_drotek2.mpu.data_available = FALSE;
-    imu_drotek2.gyro_valid = TRUE;
-    imu_drotek2.accel_valid = TRUE;
+    imu_scale_gyro(&imu);
+    imu_scale_accel(&imu);
+    AbiSendMsgIMU_GYRO_INT32(IMU_DROTEK_ID, now_ts, &imu.gyro);
+    AbiSendMsgIMU_ACCEL_INT32(IMU_DROTEK_ID, now_ts, &imu.accel);
   }
 
   /* HMC58XX event task */
@@ -142,18 +154,21 @@ void imu_drotek2_event(void)
     VECT3_COPY(imu.mag_unscaled, imu_drotek2.hmc.data.vect);
 #endif
     imu_drotek2.hmc.data_available = FALSE;
-    imu_drotek2.mag_valid = TRUE;
+    imu_scale_mag(&imu);
+    AbiSendMsgIMU_MAG_INT32(IMU_DROTEK_ID, now_ts, &imu.mag);
   }
 }
 
 /** callback function to configure hmc5883 mag
  * @return TRUE if mag configuration finished
  */
-bool_t imu_drotek2_configure_mag_slave(Mpu60x0ConfigSet mpu_set __attribute__ ((unused)), void* mpu __attribute__ ((unused)))
+bool_t imu_drotek2_configure_mag_slave(Mpu60x0ConfigSet mpu_set __attribute__((unused)),
+                                       void *mpu __attribute__((unused)))
 {
   hmc58xx_start_configure(&imu_drotek2.hmc);
-  if (imu_drotek2.hmc.initialized)
+  if (imu_drotek2.hmc.initialized) {
     return TRUE;
-  else
+  } else {
     return FALSE;
+  }
 }

@@ -1,7 +1,7 @@
 #
 # tiny_1.1.makefile
 #
-# http://paparazzi.enac.fr/wiki/Tiny_v1.1
+# http://wiki.paparazziuav.org/wiki/Tiny_v1.1
 #
 ARCH=lpc21
 
@@ -27,6 +27,9 @@ AHRS_ALIGNER_LED  ?= none
 GPS_LED           ?= none
 SYS_TIME_LED      ?= none
 
+TUNNEL_RX_LED     ?= 1
+TUNNEL_TX_LED     ?= 2
+
 
 #
 # default uart settings
@@ -36,15 +39,6 @@ MODEM_BAUD ?= B57600
 
 GPS_PORT ?= UART1
 GPS_BAUD ?= B38400
-
-
-ADC_IR_TOP ?= ADC_0
-ADC_IR1 ?= ADC_1
-ADC_IR2 ?= ADC_2
-ADC_IR_NB_SAMPLES ?= 16
-ADC_GYRO_NB_SAMPLES ?= 16
-
-ADC_GENERIC_NB_SAMPLES ?= 16
 
 #
 # you can use different actuators by adding a configure option to your firmware section

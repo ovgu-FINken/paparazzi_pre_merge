@@ -53,33 +53,15 @@
 #define LED_3_BANK 0
 #define LED_3_PIN 11
 
-#ifndef USE_LED_4
-#define USE_LED_4 1
-#endif
-#define LED_4_BANK 1
-#define LED_4_PIN 17
+#define POWER_SWITCH_GPIO GPIOB,GPIO17
 
-#define POWER_SWITCH_LED 4
+#define CAM_SWITCH_GPIO GPIOB,GPIO18
 
-#ifndef USE_LED_5
-#define USE_LED_5 1
-#endif
-#define LED_5_BANK 1
-#define LED_5_PIN 18
+#define GPS_RESET_GPIO GPIOB,GPIO19
 
-#define CAM_SWITCH_LED 5
-
-#ifndef USE_LED_6
-#define USE_LED_6 1
-#endif
-#define LED_6_BANK 1
-#define LED_6_PIN 19
-
-#define GPS_RESET 6
-
-#define Configure_GPS_RESET_Pin() LED_INIT(GPS_RESET)
-#define Set_GPS_RESET_Pin_LOW() LED_ON(GPS_RESET)
-#define Open_GPS_RESET_Pin() ClearBit(LED_DIR(GPS_RESET), LED_PIN(GPS_RESET))
+#define Configure_GPS_RESET_Pin() gpio_setup_output(GPS_RESET_GPIO)
+#define Set_GPS_RESET_Pin_LOW() gpio_clear(GPS_RESET_GPIO)
+#define Open_GPS_RESET_Pin() gpio_setup_input(GPS_RESET_GPIO)
 
 /* P0.29 aka MAT0.3 (P2) */
 #define SERVO_CLOCK_PIN  29
@@ -102,7 +84,7 @@
 /* ADC */
 
 #define ADC_0 AdcBank0(3)
-#ifdef USE_ADC_0
+#if USE_ADC_0
 #ifndef USE_AD0
 #define USE_AD0
 #endif
@@ -110,7 +92,7 @@
 #endif
 
 #define ADC_1 AdcBank0(2)
-#ifdef USE_ADC_1
+#if USE_ADC_1
 #ifndef USE_AD0
 #define USE_AD0
 #endif
@@ -119,7 +101,7 @@
 
 
 #define ADC_2 AdcBank0(1)
-#ifdef USE_ADC_2
+#if USE_ADC_2
 #ifndef USE_AD0
 #define USE_AD0
 #endif
@@ -127,7 +109,7 @@
 #endif
 
 #define ADC_3 AdcBank0(4)
-#ifdef USE_ADC_3
+#if USE_ADC_3
 #ifndef USE_AD0
 #define USE_AD0
 #endif
@@ -135,7 +117,7 @@
 #endif
 
 #define ADC_4 AdcBank1(7)
-#ifdef USE_ADC_4
+#if USE_ADC_4
 #ifndef USE_AD1
 #define USE_AD1
 #endif
@@ -143,7 +125,7 @@
 #endif
 
 #define ADC_5 AdcBank1(6)
-#ifdef USE_ADC_5
+#if USE_ADC_5
 #ifndef USE_AD1
 #define USE_AD1
 #endif
@@ -151,7 +133,7 @@
 #endif
 
 #define ADC_6 AdcBank1(2)
-#ifdef USE_ADC_6
+#if USE_ADC_6
 #ifndef USE_AD1
 #define USE_AD1
 #endif
@@ -159,7 +141,7 @@
 #endif
 
 #define ADC_7 AdcBank1(2)
-#ifdef USE_ADC_7
+#if USE_ADC_7
 #ifndef USE_AD1
 #define USE_AD1
 #endif

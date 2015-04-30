@@ -32,9 +32,12 @@
 
 #include "std.h"
 #include "LPC21xx.h"
-#include "interrupt_hw.h"
 
-#define PWM_INPUT_NB 2 //this is architecture dependent
+enum pwm_input_channels {
+  PWM_INPUT1,
+  PWM_INPUT2,
+  PWM_INPUT_NB
+};
 
 #include "mcu_periph/pwm_input.h"
 

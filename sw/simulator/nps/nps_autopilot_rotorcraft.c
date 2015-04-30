@@ -29,8 +29,6 @@
 
 #include "subsystems/radio_control.h"
 #include "subsystems/imu.h"
-#include "subsystems/sensors/baro.h"
-#include "baro_board.h"
 #include "mcu_periph/sys_time.h"
 #include "state.h"
 #include "subsystems/ahrs.h"
@@ -39,6 +37,13 @@
 
 #include "subsystems/actuators/motor_mixing.h"
 
+#include "subsystems/abi.h"
+
+#include "messages.h"
+#include "subsystems/datalink/downlink.h"
+
+// for datalink_time hack
+#include "subsystems/datalink/datalink.h"
 
 struct NpsAutopilot autopilot;
 bool_t nps_bypass_ahrs;
@@ -57,6 +62,8 @@ bool_t nps_bypass_ins;
 #endif
 
 void nps_autopilot_init(enum NpsRadioControlType type_rc, int num_rc_script, char* rc_dev) {
+  autopilot.launch = TRUE;
+  autopilot.datalink_enabled = TRUE;
 
   nps_radio_control_init(type_rc, num_rc_script, rc_dev);
   nps_electrical_init();
@@ -79,12 +86,10 @@ void nps_autopilot_run_step(double time) {
 
   nps_electrical_run_step(time);
 
-#ifdef RADIO_CONTROL_TYPE_PPM
   if (nps_radio_control_available(time)) {
     radio_control_feed();
     main_event();
   }
-#endif
 
   if (nps_sensors_gyro_available()) {
     imu_feed_gyro_accel();
@@ -94,12 +99,25 @@ void nps_autopilot_run_step(double time) {
   if (nps_sensors_mag_available()) {
     imu_feed_mag();
     main_event();
- }
+  }
 
   if (nps_sensors_baro_available()) {
-    baro_feed_value(sensors.baro.value);
+    float pressure = (float) sensors.baro.value;
+    AbiSendMsgBARO_ABS(BARO_SIM_SENDER_ID, pressure);
     main_event();
   }
+
+#if USE_SONAR
+  if (nps_sensors_sonar_available()) {
+    float dist = (float) sensors.sonar.value;
+    AbiSendMsgAGL(AGL_SONAR_NPS_ID, dist);
+
+    uint16_t foo = 0;
+    DOWNLINK_SEND_SONAR(DefaultChannel, DefaultDevice, &foo, &dist);
+
+    main_event();
+  }
+#endif
 
   if (nps_sensors_gps_available()) {
     gps_feed_value();
@@ -120,6 +138,10 @@ void nps_autopilot_run_step(double time) {
   for (uint8_t i=0; i < NPS_COMMANDS_NB; i++)
     autopilot.commands[i] = (double)motor_mixing.commands[i]/MAX_PPRZ;
 
+  // hack to reset datalink_time, since we don't use actual dl_parse_msg
+  if (autopilot.datalink_enabled) {
+    datalink_time = 0;
+  }
 }
 
 

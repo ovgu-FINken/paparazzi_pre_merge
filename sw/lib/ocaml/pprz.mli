@@ -51,6 +51,7 @@ type message = {
 
 
 external int32_of_bytes : string -> int -> int32 = "c_int32_of_indexed_bytes"
+external uint32_of_bytes : string -> int -> int64 = "c_uint32_of_indexed_bytes"
 external int64_of_bytes : string -> int -> int64 = "c_int64_of_indexed_bytes"
 (** [int32_of_bytes buffer offset] *)
 
@@ -62,6 +63,7 @@ val is_fixed_array_type : string -> bool
 
 val size_of_field : field -> int
 val string_of_value : value -> string
+val formatted_string_of_value : format -> value -> string
 val int_of_value : value -> int (* May raise Invalid_argument *)
 type type_descr = {
     format : string ;
@@ -82,6 +84,7 @@ val string_assoc : string -> values -> string
 val float_assoc : string -> values -> float
 val int_assoc : string -> values -> int
 val int32_assoc : string -> values -> Int32.t
+val uint32_assoc : string -> values -> Int64.t
 val int64_assoc : string -> values -> Int64.t
 (** May raise Not_found or Invalid_argument *)
 
@@ -107,6 +110,12 @@ val scale_of_units : ?auto:string -> string -> string -> float
 
 val alt_unit_coef_of_xml : ?auto:string -> Xml.xml -> string
 (** Return coef for alternate unit
+ *)
+
+val key_modifiers_of_string : string -> string
+(** Convert key modifiers from Qt style (without '<' or '>', separated with '+')
+ *  to GTK style.
+ *  Supported modifiers are Alt, Ctrl, Shift and Meta
  *)
 
 exception Unknown_msg_name of string * string
@@ -169,7 +178,7 @@ module type MESSAGES = sig
   val message_send : ?timestamp:float -> ?link_id:int -> string -> string -> values -> unit
   (** [message_send sender msg_name values] *)
 
-  val message_bind : ?sender:string ->string -> (string -> values -> unit) -> Ivy.binding
+  val message_bind : ?sender:string -> ?timestamp:bool -> string -> (string -> values -> unit) -> Ivy.binding
   (** [message_bind ?sender msg_name callback] *)
 
   val message_answerer : string -> string -> (string -> values -> values) -> Ivy.binding

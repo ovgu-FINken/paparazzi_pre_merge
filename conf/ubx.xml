@@ -5,7 +5,7 @@
 
 <ubx>
 
-  <class name="NAV" ID="0x01">
+  <msg_class name="NAV" ID="0x01">
 
     <message name="POSLLH" ID="0x02" length="28">
       <field name="ITOW" format="U4" unit="ms"/>
@@ -96,9 +96,9 @@
       </block>
     </message>
 
-  </class>
+  </msg_class>
 
-  <class name="CFG" ID="0x06">
+  <msg_class name="CFG" ID="0x06">
 
     <message name="PRT" ID="0x00">
       <block length="20">
@@ -114,15 +114,13 @@
       </block>
     </message>
 
-    <message name="MSG" ID="0x01">
-      <block length="6">
-        <field name="Class" format="U1"/>
+    <message name="PRT_POLL" ID="0x00" length="0">
+    </message>
+
+    <message name="MSG" ID="0x01" length="3">
+    	<field name="Class" format="U1"/>
         <field name="MsgId" format="U1"/>
-        <field name="Rate0" format="U1"/>
-        <field name="Rate1" format="U1"/>
-        <field name="Rate2" format="U1"/>
-        <field name="Rate3" format="U1"/>
-      </block>
+        <field name="Rate" format="U1"/>
     </message>
 
     <message name="NAV" ID="0x03" length="28">
@@ -194,9 +192,9 @@
       <field name="res4" format="U4"/>
     </message>
 
-  </class>
+  </msg_class>
 
-  <class name="ACK" ID="0x05">
+  <msg_class name="ACK" ID="0x05">
 
     <message name="ACK" ID="0x01" length="2">
       <field name="ClsID" format="U1"/>
@@ -208,10 +206,18 @@
       <field name="MsgID" format="U1"/>
     </message>
 
-  </class>
+  </msg_class>
 
-  <class name="RXM" ID="0x02">
+  <msg_class name="RXM" ID="0x02">
 
+<!--
+Only available with raw data product variant.
+This message contains all information needed to be able to generate a RINEX observation
+file.
+This message outputs pseudorange, doppler and carrier phase measurements for GPS
+satellites once signals have been synchronised. No other GNSS types are currently
+supported.
+-->
     <message name="RAW" ID="0x10">
       <field name="iTOW" format="I4" unit="ms"/>
       <field name="week" format="I2" unit="weeks"/>
@@ -228,9 +234,24 @@
       </block>
     </message>
 
-  </class>
+    <message name="SFRB" ID="0x11" length="42">
+      <field name="chn" format="U1"/>
+      <field name="svid" format="U1"/>
+      <field name="dwrd0" format="U4"/>
+      <field name="dwrd1" format="U4"/>
+      <field name="dwrd2" format="U4"/>
+      <field name="dwrd3" format="U4"/>
+      <field name="dwrd4" format="U4"/>
+      <field name="dwrd5" format="U4"/>
+      <field name="dwrd6" format="U4"/>
+      <field name="dwrd7" format="U4"/>
+      <field name="dwrd8" format="U4"/>
+      <field name="dwrd9" format="U4"/>
+    </message>
 
-  <class name="MON" ID="0x0A">
+  </msg_class>
+
+  <msg_class name="MON" ID="0x0A">
 
     <message name="GET_VER" ID="0x04" length="0">
     </message>
@@ -241,6 +262,6 @@
       </block>
     </message>
 
-  </class>
+  </msg_class>
 
 </ubx>

@@ -73,8 +73,8 @@
     <define name="PITCH_NEUTRAL_DEFAULT" value="0"/>
   </section>
 
-  <!-- Local magnetic field -->
   <section name="AHRS" prefix="AHRS_">
+    <!-- Local magnetic field -->
     <define name="H_X" value="0.51562740288882"/>
     <define name="H_Y" value="-0.05707735220832"/>
     <define name="H_Z" value="0.85490967783446"/>
@@ -172,7 +172,7 @@
 
   <section name="DIGITAL_CAMERA" prefix="DC_">
     <define name="AUTOSHOOT_QUARTERSEC_PERIOD" value="8" unit="quarter_second"/>
-    <define name="AUTOSHOOT_METER_GRID" value="50" unit="meter"/>
+    <define name="AUTOSHOOT_DISTANCE_INTERVAL" value="50" unit="meter"/>
   </section>
 
   <firmware name="fixedwing">
@@ -180,16 +180,12 @@
     <target name="ap" board="classix">
       <configure name="SYS_TIME_LED" value="2"/>
 
-      <define name="USE_LED_6" value="1"/>
-      <define name="LED_6_BANK" value="0"/>
-      <define name="LED_6_PIN" value="15"/>
-
       <define name="USE_AD0"/>
       <define name="USE_AD0_3"/>
       <define name="ADC_6" value="AdcBank0\(3\)"/>
 
       <subsystem name="control"/>
-      <subsystem name="navigation" type="extra"/>
+      <subsystem name="navigation"/>
     </target>
 
     <target name="fbw" board="classix">
@@ -199,14 +195,11 @@
       <define name="USE_AD1" value="1"/>
       <configure name="ACTUATORS" value="actuators_ppm"/>
       <define name="ADC_CHANNEL_VSUPPLY" value="AdcBank0\(6\)"/>
-
-      <subsystem name="radio_control" type="ppm"/>
     </target>
 
     <target name="sim" board="pc">
-      <subsystem name="radio_control" type="ppm"/>
       <subsystem name="control"/>
-      <subsystem name="navigation" type="extra"/>
+      <subsystem name="navigation"/>
     </target>
 
     <define name="DC_IMAGE_BUFFER" value="65000" />
@@ -216,6 +209,7 @@
     <define name="LOITER_TRIM"/>
     <define name="RADIO_CONTROL_AUTO1"/>
 
+    <subsystem name="radio_control" type="ppm"/>
 
     <subsystem name="telemetry" type="xbee_api">
       <configure name="MODEM_PORT" value="UART0"/>
@@ -230,16 +224,17 @@
 
   <modules>
     <load name="digital_cam.xml">
-      <define name="DC_SHUTTER_LED" value="6"/>
+      <define name="DC_SHUTTER_GPIO" value="GPIOA,GPIO15"/>
    </load>
    <load name="adc_generic.xml">
-      <define name="ADC_GENERIC_NB_SAMPLES" value="32"/>
+      <define name="ADC_CHANNEL_GENERIC_NB_SAMPLES" value="32"/>
       <configure name="ADC_CHANNEL_GENERIC1" value="ADC_6"/> <!-- e.g. current sensor -->
    </load>
    <load name="photogrammetry_calculator.xml" />
+    <load name="nav_line.xml"/>
   </modules>
 
-<!-- --------------------------------------------------------------------------- -->
+<!--+-+-+-+-+-+-+- PHOTOGRAMMETRY -+-+-+-+-+-+-+-->
 
 
   <section name="Photogrammetry" prefix="PHOTOGRAMMETRY_">

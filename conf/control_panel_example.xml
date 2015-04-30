@@ -41,11 +41,12 @@
 
     <program name="Settings (Python)" command="sw/ground_segment/python/settings_app/settingsapp.py"/>
 
-    <program name="GPSd position display" command ="sw/ground_segment/tmtc/gpsd2ivy"/>
+    <program name="GPSd position display" command="sw/ground_segment/tmtc/gpsd2ivy"/>
 
-    <program name="Log Plotter" command ="sw/logalizer/plot"/>
+    <program name="Log Plotter" command="sw/logalizer/plot"/>
 
-    <program name="Real-time Plotter" command ="sw/logalizer/plotter"/>
+    <program name="Real-time Plotter" command="sw/logalizer/plotter"/>
+    <program name="Real-time Plotter (Python)" command="sw/ground_segment/python/real_time_plot/messagepicker.py"/>
 
     <program name="Log File Player" command="sw/logalizer/play">
       <arg flag="-b" variable="ivy_bus"/>
@@ -54,6 +55,8 @@
     <program name="Simulator" command="sw/simulator/pprzsim-launch">
       <arg flag="-b" variable="ivy_bus"/>
     </program>
+
+    <program name="Video Synchronizer" command="sw/ground_segment/misc/video_synchronizer"/>
 
     <program name="Joystick" command="sw/ground_segment/joystick/input2ivy">
       <arg flag="-b" variable="ivy_bus"/>
@@ -68,14 +71,25 @@
       <arg flag="-b" variable="ivy_bus"/>
     </program>
 
-    <program name="Http Server" command="sw/ground_segment/tmtc/boa"/>
-
     <program name="Plot Meteo Profile" command="sw/logalizer/plotprofile"/>
 
     <program name="Weather Station" command="sw/ground_segment/misc/davis2ivy">
       <arg flag="-b" variable="ivy_bus"/>
       <arg flag="-d" constant="/dev/ttyUSB1"/>
     </program>
+
+    <program name="Attitude Visualizer" command="sw/tools/attitude_viz.py"/>
+
+    <program name="App Server" command="sw/ground_segment/tmtc/app_server"/>
+
+    <program name="NatNet" command="sw/ground_segment/misc/natnet2ivy"/>
+
+    <program name="Ivy2Nmea" command="sw/ground_segment/tmtc/ivy2nmea">
+      <arg flag="--ivy_bus" variable="ivy_bus"/>
+      <arg flag="--port" constant="/dev/ttyUSB1"/>
+      <arg flag="--id" constant="1"/>
+    </program>
+
  </section>
 
 
@@ -145,6 +159,26 @@
         <arg flag="-redlink"/>
       </program>
       <program name="Link Combiner"/>
+    </session>
+
+    <session name="SupperBitRF">
+      <program name="Data Link">
+        <arg flag="-d" constant="/dev/ttyACM0"/>
+      </program>
+      <program name="Server"/>
+      <program name="GCS"/>
+      <program name="Messages"/>
+    </session>
+
+    <session name="SupperBitRF cable telemetry">
+      <program name="Data Link">
+        <arg flag="-d" constant="/dev/ttyACM1"/>
+        <arg flag="-s" constant="57600"/>
+      </program>
+      <program name="Server"/>
+      <program name="GCS"/>
+      <program name="Messages"/>
+      <program name="Messages"/>
     </session>
 
 

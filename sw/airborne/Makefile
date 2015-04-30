@@ -1,7 +1,6 @@
 # Hey Emacs, this is a -*- makefile -*-
 #
-#  $Id$
-#  Copyright (C) 2003-2005 Pascal Brisset, Antoine Drouin
+#  Copyright (C) 2003-2014  The Paparazzi Team
 #
 # This file is part of paparazzi.
 #
@@ -25,15 +24,19 @@
 Q=@
 
 
-OBJDIR = $(PAPARAZZI_HOME)/var/$(AIRCRAFT)/$(TARGET)
-VARINCLUDE=$(PAPARAZZI_HOME)/var/include
-ACINCLUDE = $(PAPARAZZI_HOME)/var/$(AIRCRAFT)
+# main directory where the generated files and compilation results for an aircraft are stored
+AIRCRAFT_BUILD_DIR = $(PAPARAZZI_HOME)/var/aircrafts/$(AIRCRAFT)
+
+OBJDIR = $(AIRCRAFT_BUILD_DIR)/$(TARGET)
+ACINCLUDE = $(AIRCRAFT_BUILD_DIR)/$(TARGET)
+VARINCLUDE = $(PAPARAZZI_HOME)/var/include
 
 INCLUDES = -I$(PAPARAZZI_SRC)/sw/include -I$(PAPARAZZI_SRC)/sw/airborne -I$(PAPARAZZI_SRC)/conf/autopilot -I$(PAPARAZZI_SRC)/sw/airborne/arch/$($(TARGET).ARCHDIR) -I$(VARINCLUDE) -I$(ACINCLUDE)
 
+VPATH = .
 
 ifneq ($(MAKECMDGOALS),clean)
-  include $(PAPARAZZI_HOME)/var/$(AIRCRAFT)/Makefile.ac
+  include $(AIRCRAFT_BUILD_DIR)/Makefile.ac
   $(TARGET).srcs += $($(TARGET).EXTRA_SRCS)
   include ../../conf/Makefile.local
 
@@ -48,6 +51,12 @@ ifneq ($(MAKECMDGOALS),clean)
     endif
   endif
 
+  $(TARGET).CFLAGS += -DGIT_SHA1=$(GIT_SHA1)
+  $(TARGET).CFLAGS += -DGIT_DESC=$(GIT_DESC)
+  $(TARGET).CFLAGS += -DPPRZ_VER=$(PPRZ_VER)
+  $(TARGET).CFLAGS += -DPPRZ_VER_MAJOR=$(PPRZ_VER_MAJOR)
+  $(TARGET).CFLAGS += -DPPRZ_VER_MINOR=$(PPRZ_VER_MINOR)
+  $(TARGET).CFLAGS += -DPPRZ_VER_PATCH=$(PPRZ_VER_PATCH)
   ifdef PRINT_CONFIG
     $(TARGET).CFLAGS += -DPRINT_CONFIG
   endif
@@ -70,6 +79,4 @@ warn_conf :
 	@echo '###########################################################'
 	@echo
 
-clean :
-	$(Q)rm -f *~ a.out *.elf
 .PHONY: clean

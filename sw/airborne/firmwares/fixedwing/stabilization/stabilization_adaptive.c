@@ -31,7 +31,7 @@
 #include "firmwares/fixedwing/stabilization/stabilization_attitude.h"
 #include "firmwares/fixedwing/stabilization/stabilization_adaptive.h"
 #include "state.h"
-#include "subsystems/nav.h"
+#include "firmwares/fixedwing/nav.h"
 #include "generated/airframe.h"
 #include CTRL_TYPE_H
 #include "firmwares/fixedwing/autopilot.h"
@@ -50,19 +50,57 @@ bool_t h_ctl_disabled;
 /* AUTO1 rate mode */
 bool_t h_ctl_auto1_rate;
 
+struct HCtlAdaptRef {
+  float roll_angle;
+  float roll_rate;
+  float roll_accel;
+  float pitch_angle;
+  float pitch_rate;
+  float pitch_accel;
 
-float h_ctl_ref_roll_angle;
-float h_ctl_ref_roll_rate;
-float h_ctl_ref_roll_accel;
-float h_ctl_ref_pitch_angle;
-float h_ctl_ref_pitch_rate;
-float h_ctl_ref_pitch_accel;
-#define H_CTL_REF_W 5.
-#define H_CTL_REF_XI 0.85
+  float max_p;
+  float max_p_dot;
+  float max_q;
+  float max_q_dot;
+};
+
+struct HCtlAdaptRef h_ctl_ref;
+
+/* Reference generator */
+#ifndef H_CTL_REF_W_P
+#define H_CTL_REF_W_P 5.
+#endif
+#ifndef H_CTL_REF_XI_P
+#define H_CTL_REF_XI_P 0.85
+#endif
+#ifndef H_CTL_REF_W_Q
+#define H_CTL_REF_W_Q 5.
+#endif
+#ifndef H_CTL_REF_XI_Q
+#define H_CTL_REF_XI_Q 0.85
+#endif
+#ifndef H_CTL_REF_MAX_P
 #define H_CTL_REF_MAX_P RadOfDeg(150.)
+#endif
+#ifndef H_CTL_REF_MAX_P_DOT
 #define H_CTL_REF_MAX_P_DOT RadOfDeg(500.)
+#endif
+#ifndef H_CTL_REF_MAX_Q
 #define H_CTL_REF_MAX_Q RadOfDeg(150.)
+#endif
+#ifndef H_CTL_REF_MAX_Q_DOT
 #define H_CTL_REF_MAX_Q_DOT RadOfDeg(500.)
+#endif
+
+#if USE_ANGLE_REF
+PRINT_CONFIG_MSG("USING ATTITUDE REFERENCE GENERATOR")
+PRINT_CONFIG_VAR(H_CTL_REF_W_P)
+PRINT_CONFIG_VAR(H_CTL_REF_W_Q)
+PRINT_CONFIG_VAR(H_CTL_REF_MAX_P)
+PRINT_CONFIG_VAR(H_CTL_REF_MAX_P_DOT)
+PRINT_CONFIG_VAR(H_CTL_REF_MAX_Q)
+PRINT_CONFIG_VAR(H_CTL_REF_MAX_Q_DOT)
+#endif
 
 /* inner roll loop parameters */
 float h_ctl_roll_setpoint;
@@ -101,8 +139,12 @@ float airspeed_ratio2;
 float v_ctl_pitch_loiter_trim;
 float v_ctl_pitch_dash_trim;
 
-inline static void h_ctl_roll_loop( void );
-inline static void h_ctl_pitch_loop( void );
+// Pitch trim rate limiter
+#ifndef PITCH_TRIM_RATE_LIMITER
+#define PITCH_TRIM_RATE_LIMITER 3.
+#endif
+inline static void h_ctl_roll_loop(void);
+inline static void h_ctl_pitch_loop(void);
 
 // Some default course gains
 // H_CTL_COURSE_PGAIN needs to be define in airframe
@@ -143,25 +185,47 @@ inline static void h_ctl_pitch_loop( void );
 #define H_CTL_PITCH_KFFD 0.
 #endif
 
-#if DOWNLINK
+#ifndef USE_GYRO_PITCH_RATE
+#define USE_GYRO_PITCH_RATE TRUE
+#endif
+
+#if PERIODIC_TELEMETRY
 #include "subsystems/datalink/telemetry.h"
 
-static void send_calibration(void) {
-  DOWNLINK_SEND_CALIBRATION(DefaultChannel, DefaultDevice,  &v_ctl_auto_throttle_sum_err, &v_ctl_auto_throttle_submode);
+static void send_calibration(struct transport_tx *trans, struct link_device *dev)
+{
+  pprz_msg_send_CALIBRATION(trans, dev, AC_ID,  &v_ctl_auto_throttle_sum_err, &v_ctl_auto_throttle_submode);
 }
 
-static void send_tune_roll(void) {
-  DOWNLINK_SEND_TUNE_ROLL(DefaultChannel, DefaultDevice,
-      &(stateGetBodyRates_f()->p), &(stateGetNedToBodyEulers_f()->phi), &h_ctl_roll_setpoint);
+static void send_tune_roll(struct transport_tx *trans, struct link_device *dev)
+{
+  pprz_msg_send_TUNE_ROLL(trans, dev, AC_ID,
+                          &(stateGetBodyRates_f()->p), &(stateGetNedToBodyEulers_f()->phi), &h_ctl_roll_setpoint);
 }
 
-static void send_ctl_a(void) {
-  DOWNLINK_SEND_H_CTL_A(DefaultChannel, DefaultDevice,
-      &h_ctl_roll_sum_err, &h_ctl_ref_roll_angle, &h_ctl_pitch_sum_err, &h_ctl_ref_pitch_angle)
+static void send_ctl_a(struct transport_tx *trans, struct link_device *dev)
+{
+  pprz_msg_send_H_CTL_A(trans, dev, AC_ID,
+                        &h_ctl_roll_sum_err,
+                        &h_ctl_roll_setpoint,
+                        &h_ctl_ref.roll_angle,
+                        &(stateGetNedToBodyEulers_f()->phi),
+                        &h_ctl_aileron_setpoint,
+                        &h_ctl_pitch_sum_err,
+                        &h_ctl_pitch_loop_setpoint,
+                        &h_ctl_ref.pitch_angle,
+                        &(stateGetNedToBodyEulers_f()->theta),
+                        &h_ctl_elevator_setpoint);
 }
 #endif
 
-void h_ctl_init( void ) {
+void h_ctl_init(void)
+{
+  h_ctl_ref.max_p = H_CTL_REF_MAX_P;
+  h_ctl_ref.max_p_dot = H_CTL_REF_MAX_P_DOT;
+  h_ctl_ref.max_q = H_CTL_REF_MAX_Q;
+  h_ctl_ref.max_q_dot = H_CTL_REF_MAX_Q_DOT;
+
   h_ctl_course_setpoint = 0.;
   h_ctl_course_pre_bank = 0.;
   h_ctl_course_pre_bank_correction = H_CTL_COURSE_PRE_BANK_CORRECTION;
@@ -208,7 +272,7 @@ void h_ctl_init( void ) {
   v_ctl_pitch_dash_trim = 0.;
 #endif
 
-#if DOWNLINK
+#if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, "CALIBRATION", send_calibration);
   register_periodic_telemetry(DefaultPeriodic, "TUNE_ROLL", send_tune_roll);
   register_periodic_telemetry(DefaultPeriodic, "H_CTL_A", send_ctl_a);
@@ -219,7 +283,8 @@ void h_ctl_init( void ) {
  * \brief
  *
  */
-void h_ctl_course_loop ( void ) {
+void h_ctl_course_loop(void)
+{
   static float last_err;
 
   // Ground path error
@@ -230,33 +295,35 @@ void h_ctl_course_loop ( void ) {
   last_err = err;
   NormRadAngle(d_err);
 
-  float speed_depend_nav = (*stateGetHorizontalSpeedNorm_f())/NOMINAL_AIRSPEED;
+  float speed_depend_nav = (*stateGetHorizontalSpeedNorm_f()) / NOMINAL_AIRSPEED;
   Bound(speed_depend_nav, 0.66, 1.5);
 
   h_ctl_roll_setpoint = h_ctl_course_pre_bank_correction * h_ctl_course_pre_bank
-    + h_ctl_course_pgain * speed_depend_nav * err
-    + h_ctl_course_dgain * d_err;
+                        + h_ctl_course_pgain * speed_depend_nav * err
+                        + h_ctl_course_dgain * d_err;
 
   BoundAbs(h_ctl_roll_setpoint, h_ctl_roll_max_setpoint);
 }
 
 #if USE_AIRSPEED
-static inline void compute_airspeed_ratio( void ) {
+static inline void compute_airspeed_ratio(void)
+{
   if (use_airspeed_ratio) {
     // low pass airspeed
     static float airspeed = 0.;
-    airspeed = ( 15*airspeed + (*stateGetAirspeed_f()) ) / 16;
+    airspeed = (15 * airspeed + (*stateGetAirspeed_f())) / 16;
     // compute ratio
     float airspeed_ratio = airspeed / NOMINAL_AIRSPEED;
     Bound(airspeed_ratio, AIRSPEED_RATIO_MIN, AIRSPEED_RATIO_MAX);
-    airspeed_ratio2 = airspeed_ratio*airspeed_ratio;
+    airspeed_ratio2 = airspeed_ratio * airspeed_ratio;
   } else {
     airspeed_ratio2 = 1.;
   }
 }
 #endif
 
-void h_ctl_attitude_loop ( void ) {
+void h_ctl_attitude_loop(void)
+{
   if (!h_ctl_disabled) {
 #if USE_AIRSPEED
     compute_airspeed_ratio();
@@ -266,39 +333,54 @@ void h_ctl_attitude_loop ( void ) {
   }
 }
 
-#define H_CTL_REF_DT (1./60.)
+/** Define reference generator time step
+ *  default to control frequency
+ *  and ahrs propagation freq if control is triggered by ahrs
+ */
+#ifdef AHRS_TRIGGERED_ATTITUDE_LOOP
+#define H_CTL_REF_DT (1./AHRS_PROPAGATE_FREQUENCY)
+#else
+#define H_CTL_REF_DT (1./CONTROL_FREQUENCY)
+#endif
+
+/** Adaptive control tuning parameters
+ *  activate with USE_KFF_UPDATE
+ *
+ *  !!! under development, use with care !!!
+ */
 #define KFFA_UPDATE 0.1
 #define KFFD_UPDATE 0.05
 
-inline static void h_ctl_roll_loop( void ) {
+inline static void h_ctl_roll_loop(void)
+{
 
   static float cmd_fb = 0.;
 
 #if USE_ANGLE_REF
   // Update reference setpoints for roll
-  h_ctl_ref_roll_angle += h_ctl_ref_roll_rate * H_CTL_REF_DT;
-  h_ctl_ref_roll_rate += h_ctl_ref_roll_accel * H_CTL_REF_DT;
-  h_ctl_ref_roll_accel = H_CTL_REF_W*H_CTL_REF_W * (h_ctl_roll_setpoint - h_ctl_ref_roll_angle) - 2*H_CTL_REF_XI*H_CTL_REF_W * h_ctl_ref_roll_rate;
+  h_ctl_ref.roll_angle += h_ctl_ref.roll_rate * H_CTL_REF_DT;
+  h_ctl_ref.roll_rate += h_ctl_ref.roll_accel * H_CTL_REF_DT;
+  h_ctl_ref.roll_accel = H_CTL_REF_W_P * H_CTL_REF_W_P * (h_ctl_roll_setpoint - h_ctl_ref.roll_angle) - 2 * H_CTL_REF_XI_P
+                         * H_CTL_REF_W_P * h_ctl_ref.roll_rate;
   // Saturation on references
-  BoundAbs(h_ctl_ref_roll_accel, H_CTL_REF_MAX_P_DOT);
-  if (h_ctl_ref_roll_rate > H_CTL_REF_MAX_P) {
-    h_ctl_ref_roll_rate = H_CTL_REF_MAX_P;
-    if (h_ctl_ref_roll_accel > 0.) h_ctl_ref_roll_accel = 0.;
-  }
-  else if (h_ctl_ref_roll_rate < - H_CTL_REF_MAX_P) {
-    h_ctl_ref_roll_rate = - H_CTL_REF_MAX_P;
-    if (h_ctl_ref_roll_accel < 0.) h_ctl_ref_roll_accel = 0.;
+  BoundAbs(h_ctl_ref.roll_accel, h_ctl_ref.max_p_dot);
+  if (h_ctl_ref.roll_rate > h_ctl_ref.max_p) {
+    h_ctl_ref.roll_rate = h_ctl_ref.max_p;
+    if (h_ctl_ref.roll_accel > 0.) { h_ctl_ref.roll_accel = 0.; }
+  } else if (h_ctl_ref.roll_rate < - h_ctl_ref.max_p) {
+    h_ctl_ref.roll_rate = - h_ctl_ref.max_p;
+    if (h_ctl_ref.roll_accel < 0.) { h_ctl_ref.roll_accel = 0.; }
   }
 #else
-  h_ctl_ref_roll_angle = h_ctl_roll_setpoint;
-  h_ctl_ref_roll_rate = 0.;
-  h_ctl_ref_roll_accel = 0.;
+  h_ctl_ref.roll_angle = h_ctl_roll_setpoint;
+  h_ctl_ref.roll_rate = 0.;
+  h_ctl_ref.roll_accel = 0.;
 #endif
 
 #ifdef USE_KFF_UPDATE
   // update Kff gains
-  h_ctl_roll_Kffa += KFFA_UPDATE * h_ctl_ref_roll_accel * cmd_fb / (H_CTL_REF_MAX_P_DOT*H_CTL_REF_MAX_P_DOT);
-  h_ctl_roll_Kffd += KFFD_UPDATE * h_ctl_ref_roll_rate  * cmd_fb / (H_CTL_REF_MAX_P*H_CTL_REF_MAX_P);
+  h_ctl_roll_Kffa += KFFA_UPDATE * h_ctl_ref.roll_accel * cmd_fb / (h_ctl_ref.max_p_dot * h_ctl_ref.max_p_dot);
+  h_ctl_roll_Kffd += KFFD_UPDATE * h_ctl_ref.roll_rate  * cmd_fb / (h_ctl_ref.max_p * h_ctl_ref.max_p);
 #ifdef SITL
   printf("%f %f %f\n", h_ctl_roll_Kffa, h_ctl_roll_Kffd, cmd_fb);
 #endif
@@ -307,19 +389,13 @@ inline static void h_ctl_roll_loop( void ) {
 #endif
 
   // Compute errors
-  float err = h_ctl_ref_roll_angle - stateGetNedToBodyEulers_f()->phi;
-  struct FloatRates* body_rate = stateGetBodyRates_f();
-#ifdef SITL
-  static float last_err = 0;
-  body_rate->p = (err - last_err)/(1/60.); // FIXME should be done in ahrs sim
-  last_err = err;
-#endif
-  float d_err = h_ctl_ref_roll_rate - body_rate->p;
+  float err = h_ctl_ref.roll_angle - stateGetNedToBodyEulers_f()->phi;
+  struct FloatRates *body_rate = stateGetBodyRates_f();
+  float d_err = h_ctl_ref.roll_rate - body_rate->p;
 
   if (pprz_mode == PPRZ_MODE_MANUAL || launch == 0) {
     h_ctl_roll_sum_err = 0.;
-  }
-  else {
+  } else {
     if (h_ctl_roll_igain > 0.) {
       h_ctl_roll_sum_err += err * H_CTL_REF_DT;
       BoundAbs(h_ctl_roll_sum_err, H_CTL_ROLL_SUM_ERR_MAX / h_ctl_roll_igain);
@@ -329,12 +405,12 @@ inline static void h_ctl_roll_loop( void ) {
   }
 
   cmd_fb = h_ctl_roll_attitude_gain * err;
-  float cmd = - h_ctl_roll_Kffa * h_ctl_ref_roll_accel
-    - h_ctl_roll_Kffd * h_ctl_ref_roll_rate
-    - cmd_fb
-    - h_ctl_roll_rate_gain * d_err
-    - h_ctl_roll_igain * h_ctl_roll_sum_err
-    + v_ctl_throttle_setpoint * h_ctl_aileron_of_throttle;
+  float cmd = - h_ctl_roll_Kffa * h_ctl_ref.roll_accel
+              - h_ctl_roll_Kffd * h_ctl_ref.roll_rate
+              - cmd_fb
+              - h_ctl_roll_rate_gain * d_err
+              - h_ctl_roll_igain * h_ctl_roll_sum_err
+              + v_ctl_throttle_setpoint * h_ctl_aileron_of_throttle;
 
   cmd /= airspeed_ratio2;
 
@@ -344,39 +420,48 @@ inline static void h_ctl_roll_loop( void ) {
 
 
 #if USE_PITCH_TRIM
-inline static void loiter(void) {
+inline static void loiter(void)
+{
   float pitch_trim;
+  static float last_pitch_trim;
 
 #if USE_AIRSPEED
   if (stateGetAirspeed_f() > NOMINAL_AIRSPEED) {
-    pitch_trim = v_ctl_pitch_dash_trim * (airspeed_ratio2-1) / ((AIRSPEED_RATIO_MAX * AIRSPEED_RATIO_MAX) - 1);
+    pitch_trim = v_ctl_pitch_dash_trim * (airspeed_ratio2 - 1) / ((AIRSPEED_RATIO_MAX * AIRSPEED_RATIO_MAX) - 1);
   } else {
-    pitch_trim = v_ctl_pitch_loiter_trim * (airspeed_ratio2-1) / ((AIRSPEED_RATIO_MIN * AIRSPEED_RATIO_MIN) - 1);
+    pitch_trim = v_ctl_pitch_loiter_trim * (airspeed_ratio2 - 1) / ((AIRSPEED_RATIO_MIN * AIRSPEED_RATIO_MIN) - 1);
   }
 #else
-  float throttle_diff = v_ctl_throttle_setpoint / (float)MAX_PPRZ - v_ctl_auto_throttle_nominal_cruise_throttle;
+  float throttle_diff = v_ctl_auto_throttle_cruise_throttle - v_ctl_auto_throttle_nominal_cruise_throttle;
   if (throttle_diff > 0) {
-    float max_diff = Max(V_CTL_AUTO_THROTTLE_MAX_CRUISE_THROTTLE - v_ctl_auto_throttle_nominal_cruise_throttle, 0.1);
+    float max_diff = Max(v_ctl_auto_throttle_max_cruise_throttle - v_ctl_auto_throttle_nominal_cruise_throttle, 0.1);
     pitch_trim = throttle_diff / max_diff * v_ctl_pitch_dash_trim;
   } else {
-    float max_diff = Max(v_ctl_auto_throttle_nominal_cruise_throttle - V_CTL_AUTO_THROTTLE_MIN_CRUISE_THROTTLE, 0.1);
+    float max_diff = Max(v_ctl_auto_throttle_nominal_cruise_throttle - v_ctl_auto_throttle_min_cruise_throttle, 0.1);
     pitch_trim = -throttle_diff / max_diff * v_ctl_pitch_loiter_trim;
   }
 #endif
 
+  // Pitch trim rate limiter
+  float max_change = (v_ctl_pitch_loiter_trim - v_ctl_pitch_dash_trim) * H_CTL_REF_DT / PITCH_TRIM_RATE_LIMITER;
+  Bound(pitch_trim, last_pitch_trim - max_change, last_pitch_trim + max_change);
+
+  last_pitch_trim = pitch_trim;
   h_ctl_pitch_loop_setpoint += pitch_trim;
 }
 #endif
 
 
-inline static void h_ctl_pitch_loop( void ) {
+inline static void h_ctl_pitch_loop(void)
+{
 #if !USE_GYRO_PITCH_RATE
   static float last_err;
 #endif
 
   /* sanity check */
-  if (h_ctl_pitch_of_roll <0.)
+  if (h_ctl_pitch_of_roll < 0.) {
     h_ctl_pitch_of_roll = 0.;
+  }
 
   h_ctl_pitch_loop_setpoint = h_ctl_pitch_setpoint + h_ctl_pitch_of_roll * fabs(stateGetNedToBodyEulers_f()->phi);
 #if USE_PITCH_TRIM
@@ -385,38 +470,37 @@ inline static void h_ctl_pitch_loop( void ) {
 
 #if USE_ANGLE_REF
   // Update reference setpoints for pitch
-  h_ctl_ref_pitch_angle += h_ctl_ref_pitch_rate * H_CTL_REF_DT;
-  h_ctl_ref_pitch_rate += h_ctl_ref_pitch_accel * H_CTL_REF_DT;
-  h_ctl_ref_pitch_accel = H_CTL_REF_W*H_CTL_REF_W * (h_ctl_pitch_loop_setpoint - h_ctl_ref_pitch_angle) - 2*H_CTL_REF_XI*H_CTL_REF_W * h_ctl_ref_pitch_rate;
+  h_ctl_ref.pitch_angle += h_ctl_ref.pitch_rate * H_CTL_REF_DT;
+  h_ctl_ref.pitch_rate += h_ctl_ref.pitch_accel * H_CTL_REF_DT;
+  h_ctl_ref.pitch_accel = H_CTL_REF_W_Q * H_CTL_REF_W_Q * (h_ctl_pitch_loop_setpoint - h_ctl_ref.pitch_angle) - 2 *
+                          H_CTL_REF_XI_Q * H_CTL_REF_W_Q * h_ctl_ref.pitch_rate;
   // Saturation on references
-  BoundAbs(h_ctl_ref_pitch_accel, H_CTL_REF_MAX_Q_DOT);
-  if (h_ctl_ref_pitch_rate > H_CTL_REF_MAX_Q) {
-    h_ctl_ref_pitch_rate = H_CTL_REF_MAX_Q;
-    if (h_ctl_ref_pitch_accel > 0.) h_ctl_ref_pitch_accel = 0.;
-  }
-  else if (h_ctl_ref_pitch_rate < - H_CTL_REF_MAX_Q) {
-    h_ctl_ref_pitch_rate = - H_CTL_REF_MAX_Q;
-    if (h_ctl_ref_pitch_accel < 0.) h_ctl_ref_pitch_accel = 0.;
+  BoundAbs(h_ctl_ref.pitch_accel, h_ctl_ref.max_q_dot);
+  if (h_ctl_ref.pitch_rate > h_ctl_ref.max_q) {
+    h_ctl_ref.pitch_rate = h_ctl_ref.max_q;
+    if (h_ctl_ref.pitch_accel > 0.) { h_ctl_ref.pitch_accel = 0.; }
+  } else if (h_ctl_ref.pitch_rate < - h_ctl_ref.max_q) {
+    h_ctl_ref.pitch_rate = - h_ctl_ref.max_q;
+    if (h_ctl_ref.pitch_accel < 0.) { h_ctl_ref.pitch_accel = 0.; }
   }
 #else
-  h_ctl_ref_pitch_angle = h_ctl_pitch_loop_setpoint;
-  h_ctl_ref_pitch_rate = 0.;
-  h_ctl_ref_pitch_accel = 0.;
+  h_ctl_ref.pitch_angle = h_ctl_pitch_loop_setpoint;
+  h_ctl_ref.pitch_rate = 0.;
+  h_ctl_ref.pitch_accel = 0.;
 #endif
 
   // Compute errors
-  float err =  h_ctl_ref_pitch_angle - stateGetNedToBodyEulers_f()->theta;
+  float err =  h_ctl_ref.pitch_angle - stateGetNedToBodyEulers_f()->theta;
 #if USE_GYRO_PITCH_RATE
-  float d_err = h_ctl_ref_pitch_rate - stateGetBodyRates_f()->q;
+  float d_err = h_ctl_ref.pitch_rate - stateGetBodyRates_f()->q;
 #else // soft derivation
-  float d_err = (err - last_err)/H_CTL_REF_DT - h_ctl_ref_pitch_rate;
+  float d_err = (err - last_err) / H_CTL_REF_DT - h_ctl_ref.pitch_rate;
   last_err = err;
 #endif
 
   if (pprz_mode == PPRZ_MODE_MANUAL || launch == 0) {
     h_ctl_pitch_sum_err = 0.;
-  }
-  else {
+  } else {
     if (h_ctl_pitch_igain > 0.) {
       h_ctl_pitch_sum_err += err * H_CTL_REF_DT;
       BoundAbs(h_ctl_pitch_sum_err, H_CTL_PITCH_SUM_ERR_MAX / h_ctl_pitch_igain);
@@ -425,11 +509,11 @@ inline static void h_ctl_pitch_loop( void ) {
     }
   }
 
-  float cmd = - h_ctl_pitch_Kffa * h_ctl_ref_pitch_accel
-    - h_ctl_pitch_Kffd * h_ctl_ref_pitch_rate
-    + h_ctl_pitch_pgain * err
-    + h_ctl_pitch_dgain * d_err
-    + h_ctl_pitch_igain * h_ctl_pitch_sum_err;
+  float cmd = - h_ctl_pitch_Kffa * h_ctl_ref.pitch_accel
+              - h_ctl_pitch_Kffd * h_ctl_ref.pitch_rate
+              + h_ctl_pitch_pgain * err
+              + h_ctl_pitch_dgain * d_err
+              + h_ctl_pitch_igain * h_ctl_pitch_sum_err;
 
   cmd /= airspeed_ratio2;
 

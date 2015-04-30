@@ -127,11 +127,11 @@ struct spi_transaction;
  * If not NULL (or 0), call function (with transaction as parameter)
  * before or after transaction, e.g to allow execution of hardware specific actions
  */
-typedef void (*SPICallback)( struct spi_transaction *trans );
+typedef void (*SPICallback)(struct spi_transaction *trans);
 
 /** SPI transaction structure.
  * - Use this structure to store a request of SPI transaction
- *   and submit it using spi_submit function
+ *   and submit it using #spi_submit function
  * - The input/output buffers needs to be created separately
  * - Take care of pointing input_buf/ouput_buf correctly
  * - input_length and output_length can be different, the larger number
@@ -140,10 +140,10 @@ typedef void (*SPICallback)( struct spi_transaction *trans );
  *   0 is sent for the remaining words
  */
 struct spi_transaction {
-  volatile uint8_t* input_buf;  ///< pointer to receive buffer for DMA
-  volatile uint8_t* output_buf; ///< pointer to transmit buffer for DMA
-  uint8_t input_length;         ///< number of data words to read
-  uint8_t output_length;        ///< number of data words to write
+  volatile uint8_t *input_buf;  ///< pointer to receive buffer for DMA
+  volatile uint8_t *output_buf; ///< pointer to transmit buffer for DMA
+  uint16_t input_length;        ///< number of data words to read
+  uint16_t output_length;       ///< number of data words to write
   uint8_t slave_idx;            ///< slave id: #SPI_SLAVE0 to #SPI_SLAVE4
   enum SPISlaveSelect select;   ///< slave selection behavior
   enum SPIClockPolarity cpol;   ///< clock polarity control
@@ -156,13 +156,18 @@ struct spi_transaction {
   volatile enum SPITransactionStatus status;
 };
 
+/** SPI transaction queue length.
+ * Number of transactions that can be queued.
+ */
 #ifndef SPI_TRANSACTION_QUEUE_LEN
 #define SPI_TRANSACTION_QUEUE_LEN 8
 #endif
 
+/** SPI peripheral structure.
+ */
 struct spi_periph {
   /** circular buffer holding transactions */
-  struct spi_transaction* trans[SPI_TRANSACTION_QUEUE_LEN];
+  struct spi_transaction *trans[SPI_TRANSACTION_QUEUE_LEN];
   uint8_t trans_insert_idx;
   uint8_t trans_extract_idx;
   /** internal state of the peripheral */
@@ -239,7 +244,7 @@ extern void spi3_arch_init(void);
 /** Initialize a spi peripheral.
  * @param p spi peripheral to be configured
  */
-extern void spi_init(struct spi_periph* p);
+extern void spi_init(struct spi_periph *p);
 
 /** Initialize all used slaves and uselect them.
  */
@@ -251,7 +256,7 @@ extern void spi_init_slaves(void);
  * @param t spi transaction
  * @return TRUE if insertion to the transaction queue succeded
  */
-extern bool_t spi_submit(struct spi_periph* p, struct spi_transaction* t);
+extern bool_t spi_submit(struct spi_periph *p, struct spi_transaction *t);
 
 /** Select a slave.
  * @param slave slave id
@@ -271,7 +276,7 @@ extern void spi_slave_unselect(uint8_t slave);
  * @param slave slave id
  * @return true if correctly locked
  */
-extern bool_t spi_lock(struct spi_periph* p, uint8_t slave);
+extern bool_t spi_lock(struct spi_periph *p, uint8_t slave);
 
 /** Resume the SPI fifo.
  * Only the slave that locks the fifo can unlock it.
@@ -279,7 +284,7 @@ extern bool_t spi_lock(struct spi_periph* p, uint8_t slave);
  * @param slave slave id
  * @return true if correctly unlocked
  */
-extern bool_t spi_resume(struct spi_periph* p, uint8_t slave);
+extern bool_t spi_resume(struct spi_periph *p, uint8_t slave);
 
 #endif /* SPI_MASTER */
 
@@ -336,7 +341,7 @@ extern void spi3_slave_arch_init(void);
 /** Initialize a spi peripheral in slave mode.
  * @param p spi peripheral to be configured
  */
-extern void spi_slave_init(struct spi_periph* p);
+extern void spi_slave_init(struct spi_periph *p);
 
 /** Register a spi transaction in slave mode (only one transaction can be registered).
  * Must be implemented by the underlying architecture
@@ -344,7 +349,7 @@ extern void spi_slave_init(struct spi_periph* p);
  * @param t spi transaction
  * @return return true if registered with success
  */
-extern bool_t spi_slave_register(struct spi_periph* p, struct spi_transaction* t);
+extern bool_t spi_slave_register(struct spi_periph *p, struct spi_transaction *t);
 
 /** Initialized and wait for the next transaction.
  * If a transaction is registered for this peripheral, the spi will be
@@ -352,7 +357,7 @@ extern bool_t spi_slave_register(struct spi_periph* p, struct spi_transaction* t
  * @param p spi peripheral to be used
  * @return return true if a transaction was register for this peripheral
  */
-extern bool_t spi_slave_wait(struct spi_periph* p);
+extern bool_t spi_slave_wait(struct spi_periph *p);
 
 #endif /* SPI_SLAVE */
 
@@ -360,6 +365,7 @@ extern bool_t spi_slave_wait(struct spi_periph* p);
 /** @}*/
 
 #if SPI_SLAVE_HS
+#include "mcu_periph/spi_slave_hs_arch.h"
 extern void spi_slave_hs_init(void);
 #endif
 

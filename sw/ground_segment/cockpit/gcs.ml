@@ -26,6 +26,8 @@ module G = MapCanvas
 open Printf
 open Latlong
 
+let locale = GtkMain.Main.init ~setlocale:false ()
+
 let soi = string_of_int
 
 let home = Env.paparazzi_home
@@ -171,10 +173,10 @@ module TodoList = struct
 end
 
 
-(************ Google, OSM Maps handling *****************************************)
+(************ Maps handling (Google, OSM, MS, etc.) ***********************************)
 module GM = struct
-  (** Fill the visible background with Google, OSM tiles *)
-  let zoomlevel = ref 18
+  (** Fill the visible background with map tiles *)
+  let zoomlevel = ref 20
   let fill_tiles = fun geomap ->
     match geomap#georef with
         None -> ()
@@ -187,7 +189,7 @@ module GM = struct
     auto := x;
     update geomap
 
-  (** Creates a calibrated map from the Google, OSM tiles (selected region) *)
+  (** Creates a calibrated map from the map tiles (selected region) *)
   let map_from_tiles = fun (geomap:G.widget) () ->
     match geomap#region with
         None -> GToolbox.message_box "Error" "Select a region (shift-left drag)"
@@ -267,7 +269,7 @@ let any_event = fun (_geomap:G.widget) _ev -> false
 let button_press = fun (geomap:G.widget) ev ->
   let state = GdkEvent.Button.state ev in
   if GdkEvent.Button.button ev = 3 then begin
-    (** Display a tile from Google Maps or IGN *)
+    (** Display a map tile from map provider (Google, OSC, ..) or IGN *)
     let xc = GdkEvent.Button.x ev
     and yc = GdkEvent.Button.y ev in
     let (xw,yw) = geomap#window_to_world xc yc in
@@ -290,7 +292,7 @@ let button_press = fun (geomap:G.widget) ev ->
     GToolbox.popup_menu ~entries:([`I ("Load background tile", display_gm)]@m)
       ~button:3 ~time:(Int32.of_int 0);
     true
-  end else if GdkEvent.Button.button ev = 1 && Gdk.Convert.test_modifier `CONTROL state then
+  end else if GdkEvent.Button.button ev = 1 && Gdk.Convert.test_modifier `CONTROL state then (* create new wp on Ctrl-click *)
       let xc = GdkEvent.Button.x ev in
       let yc = GdkEvent.Button.y ev in
       let xyw = geomap#canvas#window_to_world xc yc in
@@ -311,7 +313,7 @@ let keys_help = fun () ->
     "Zoom: Mouse Wheel, PgUp, PgDown\n\
     Pan: Map & keyboard arrows\n\
     Fit to window: f\n\
-    Center active A/C: f\n\
+    Center active A/C: c or C\n\
     Fullscreen: F11\n\
     Load Map Tile: Right\n\
     Create Waypoint: Ctrl-Left\n\
@@ -338,6 +340,7 @@ and display_particules = ref false
 and wid = ref None
 and srtm = ref false
 and hide_fp = ref false
+and timestamp = ref false
 
 let options =
   [
@@ -348,13 +351,13 @@ let options =
     "-edit", Arg.Unit (fun () -> edit := true; layout_file := "editor.xml"), "Flight plan editor";
     "-fullscreen", Arg.Set fullscreen, "Fullscreen window";
     "-maps_fill", Arg.Set GM.auto, "Automatically start loading background maps";
-    "-maps_zoom", Arg.Set_int GM.zoomlevel, "Background maps zoomlevel (default: 18, max: 22)";
+    "-maps_zoom", Arg.Set_int GM.zoomlevel, "Background maps zoomlevel (default: 20, min: 18, max: 22)";
     "-ign", Arg.String (fun s -> ign:=true; IGN.data_path := s), "IGN tiles path";
     "-lambertIIe", Arg.Unit (fun () -> projection:=G.LambertIIe),"Switch to LambertIIe projection";
     "-layout", Arg.Set_string layout_file, (sprintf "<XML layout specification> GUI layout. Default: %s" !layout_file);
     "-m", Arg.String (fun x -> map_files := x :: !map_files), "Map XML description file";
     "-maximize", Arg.Set maximize, "Maximize window";
-    "-mercator", Arg.Unit (fun () -> projection:=G.Mercator),"Switch to (Google Maps) Mercator projection, default";
+    "-mercator", Arg.Unit (fun () -> projection:=G.Mercator),"Switch to Mercator projection, default";
     "-mplayer", Arg.Set_string mplayer, "Launch mplayer with the given argument as X plugin";
     "-no_alarm", Arg.Set no_alarm, "Disables alarm page";
     "-maps_no_http", Arg.Unit (fun () -> Gm.set_policy Gm.NoHttp), "Switch off downloading of maps, always use cached maps";
@@ -371,6 +374,7 @@ let options =
     "-wid", Arg.String (fun s -> wid := Some (Int32.of_string s)), "<window id> Id of an existing window to be attached to";
     "-zoom", Arg.Set_float zoom, "Initial zoom";
     "-auto_hide_fp", Arg.Unit (fun () -> Live.auto_hide_fp true; hide_fp := true), "Automatically hide flight plans of unselected aircraft";
+    "-timestamp", Arg.Set timestamp, "Bind on timestampped telemetry messages";
   ]
 
 
@@ -433,7 +437,7 @@ let create_geomap = fun switch_fullscreen editor_frame ->
       group := menu_item#group)
     Gm.policies;
 
-  (* Google fill menu entry and toolbar button *)
+  (* Map tiles fill menu entry and toolbar button *)
   let callback = fun _ -> GM.fill_tiles geomap in
   ignore (map_menu_fact#add_item "Maps Fill" ~key:GdkKeysyms._G ~callback);
   let b = GButton.button ~packing:geomap#toolbar#add () in
@@ -441,14 +445,14 @@ let create_geomap = fun switch_fullscreen editor_frame ->
   let pixbuf = GdkPixbuf.from_file (Env.gcs_icons_path // "googleearth.png") in
   ignore (GMisc.image ~pixbuf ~packing:b#add ());
   let tooltips = GData.tooltips () in
-  tooltips#set_tip b#coerce ~text:"Google maps fill";
+  tooltips#set_tip b#coerce ~text:"Fill current view with background map tiles";
 
   ignore (map_menu_fact#add_check_item "Maps Auto" ~active:!GM.auto ~callback:(GM.active_auto geomap));
   ignore (map_menu_fact#add_item "Map of Region" ~key:GdkKeysyms._R ~callback:(map_from_region geomap));
   ignore (map_menu_fact#add_item "Dump map of Tiles" ~key:GdkKeysyms._T ~callback:(GM.map_from_tiles geomap));
   ignore (map_menu_fact#add_item "Load sector" ~callback:(Sectors.load geomap));
 
-  (** Connect Google Maps display to view change *)
+  (** Connect Maps display to view change *)
   geomap#connect_view (fun () -> GM.update geomap);
   if !auto_ortho then
     geomap#connect_view (fun () -> fill_ortho geomap);
@@ -547,8 +551,37 @@ let rec replace_widget_children = fun name children xml ->
                   loop xmls)
     | _ -> xml
 
+let rec update_widget_size = fun orientation widgets xml ->
+  let get_size = fun (widget:GObj.widget) orientation ->
+    let rect = widget#misc#allocation in
+    if orientation = `HORIZONTAL then rect.Gtk.width else rect.Gtk.height
+  in
+  let xmls = Xml.children xml
+  and tag = String.lowercase (Xml.tag xml) in
+  match tag with
+      "widget" ->
+        let name = ExtXml.attrib xml "name" in
+        let widget =
+          try List.assoc name widgets with
+              Not_found -> failwith (sprintf "Unknown widget: '%s'" name)
+        in
+        let size = get_size widget orientation in
+        let xml = ExtXml.subst_attrib "size" (string_of_int size) xml in
+        Xml.Element("widget", Xml.attribs xml, xmls)
+    | "rows" ->
+        Xml.Element("rows", Xml.attribs xml, List.map (update_widget_size `VERTICAL widgets) xmls)
+    | "columns" ->
+        Xml.Element("columns", Xml.attribs xml, List.map (update_widget_size `HORIZONTAL widgets) xmls)
+    | x -> failwith (sprintf "update_widget_size: %s" x)
 
 
+(* get DTD head line for layout *)
+let get_layout_dtd = fun filename ->
+  let gcs_regexp = Str.regexp (Filename.concat Env.paparazzi_home "conf/gcs") in
+  let local_dir = Str.replace_first gcs_regexp "" (Filename.dirname filename) in
+  let split = Str.split (Str.regexp Filename.dir_sep) local_dir in
+  let layout = List.fold_left (fun s _ -> "../" ^ s ) "layout.dtd" split in
+  sprintf "<!DOCTYPE layout SYSTEM \"%s\">" layout
 
 
 let save_layout = fun filename contents ->
@@ -563,6 +596,7 @@ let save_layout = fun filename contents ->
       `SAVE, Some name ->
         dialog#destroy ();
         let f = open_out name in
+        fprintf f "%s\n\n" (get_layout_dtd name);
         fprintf f "%s\n" contents;
         close_out f
     | _ -> dialog#destroy ()
@@ -613,7 +647,7 @@ let () =
   let window, switch_fullscreen =
     match !wid with
         None ->
-          let icon = GdkPixbuf.from_file Env.icon_file in
+          let icon = GdkPixbuf.from_file Env.icon_gcs_file in
           let window = GWindow.window ~icon ~title:"GCS" ~border_width:1 ~width ~height ~allow_shrink:true () in
           if !maximize then
             window#maximize ();
@@ -628,7 +662,14 @@ let () =
               window#unfullscreen () in
           (window:>GWindow.window_skel),switch_fullscreen
 
-      | Some window ->
+      | Some xid ->
+        let window =
+          IFDEF GDK_NATIVE_WINDOW THEN
+            Gdk.Window.native_of_xid xid
+          ELSE
+            xid
+          END
+        in
         (GWindow.plug ~window ~width ~height ():>GWindow.window_skel), fun _ -> () in
 
   (* Editor frame *)
@@ -639,6 +680,10 @@ let () =
   let map_frame = GPack.vbox () in
   (** Put the canvas in a frame *)
   map_frame#add geomap#frame#coerce;
+
+  (** window for the strip panel *)
+  let scrolled = GBin.scrolled_window ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC () in
+  let strips_table = GPack.vbox ~spacing:5 ~packing:scrolled#add_with_viewport () in
 
   (** Aircraft notebook *)
   let ac_notebook = GPack.notebook ~tab_border:0 () in
@@ -655,7 +700,7 @@ let () =
   let plugin_frame = GPack.vbox ~width:plugin_width () in
 
   let widgets = ["map2d", map_frame#coerce;
-                 "strips", Strip.scrolled#coerce;
+                 "strips", scrolled#coerce;
                  "aircraft", ac_notebook#coerce;
                  "editor", editor_frame#coerce;
                  "alarms", alert_page#coerce;
@@ -671,8 +716,17 @@ let () =
   listen_dropped_papgets geomap;
 
   let save_layout = fun () ->
-    let the_new_layout = replace_widget_children "map2d" (Papgets.dump_store ()) the_layout in
+    (* Ask if ac_id parameters from papgets should be saved *)
+    let save_acid =
+      if Papgets.has_papgets () then
+        match GToolbox.question_box ~title:"Save Layout" ~buttons:["Yes"; "no"] ~default:1 "Do you want to save A/C id of Papgets if available\nYes: the saved layout will only work with A/C that have the same id (default)\nno: the saved layout will work with any A/C (but will mix data while using multiple A/C)" with
+        | 2 -> false
+        | _ -> true
+      else true
+    in
+    let the_new_layout = replace_widget_children "map2d" (Papgets.dump_store save_acid) the_layout in
     let width, height = Gdk.Drawable.get_size window#misc#window in
+    let the_new_layout = update_widget_size `HORIZONTAL widgets the_new_layout in
     let new_layout = Xml.Element ("layout", ["width", soi width; "height", soi height], [the_new_layout]) in
     save_layout layout_file (Xml.to_string_fmt new_layout)
   in
@@ -732,7 +786,7 @@ let () =
     begin
       my_alert#add "Waiting for telemetry...";
       Speech.say "Waiting for telemetry...";
-      Live.listen_acs_and_msgs geomap ac_notebook my_alert !auto_center_new_ac alt_graph
+      Live.listen_acs_and_msgs geomap ac_notebook strips_table my_alert !auto_center_new_ac alt_graph !timestamp
     end;
 
   (** Display the window *)

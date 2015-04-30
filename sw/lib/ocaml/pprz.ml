@@ -76,9 +76,10 @@ let units_file = Env.paparazzi_src // "conf" // "units.xml"
 
 external float_of_bytes : string -> int -> float = "c_float_of_indexed_bytes"
 external double_of_bytes : string -> int -> float = "c_double_of_indexed_bytes"
-external int32_of_bytes : string -> int -> int32 = "c_int32_of_indexed_bytes"
 external int8_of_bytes : string -> int -> int = "c_int8_of_indexed_bytes"
 external int16_of_bytes : string -> int -> int = "c_int16_of_indexed_bytes"
+external int32_of_bytes : string -> int -> int32 = "c_int32_of_indexed_bytes"
+external uint32_of_bytes : string -> int -> int64 = "c_uint32_of_indexed_bytes"
 external int64_of_bytes : string -> int -> int64 = "c_int64_of_indexed_bytes"
 external sprint_float : string -> int -> float -> unit = "c_sprint_float"
 external sprint_double : string -> int -> float -> unit = "c_sprint_double"
@@ -90,7 +91,7 @@ external sprint_int8 : string -> int -> int -> unit = "c_sprint_int8"
 let types = [
   ("uint8",  { format = "%u"; glib_type = "guint8"; inttype = "uint8_t";  size = 1; value=Int 42 });
   ("uint16", { format = "%u";  glib_type = "guint16"; inttype = "uint16_t"; size = 2; value=Int 42 });
-  ("uint32", { format = "%lu" ;  glib_type = "guint32"; inttype = "uint32_t"; size = 4; value=Int 42 });
+  ("uint32", { format = "%Lu" ;  glib_type = "guint32"; inttype = "uint32_t"; size = 4; value=Int 42 }); (* uint32 should be lu, but doesn't fit into Int32 so Int64 (Lu) is used *)
   ("uint64", { format = "%Lu" ;  glib_type = "guint64"; inttype = "uint64_t"; size = 8; value=Int 42 });
   ("int8",   { format = "%d"; glib_type = "gint8"; inttype = "int8_t";   size = 1; value= Int 42 });
   ("int16",  { format = "%d";  glib_type = "gint16"; inttype = "int16_t";  size = 2; value= Int 42 });
@@ -136,15 +137,17 @@ let length_of_fixed_array_type = fun s ->
 
 let int_of_string = fun x ->
   try int_of_string x with
-      _ -> failwith (sprintf "Pprz.int_of_string: %s" x)
+      _ -> try int_of_string ("0x"^x) with (* try hex format in case *)
+        _ -> failwith (sprintf "Pprz.int_of_string: %s" x)
 
 let rec value = fun t v ->
   match t with
       Scalar ("uint8" | "uint16" | "int8" | "int16") -> Int (int_of_string v)
-    | Scalar ("uint32" | "int32") -> Int32 (Int32.of_string v)
+    | Scalar "int32" -> Int32 (Int32.of_string v)
+    | Scalar "uint32" -> Int64 (Int64.of_string v)
     | Scalar ("uint64" | "int64") -> Int64 (Int64.of_string v)
     | Scalar ("float" | "double") -> Float (float_of_string v)
-    | Scalar "string" -> String v
+    | ArrayType "char" | FixedArrayType ("char", _) | Scalar "string" -> String v
     | Scalar "char" -> Char v.[0]
     | ArrayType t' ->
         Array (Array.map (value (Scalar t')) (Array.of_list (split_array v)))
@@ -160,16 +163,27 @@ let rec string_of_value = function
   | Int64 x -> Int64.to_string x
   | Char c -> String.make 1 c
   | String s -> s
-  | Array a -> String.concat separator (Array.to_list (Array.map string_of_value a))
+  | Array a ->
+      let l = (Array.to_list (Array.map string_of_value a)) in
+      match a.(0) with
+      | Char _ -> "\""^(String.concat "" l)^"\""
+      | _ -> String.concat separator l
 
 
-let magic = fun x -> (Obj.magic x:('a,'b,'c) Pervasives.format)
-
-
-let formatted_string_of_value = fun format v ->
+let rec formatted_string_of_value = fun format v ->
+  let f = fun x -> Scanf.format_from_string format x in
   match v with
-      Float x -> sprintf (magic format) x
-    | v -> string_of_value v
+    | Int x -> sprintf (f "%d") x
+    | Float x -> sprintf (f "%f") x
+    | Int32 x -> sprintf (f "%ld") x
+    | Int64 x -> sprintf (f "%Ld") x
+    | Char x -> sprintf (f "%c") x
+    | String x ->sprintf "%s" x
+    | Array a ->
+        let l = (Array.to_list (Array.map (formatted_string_of_value format) a)) in
+        match a.(0) with
+        | Char _ -> "\""^(String.concat "" l)^"\""
+        | _ -> String.concat separator l
 
 
 let sizeof = fun f ->
@@ -241,6 +255,17 @@ let alt_unit_coef_of_xml = fun ?auto xml ->
     in
     coef
 
+let key_modifiers_of_string = fun key ->
+  let key_split = Str.split (Str.regexp "\\+") key in
+  let keys = List.map (fun k ->
+    match k with
+    | "Ctrl" -> "<Control>"
+    | "Alt" -> "<Alt>"
+    | "Shift" -> "<Shift>"
+    | "Meta" -> "<Meta>"
+    | x -> x
+  ) key_split in
+  String.concat "" keys
 
 let pipe_regexp = Str.regexp "|"
 let field_of_xml = fun xml ->
@@ -288,12 +313,17 @@ let int_assoc = fun (a:string) vs ->
 let int32_assoc = fun (a:string) vs ->
   match assoc a vs with
       Int32 x -> x
-    | _ -> invalid_arg "Pprz.int_assoc"
+    | _ -> invalid_arg "Pprz.int32_assoc"
+
+let uint32_assoc = fun (a:string) vs ->
+  match assoc a vs with
+      Int64 x -> x
+    | _ -> invalid_arg "Pprz.uint32_assoc"
 
 let int64_assoc = fun (a:string) vs ->
   match assoc a vs with
     Int64 x -> x
-  | _ -> invalid_arg "Pprz.int_assoc"
+  | _ -> invalid_arg "Pprz.int64_assoc"
 
 let string_assoc = fun (a:string) (vs:values) -> string_of_value (assoc a vs)
 
@@ -316,9 +346,11 @@ let parse_class = fun xml_class ->
         with
             Xml.No_attribute("link") -> None
       in
+      (* only keep a "field" nodes *)
+      let xml_children = List.filter (fun f -> Xml.tag f = "field") (Xml.children xml_msg) in
       let msg = {
         name = name;
-        fields = List.map field_of_xml (Xml.children xml_msg);
+        fields = List.map field_of_xml xml_children;
         link = link
       } in
       let id = int_of_string (ExtXml.attrib xml_msg "id") in
@@ -340,7 +372,8 @@ let rec value_of_bin = fun buffer index _type ->
     | Scalar "int16" -> Int (int16_of_bytes buffer index), sizeof _type
     | Scalar "float" -> Float (float_of_bytes buffer index), sizeof _type
     | Scalar "double" -> Float (double_of_bytes buffer index), sizeof _type
-    | Scalar ("int32"  | "uint32") -> Int32 (int32_of_bytes buffer index), sizeof _type
+    | Scalar "int32" -> Int32 (int32_of_bytes buffer index), sizeof _type
+    | Scalar "uint32" -> Int64 (uint32_of_bytes buffer index), sizeof _type
     | Scalar ("int64"  | "uint64") -> Int64 (int64_of_bytes buffer index), sizeof _type
     | ArrayType t ->
       (** First get the number of values *)
@@ -381,8 +414,8 @@ let rec sprint_value = fun buf i _type v ->
       sprint_int8 buf i x; sizeof _type
     | Scalar "float", Float f -> sprint_float buf i f; sizeof _type
     | Scalar "double", Float f -> sprint_double buf i f; sizeof _type
-    | Scalar ("int32"|"uint32"), Int32 x -> sprint_int32 buf i x; sizeof _type
-    | Scalar ("int64"|"uint64"), Int64 x -> sprint_int64 buf i x; sizeof _type
+    | Scalar "int32", Int32 x -> sprint_int32 buf i x; sizeof _type
+    | Scalar ("int64"|"uint64"|"uint32"), Int64 x -> sprint_int64 buf i x; sizeof _type
     | Scalar "int16", Int x -> sprint_int16 buf i x; sizeof _type
     | Scalar ("int32" | "uint32"), Int value ->
       assert (_type <> Scalar "uint32" || value >= 0);
@@ -496,7 +529,7 @@ module PprzTransportBase(SubType:TRANSPORT_TYPE) = struct
   let checksum = fun msg ->
     let l = String.length msg in
     let ck_a, ck_b = compute_checksum msg in
-    Debug.call 'T' (fun f -> fprintf f "Pprz cs: %d %d\n" ck_a (Char.code msg.[l-2]));
+    Debug.call 'T' (fun f -> fprintf f "Pprz cs: %d %d | %d %d\n" ck_a (Char.code msg.[l-2]) ck_b (Char.code msg.[l-1]));
     ck_a = Char.code msg.[l-2] && ck_b = Char.code msg.[l-1]
 
   let payload = fun msg ->
@@ -573,7 +606,7 @@ module type MESSAGES = sig
   val message_send : ?timestamp:float -> ?link_id:int -> string -> string -> values -> unit
   (** [message_send sender link_id msg_name values] *)
 
-  val message_bind : ?sender:string -> string -> (string -> values -> unit) -> Ivy.binding
+  val message_bind : ?sender:string -> ?timestamp:bool -> string -> (string -> values -> unit) -> Ivy.binding
   (** [message_bind ?sender msg_name callback] *)
 
   val message_answerer : string -> string -> (string -> values -> values) -> Ivy.binding
@@ -590,7 +623,8 @@ module MessagesOfXml(Class:CLASS_Xml) = struct
   let messages_by_id, messages_by_name =
     try
       let select = fun x -> Xml.attrib x "name" = Class.name in
-      parse_class (ExtXml.child Class.xml ~select "class")
+      let xml_class = try ExtXml.child Class.xml ~select "msg_class" with Not_found -> ExtXml.child Class.xml ~select "class" in
+      parse_class xml_class
     with
         Not_found -> failwith (sprintf "Unknown message class: %s" Class.name)
   let messages = messages_by_id
@@ -650,8 +684,21 @@ module MessagesOfXml(Class:CLASS_Xml) = struct
 
 
   let space = Str.regexp "[ \t]+"
+  let array_sep = Str.regexp "[\"|]" (* also search for old separator '|' for backward compatibility *)
   let values_of_string = fun s ->
-    match Str.split space s with
+    (* split arguments and arrays *)
+    let array_split = Str.full_split array_sep s in
+    let rec loop = fun fields ->
+      match fields with
+      | [] -> []
+      | (Str.Delim "\"")::((Str.Text l)::[Str.Delim "\""]) | (Str.Delim "|")::((Str.Text l)::[Str.Delim "|"]) -> [l]
+      | (Str.Delim "\"")::((Str.Text l)::((Str.Delim "\"")::xs)) | (Str.Delim "|")::((Str.Text l)::((Str.Delim "|")::xs)) -> [l] @ (loop xs)
+      | [Str.Text x] -> Str.split space x
+      | (Str.Text x)::xs -> (Str.split space x) @ (loop xs)
+      | (Str.Delim _)::_ -> failwith "Pprz.values_of_string: incorrect array delimiter"
+    in
+    let msg_split = loop array_split in
+    match msg_split with
         msg_name::args ->
           begin
             try
@@ -699,31 +746,32 @@ module MessagesOfXml(Class:CLASS_Xml) = struct
       | Some the_link_id -> begin
         let index = ref 0 in
         let modified_msg = String.copy msg in
-        let func = fun c -> 
-          match c with 
-            ' ' -> begin 
-            String.set modified_msg !index ';'; 
+        let func = fun c ->
+          match c with
+            ' ' -> begin
+            String.set modified_msg !index ';';
             index := !index + 1
             end
           | x -> index := !index + 1; in
         String.iter func modified_msg;
         Ivy.send ( Printf.sprintf "redlink TELEMETRY_MESSAGE %s %i %s" sender the_link_id modified_msg);
       end
-          
-  let message_bind = fun ?sender msg_name cb ->
+
+  let message_bind = fun ?sender ?(timestamp=false) msg_name cb ->
+    let tsregexp, tsoffset = if timestamp then "([0-9]+\\.[0-9]+ )?", 1 else "", 0 in
     match sender with
         None ->
           Ivy.bind
             (fun _ args ->
-              let values = try snd (values_of_string args.(2)) with exc -> prerr_endline (Printexc.to_string exc); [] in
-              cb args.(1) values)
-            (sprintf "^([0-9]+\\.[0-9]+ )?([^ ]*) +(%s( .*|$))" msg_name)
+              let values = try snd (values_of_string args.(1+tsoffset)) with exc -> prerr_endline (Printexc.to_string exc); [] in
+              cb args.(tsoffset) values)
+            (sprintf "^%s([^ ]*) +(%s( .*|$))" tsregexp msg_name)
       | Some s ->
         Ivy.bind
           (fun _ args ->
-            let values = try snd (values_of_string args.(1)) with  exc -> prerr_endline (Printexc.to_string exc); [] in
+            let values = try snd (values_of_string args.(tsoffset)) with  exc -> prerr_endline (Printexc.to_string exc); [] in
             cb s values)
-          (sprintf "^([0-9]+\\.[0-9]+ )?%s +(%s( .*|$))" s msg_name)
+          (sprintf "^%s%s +(%s( .*|$))" tsregexp s msg_name)
 
   let message_answerer = fun sender msg_name cb ->
     let ivy_cb = fun _ args ->

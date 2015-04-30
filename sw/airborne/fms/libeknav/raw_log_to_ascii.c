@@ -13,7 +13,7 @@
 #include "fms/fms_autopilot_msg.h"
 #include "fms/libeknav/raw_log.h"
 
-void print_raw_log_entry(struct raw_log_entry*);
+void print_raw_log_entry(struct raw_log_entry *);
 //void build_fake_log(void);
 
 #define PRT(a) printf("%f ", a);
@@ -28,7 +28,8 @@ struct raw_log_entry __attribute__ ((packed)){
 */
 
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
 
   //  build_fake_log();
 
@@ -44,7 +45,7 @@ int main(int argc, char** argv) {
   while (1) {
     struct raw_log_entry entry;
     ssize_t nb_read = read(raw_log_fd, &entry, sizeof(entry));
-    if (nb_read != sizeof(entry)) break;
+    if (nb_read != sizeof(entry)) { break; }
     print_raw_log_entry(&entry);
     printf("\n");
     //printf("%f %f %f %f", e.time, e.gyro.p, e.gyro.q, e.gyro.r);
@@ -55,21 +56,22 @@ int main(int argc, char** argv) {
 
 
 
-void print_raw_log_entry(struct raw_log_entry* e){
+void print_raw_log_entry(struct raw_log_entry *e)
+{
   struct DoubleVect3 tempvect;
   struct DoubleRates temprates;
   printf("%f\t", e->time);
-	printf("%i\t", e->message.valid_sensors);
+  printf("%i\t", e->message.valid_sensors);
   RATES_FLOAT_OF_BFP(temprates, e->message.gyro);
-	printf("% f % f % f\t", temprates.p,     temprates.q,     temprates.r);
+  printf("% f % f % f\t", temprates.p,     temprates.q,     temprates.r);
   ACCELS_FLOAT_OF_BFP(tempvect, e->message.accel);
-	printf("% f % f % f\t", tempvect.x,    tempvect.y,    tempvect.z);
+  printf("% f % f % f\t", tempvect.x,    tempvect.y,    tempvect.z);
   MAGS_FLOAT_OF_BFP(tempvect, e->message.mag);
-	printf("% f % f % f\t", tempvect.x,      tempvect.y,     tempvect.z);
-	printf("% i % i % i\t", e->message.ecef_pos.x, e->message.ecef_pos.y, e->message.ecef_pos.z);
-	printf("% i % i % i\t", e->message.ecef_vel.x, e->message.ecef_vel.y, e->message.ecef_vel.z);
-  double baro_scaled = (double)(e->message.pressure_absolute)/256;
-	printf("%f", baro_scaled);
+  printf("% f % f % f\t", tempvect.x,      tempvect.y,     tempvect.z);
+  printf("% i % i % i\t", e->message.ecef_pos.x, e->message.ecef_pos.y, e->message.ecef_pos.z);
+  printf("% i % i % i\t", e->message.ecef_vel.x, e->message.ecef_vel.y, e->message.ecef_vel.z);
+  double baro_scaled = (double)(e->message.pressure_absolute) / 256;
+  printf("%f", baro_scaled);
 }
 
 /*

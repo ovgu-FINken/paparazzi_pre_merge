@@ -46,16 +46,14 @@
 #  </section>
 #
 
+ADC_GYRO_NB_SAMPLES ?= 16
+ADC_ACCEL_NB_SAMPLES ?= $(ADC_GYRO_NB_SAMPLES)
 
 ifeq ($(ARCH), lpc21)
 
 imu_CFLAGS += -DIMU_TYPE_H=\"subsystems/imu/imu_analog.h\"  -DUSE_IMU
 
 imu_CFLAGS += -DADC_CHANNEL_GYRO_NB_SAMPLES=$(ADC_GYRO_NB_SAMPLES)
-
-ifeq ($(ADC_ACCEL_NB_SAMPLES),)
-ADC_ACCEL_NB_SAMPLES = $(ADC_GYRO_NB_SAMPLES)
-endif
 imu_CFLAGS += -DADC_CHANNEL_ACCEL_NB_SAMPLES=$(ADC_ACCEL_NB_SAMPLES)
 
 ifneq ($(GYRO_P),)
@@ -91,7 +89,14 @@ $(error Not implemented for the stm32 yet... should be trivial, just do it...)
 
 endif
 
-# Keep CFLAGS/Srcs for imu in separate expression so we can assign it to other targets
-# see: conf/autopilot/subsystems/lisa_passthrough/imu_b2_v1.1.makefile for example
-ap.CFLAGS += $(imu_CFLAGS)
-ap.srcs += $(imu_srcs)
+
+# add it for all targets except sim, fbw and nps
+ifeq (,$(findstring $(TARGET),sim fbw nps))
+$(TARGET).CFLAGS += $(imu_CFLAGS)
+$(TARGET).srcs += $(imu_srcs)
+endif
+
+#
+# NPS simulator
+#
+include $(CFG_SHARED)/imu_nps.makefile

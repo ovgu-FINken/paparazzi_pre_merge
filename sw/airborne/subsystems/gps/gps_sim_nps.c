@@ -21,6 +21,9 @@
 
 #include "subsystems/gps/gps_sim_nps.h"
 #include "subsystems/gps.h"
+#include "subsystems/abi.h"
+#include "nps_sensors.h"
+#include "nps_fdm.h"
 
 #if GPS_USE_LATLONG
 /* currently needed to get nav_utm_zone0 */
@@ -28,10 +31,14 @@
 #include "math/pprz_geodetic_float.h"
 #endif
 
-bool_t gps_available;
 bool_t gps_has_fix;
 
-void  gps_feed_value() {
+void  gps_feed_value()
+{
+  // FIXME, set proper time instead of hardcoded to May 2014
+  gps.week = 1794;
+  gps.tow = fdm.time * 1000;
+
   gps.ecef_pos.x = sensors.gps.ecef_pos.x * 100.;
   gps.ecef_pos.y = sensors.gps.ecef_pos.y * 100.;
   gps.ecef_pos.z = sensors.gps.ecef_pos.z * 100.;
@@ -39,8 +46,8 @@ void  gps_feed_value() {
   gps.ecef_vel.y = sensors.gps.ecef_vel.y * 100.;
   gps.ecef_vel.z = sensors.gps.ecef_vel.z * 100.;
   //ecef pos seems to be based on geocentric model, hence we get a very high alt when converted to lla
-  gps.lla_pos.lat = sensors.gps.lla_pos.lat * 1e7;
-  gps.lla_pos.lon = sensors.gps.lla_pos.lon * 1e7;
+  gps.lla_pos.lat = DegOfRad(sensors.gps.lla_pos.lat) * 1e7;
+  gps.lla_pos.lon = DegOfRad(sensors.gps.lla_pos.lon) * 1e7;
   gps.lla_pos.alt = sensors.gps.lla_pos.alt * 1000.;
   gps.hmsl        = sensors.gps.hmsl * 1000.;
 
@@ -63,27 +70,36 @@ void  gps_feed_value() {
 #if GPS_USE_LATLONG
   /* Computes from (lat, long) in the referenced UTM zone */
   struct LlaCoor_f lla_f;
-  lla_f.lat = ((float) gps.lla_pos.lat) / 1e7;
-  lla_f.lon = ((float) gps.lla_pos.lon) / 1e7;
+  LLA_FLOAT_OF_BFP(lla_f, gps.lla_pos);
   struct UtmCoor_f utm_f;
   utm_f.zone = nav_utm_zone0;
   /* convert to utm */
   utm_of_lla_f(&utm_f, &lla_f);
   /* copy results of utm conversion */
-  gps.utm_pos.east = utm_f.east*100;
-  gps.utm_pos.north = utm_f.north*100;
+  gps.utm_pos.east = utm_f.east * 100;
+  gps.utm_pos.north = utm_f.north * 100;
   gps.utm_pos.alt = gps.lla_pos.alt;
   gps.utm_pos.zone = nav_utm_zone0;
 #endif
 
-  if (gps_has_fix)
+  if (gps_has_fix) {
     gps.fix = GPS_FIX_3D;
-  else
+  } else {
     gps.fix = GPS_FIX_NONE;
-  gps_available = TRUE;
+  }
+
+  // publish gps data
+  uint32_t now_ts = get_sys_time_usec();
+  gps.last_msg_ticks = sys_time.nb_sec_rem;
+  gps.last_msg_time = sys_time.nb_sec;
+  if (gps.fix == GPS_FIX_3D) {
+    gps.last_3dfix_ticks = sys_time.nb_sec_rem;
+    gps.last_3dfix_time = sys_time.nb_sec;
+  }
+  AbiSendMsgGPS(GPS_SIM_ID, now_ts, &gps);
 }
 
-void gps_impl_init() {
-  gps_available = FALSE;
+void gps_impl_init()
+{
   gps_has_fix = TRUE;
 }
