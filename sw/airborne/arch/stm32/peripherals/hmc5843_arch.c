@@ -20,19 +20,25 @@
  */
 #include "peripherals/hmc5843.h"
 
-#include <libopencm3/stm32/f1/gpio.h>
-#include <libopencm3/stm32/f1/rcc.h>
-#include <libopencm3/stm32/f1/nvic.h>
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/exti.h>
+#include <libopencm3/cm3/nvic.h>
+
 #include "mcu_periph/i2c.h"
 
-void hmc5843_arch_init( void ) {
-  /* configure external interrupt exti5 on PB5( mag int ) */
+#ifndef STM32F1
+#error "HMC5843 arch currently only implemented for STM32F1"
+#endif
 
-  rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPBEN | RCC_APB2ENR_AFIOEN);
+void hmc5843_arch_init(void)
+{
+  /* configure external interrupt exti5 on PB5( mag int ) */
+  rcc_periph_clock_enable(RCC_GPIOB);
+  rcc_periph_clock_enable(RCC_AFIO);
   gpio_set_mode(GPIOB, GPIO_MODE_INPUT,
-	        GPIO_CNF_INPUT_FLOAT, GPIO5);
+                GPIO_CNF_INPUT_FLOAT, GPIO5);
 
 #ifdef HMC5843_USE_INT
   exti_select_source(EXTI5, GPIOB);
@@ -46,10 +52,11 @@ void hmc5843_arch_init( void ) {
 
 void hmc5843_arch_reset(void)
 {
-    i2c2_er_irq_handler();
+  i2c2_er_irq_handler();
 }
 
-void exti9_5_isr(void) {
+void exti9_5_isr(void)
+{
 
   exti_reset_request(EXTI5);
 }

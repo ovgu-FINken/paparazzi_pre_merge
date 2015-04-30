@@ -39,12 +39,12 @@
 #define UART3_irq_handler usart3_irq_handler
 #define UART5_irq_handler usart5_irq_handler
 
-#if defined USE_UART0 || OVERRIDE_UART0_IRQ_HANDLER
+#if USE_UART0
 extern void uart0_handler(void);
 #endif
 
 
-#ifdef USE_UART0
+#if USE_UART0
 #define UART0_RX_BUFFER_SIZE 128
 #define UART0_TX_BUFFER_SIZE 128
 
@@ -56,20 +56,20 @@ extern volatile bool_t   uart0_tx_running;
 extern uint8_t  uart0_tx_buffer[UART0_TX_BUFFER_SIZE];
 
 #define UART0ChAvailable() (uart0_rx_insert_idx != uart0_rx_extract_idx)
-#define UART0Getch() ({							\
-      uint8_t ret = uart0_rx_buffer[uart0_rx_extract_idx];		\
-      uart0_rx_extract_idx = (uart0_rx_extract_idx + 1)%UART0_RX_BUFFER_SIZE; \
-      ret;								\
-    })
+#define UART0Getch() ({             \
+    uint8_t ret = uart0_rx_buffer[uart0_rx_extract_idx];    \
+    uart0_rx_extract_idx = (uart0_rx_extract_idx + 1)%UART0_RX_BUFFER_SIZE; \
+    ret;                \
+  })
 
 #endif /* USE_UART0 */
 
-#if defined USE_UART1 || OVERRIDE_UART1_IRQ_HANDLER
+#if USE_UART1
 extern void uart1_handler(void);
 #endif
 
 
-#ifdef USE_UART1
+#if USE_UART1
 #define UART1_RX_BUFFER_SIZE 128
 #define UART1_TX_BUFFER_SIZE 128
 
@@ -81,16 +81,16 @@ extern volatile bool_t   uart1_tx_running;
 extern uint8_t  uart1_tx_buffer[UART1_TX_BUFFER_SIZE];
 
 #define UART1ChAvailable() (uart1_rx_insert_idx != uart1_rx_extract_idx)
-#define UART1Getch() ({							\
-      uint8_t ret = uart1_rx_buffer[uart1_rx_extract_idx];		\
-      uart1_rx_extract_idx = (uart1_rx_extract_idx + 1)%UART1_RX_BUFFER_SIZE; \
-      ret;								\
-    })
+#define UART1Getch() ({             \
+    uint8_t ret = uart1_rx_buffer[uart1_rx_extract_idx];    \
+    uart1_rx_extract_idx = (uart1_rx_extract_idx + 1)%UART1_RX_BUFFER_SIZE; \
+    ret;                \
+  })
 
 #endif /* USE_UART1 */
 
 
-void uart_init( void );
-void uart0_init_param( uint16_t baud, uint8_t mode, uint8_t fmode);
+void uart_init(void);
+void uart0_init_param(uint16_t baud, uint8_t mode, uint8_t fmode);
 
 #endif /* UART_HW_H */

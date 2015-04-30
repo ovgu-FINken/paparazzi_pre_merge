@@ -59,8 +59,7 @@
 #define SPEKTRUM_BIND_PIN GPIO12
 #define SPEKTRUM_BIND_PIN_PORT GPIOC
 
-#define SPEKTRUM_UART1_RCC_REG &RCC_APB2ENR
-#define SPEKTRUM_UART1_RCC_DEV RCC_APB2ENR_USART1EN
+#define SPEKTRUM_UART1_RCC RCC_USART1
 #define SPEKTRUM_UART1_BANK GPIO_BANK_USART1_RX
 #define SPEKTRUM_UART1_PIN GPIO_USART1_RX
 #define SPEKTRUM_UART1_AF 0
@@ -68,8 +67,7 @@
 #define SPEKTRUM_UART1_ISR usart1_isr
 #define SPEKTRUM_UART1_DEV USART1
 
-#define SPEKTRUM_UART3_RCC_REG &RCC_APB1ENR
-#define SPEKTRUM_UART3_RCC_DEV RCC_APB1ENR_USART3EN
+#define SPEKTRUM_UART3_RCC RCC_USART3
 #define SPEKTRUM_UART3_BANK GPIO_BANK_USART3_PR_RX
 #define SPEKTRUM_UART3_PIN GPIO_USART3_PR_RX
 #define SPEKTRUM_UART3_AF AFIO_MAPR_USART3_REMAP_PARTIAL_REMAP
@@ -77,8 +75,7 @@
 #define SPEKTRUM_UART3_ISR usart3_isr
 #define SPEKTRUM_UART3_DEV USART3
 
-#define SPEKTRUM_UART5_RCC_REG &RCC_APB1ENR
-#define SPEKTRUM_UART5_RCC_DEV RCC_APB1ENR_UART5EN
+#define SPEKTRUM_UART5_RCC RCC_UART5
 #define SPEKTRUM_UART5_BANK GPIO_BANK_UART5_RX
 #define SPEKTRUM_UART5_PIN GPIO_UART5_RX
 #define SPEKTRUM_UART5_AF 0
@@ -134,15 +131,74 @@
 
 #endif // PPM_CONFIG
 
-/* ADC */
+/*
+ * ADC
+ */
 
-// active ADC
-#define USE_AD1 1
-#define USE_AD1_1 1
-#define USE_AD1_2 1
-#define USE_AD1_3 1
-#define USE_AD1_4 1
+/* Onboard ADCs */
+/*
+  ADC1 PC3/ADC13
+  ADC2 PC0/ADC10
+  ADC3 PC1/ADC11
+  ADC4 PC5/ADC15
+  ADC6 PC2/ADC12
+  BATT PC4/ADC14 (ADC5)
+*/
 
+/* provide defines that can be used to access the ADC_x in the code or airframe file
+ * these directly map to the index number of the 4 adc channels defined above
+ * 4th (index 3) is used for bat monitoring by default
+ */
+#if USE_ADC_1
+#define AD1_1_CHANNEL 13
+#define ADC_1 AD1_1
+#define ADC_1_GPIO_PORT GPIOC
+#define ADC_1_GPIO_PIN GPIO3
+#endif
+
+#if USE_ADC_2
+#define AD1_2_CHANNEL 10
+#define ADC_2 AD1_2
+#define ADC_2_GPIO_PORT GPIOC
+#define ADC_2_GPIO_PIN GPIO0
+#endif
+
+#if USE_ADC_3
+#define AD1_3_CHANNEL 11
+#define ADC_3 AD1_3
+#define ADC_3_GPIO_PORT GPIOC
+#define ADC_3_GPIO_PIN GPIO1
+#endif
+
+#if USE_ADC_4
+#define AD2_1_CHANNEL 15
+#define ADC_4 AD2_1
+#define ADC_4_GPIO_PORT GPIOC
+#define ADC_4_GPIO_PIN GPIO5
+#endif
+
+// Internal ADC for battery enabled by default
+#ifndef USE_ADC_5
+#define USE_ADC_5 1
+#endif
+#if USE_ADC_5
+#define AD1_4_CHANNEL 14
+#define ADC_5 AD1_4
+#define ADC_5_GPIO_PORT GPIOC
+#define ADC_5_GPIO_PIN GPIO4
+#endif
+
+#if USE_ADC_6
+#define AD2_2_CHANNEL 12
+#define ADC_6 AD2_2
+#define ADC_6_GPIO_PORT GPIOC
+#define ADC_6_GPIO_PIN GPIO2
+#endif
+
+/* allow to define ADC_CHANNEL_VSUPPLY in the airframe file*/
+#ifndef ADC_CHANNEL_VSUPPLY
+#define ADC_CHANNEL_VSUPPLY ADC_5
+#endif
 
 /*
  * I2C
@@ -168,20 +224,30 @@
 #define USE_PWM2 1
 #define USE_PWM3 1
 #define USE_PWM4 1
+
+#if DUAL_PWM_ON
+#define DUAL_PWM_USE_TIM5 1
+
+#define USE_DUAL_PWM5 1
+#define USE_DUAL_PWM6 1
+#else
 #define USE_PWM5 1
 #define USE_PWM6 1
+#endif
+
+
 
 #if USE_SERVOS_7AND8
-  #if USE_I2C1
-    #error "You cannot USE_SERVOS_7AND8 and USE_I2C1 at the same time"
-  #else
-    #define ACTUATORS_PWM_NB 8
-    #define USE_PWM7 1
-    #define USE_PWM8 1
-    #define PWM_USE_TIM4 1
-  #endif
+#if USE_I2C1
+#error "You cannot USE_SERVOS_7AND8 and USE_I2C1 at the same time"
 #else
-  #define ACTUATORS_PWM_NB 6
+#define ACTUATORS_PWM_NB 8
+#define USE_PWM7 1
+#define USE_PWM8 1
+#define PWM_USE_TIM4 1
+#endif
+#else
+#define ACTUATORS_PWM_NB 6
 #endif
 
 // Servo numbering on LisaM silkscreen/docs starts with 1
@@ -190,10 +256,9 @@
 #if USE_PWM1
 #define PWM_SERVO_1 0
 #define PWM_SERVO_1_TIMER TIM3
-#define PWM_SERVO_1_RCC_IOP RCC_APB2ENR_IOPCEN
 #define PWM_SERVO_1_GPIO GPIOC
 #define PWM_SERVO_1_PIN GPIO6
-#define PWM_SERVO_1_AF 0
+#define PWM_SERVO_1_AF AFIO_MAPR_TIM3_REMAP_FULL_REMAP
 #define PWM_SERVO_1_OC TIM_OC1
 #define PWM_SERVO_1_OC_BIT (1<<0)
 #else
@@ -203,10 +268,9 @@
 #if USE_PWM2
 #define PWM_SERVO_2 1
 #define PWM_SERVO_2_TIMER TIM3
-#define PWM_SERVO_2_RCC_IOP RCC_APB2ENR_IOPCEN
 #define PWM_SERVO_2_GPIO GPIOC
 #define PWM_SERVO_2_PIN GPIO7
-#define PWM_SERVO_2_AF 0
+#define PWM_SERVO_2_AF AFIO_MAPR_TIM3_REMAP_FULL_REMAP
 #define PWM_SERVO_2_OC TIM_OC2
 #define PWM_SERVO_2_OC_BIT (1<<1)
 #else
@@ -216,10 +280,9 @@
 #if USE_PWM3
 #define PWM_SERVO_3 2
 #define PWM_SERVO_3_TIMER TIM3
-#define PWM_SERVO_3_RCC_IOP RCC_APB2ENR_IOPCEN
 #define PWM_SERVO_3_GPIO GPIOC
 #define PWM_SERVO_3_PIN GPIO8
-#define PWM_SERVO_3_AF 0
+#define PWM_SERVO_3_AF AFIO_MAPR_TIM3_REMAP_FULL_REMAP
 #define PWM_SERVO_3_OC TIM_OC3
 #define PWM_SERVO_3_OC_BIT (1<<2)
 #else
@@ -229,10 +292,9 @@
 #if USE_PWM4
 #define PWM_SERVO_4 3
 #define PWM_SERVO_4_TIMER TIM3
-#define PWM_SERVO_4_RCC_IOP RCC_APB2ENR_IOPCEN
 #define PWM_SERVO_4_GPIO GPIOC
 #define PWM_SERVO_4_PIN GPIO9
-#define PWM_SERVO_4_AF 0
+#define PWM_SERVO_4_AF AFIO_MAPR_TIM3_REMAP_FULL_REMAP
 #define PWM_SERVO_4_OC TIM_OC4
 #define PWM_SERVO_4_OC_BIT (1<<3)
 #else
@@ -242,11 +304,22 @@
 #if USE_PWM5
 #define PWM_SERVO_5 4
 #define PWM_SERVO_5_TIMER TIM5
-#define PWM_SERVO_5_RCC_IOP RCC_APB2ENR_IOPAEN
 #define PWM_SERVO_5_GPIO GPIOA
 #define PWM_SERVO_5_PIN GPIO0
 #define PWM_SERVO_5_AF 0
 #define PWM_SERVO_5_OC TIM_OC1
+#define PWM_SERVO_5_OC_BIT (1<<0)
+#elif USE_DUAL_PWM5
+#define DUAL_PWM_SERVO_5 4
+
+#define DUAL_PWM_SERVO_5_P1 0
+#define DUAL_PWM_SERVO_5_P2 1
+
+#define DUAL_PWM_SERVO_5_TIMER TIM5
+#define DUAL_PWM_SERVO_5_GPIO GPIOA
+#define DUAL_PWM_SERVO_5_PIN GPIO0
+#define DUAL_PWM_SERVO_5_AF 0
+#define DUAL_PWM_SERVO_5_OC TIM_OC1
 #define PWM_SERVO_5_OC_BIT (1<<0)
 #else
 #define PWM_SERVO_5_OC_BIT 0
@@ -255,20 +328,35 @@
 #if USE_PWM6
 #define PWM_SERVO_6 5
 #define PWM_SERVO_6_TIMER TIM5
-#define PWM_SERVO_6_RCC_IOP RCC_APB2ENR_IOPAEN
 #define PWM_SERVO_6_GPIO GPIOA
 #define PWM_SERVO_6_PIN GPIO1
 #define PWM_SERVO_6_AF 0
 #define PWM_SERVO_6_OC TIM_OC2
 #define PWM_SERVO_6_OC_BIT (1<<1)
+#elif USE_DUAL_PWM6
+#define DUAL_PWM_SERVO_6 5
+
+#define DUAL_PWM_SERVO_6_P1 0
+#define DUAL_PWM_SERVO_6_P2 1
+
+#define DUAL_PWM_SERVO_6_TIMER TIM5
+#define DUAL_PWM_SERVO_6_GPIO GPIOA
+#define DUAL_PWM_SERVO_6_PIN GPIO1
+#define DUAL_PWM_SERVO_6_AF 0
+#define DUAL_PWM_SERVO_6_OC TIM_OC2
+#define PWM_SERVO_6_OC_BIT (1<<1)
 #else
 #define PWM_SERVO_6_OC_BIT 0
 #endif
 
+
+
+
+
+
 #if USE_PWM7
 #define PWM_SERVO_7 6
 #define PWM_SERVO_7_TIMER TIM4
-#define PWM_SERVO_7_RCC_IOP RCC_APB2ENR_IOPBEN
 #define PWM_SERVO_7_GPIO GPIOB
 #define PWM_SERVO_7_PIN GPIO6
 #define PWM_SERVO_7_AF 0
@@ -281,7 +369,6 @@
 #if USE_PWM8
 #define PWM_SERVO_8 7
 #define PWM_SERVO_8_TIMER TIM4
-#define PWM_SERVO_8_RCC_IOP RCC_APB2ENR_IOPBEN
 #define PWM_SERVO_8_GPIO GPIOB
 #define PWM_SERVO_8_PIN GPIO7
 #define PWM_SERVO_8_AF 0

@@ -139,7 +139,7 @@ let ac_id_of_name = fun ac_name ->
 
 (** Fill the index_of_settings table from var/AC/settings.xml *)
 let hash_index_of_settings = fun ac_name ->
-  let xml_file = Env.paparazzi_home // "var" // ac_name // "settings.xml" in
+  let xml_file = Env.paparazzi_home // "var" // "aircrafts" // ac_name // "settings.xml" in
   let xml = Xml.parse_file xml_file in
   let index = ref 0 in
   let rec loop = fun xml ->
@@ -152,9 +152,9 @@ let hash_index_of_settings = fun ac_name ->
   loop (ExtXml.child xml "dl_settings")
 
 
-(** Fill the index_of_blocks table from var/AC/flight_plan.xml *)
+(** Fill the index_of_blocks table from var/aircrafts/AC/flight_plan.xml *)
 let hash_index_of_blocks = fun ac_name ->
-  let xml_file = Env.paparazzi_home // "var" // ac_name // "flight_plan.xml" in
+  let xml_file = Env.paparazzi_home // "var" // "aircrafts" // ac_name // "flight_plan.xml" in
   let dump = Xml.parse_file xml_file in
   let flight_plan = ExtXml.child dump "flight_plan" in
   let blocks = ExtXml.child flight_plan "blocks" in
@@ -220,7 +220,9 @@ let parse_value = fun s ->
 (** Parse a message field and eval *)
 let parse_msg_field = fun msg_descr field ->
   let name = Xml.attrib field "name" in
-  let field_descr = List.assoc name msg_descr.Pprz.fields in
+  let field_descr = try List.assoc name msg_descr.Pprz.fields with _ ->
+    Printf.printf "parse_msg_field: field %s not found\n" name;
+    raise (Failure "field not found") in
 
   let value = eval_settings_and_blocks field_descr (parse_value (Xml.attrib field "value")) in
   (name, value)
@@ -234,9 +236,14 @@ let parse_msg = fun msg ->
   let fields, has_ac_id =
     match get_message_type msg_class with
         "Message" ->
-          let msg_descr = get_message msg_class msg_name in
-          (List.map (parse_msg_field msg_descr) (Xml.children msg),
-           List.mem_assoc "ac_id" msg_descr.Pprz.fields)
+          begin
+            let msg_descr = get_message msg_class msg_name in
+            try
+              (List.map (parse_msg_field msg_descr) (Xml.children msg),
+               List.mem_assoc "ac_id" msg_descr.Pprz.fields)
+            with _ ->
+              failwith (sprintf "Couldn't parse message %s" msg_name)
+          end
       | "Trim" -> ([], false)
       | _ -> failwith ("Unknown message class type") in
 
@@ -592,7 +599,8 @@ let () =
   hash_index_of_settings !ac_name;
   hash_index_of_blocks !ac_name;
 
-  Printf.printf "Joystick ID: %u\n" !joystick_id;
+  Printf.printf "Joystick ID (option -id): %u\n" !joystick_id;
+  Printf.printf "Joystick SDL device index (option -d): %u\n" !device_index;
 
   let joystick_conf_dir = conf_dir ^ "/joystick/" in
   let xml_descr_full = joystick_conf_dir ^ !xml_descr in

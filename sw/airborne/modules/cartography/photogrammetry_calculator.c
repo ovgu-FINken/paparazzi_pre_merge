@@ -25,19 +25,22 @@
 #include "generated/airframe.h"
 #include "generated/flight_plan.h"
 
-// Flightplan Variables
+/** Default sweep angle in radians from north */
 #ifndef PHOTOGRAMMETRY_SWEEP_ANGLE
 #define PHOTOGRAMMETRY_SWEEP_ANGLE 0
 #endif
 
+/** overlap 1-99 percent */
 #ifndef PHOTOGRAMMETRY_OVERLAP
 #define PHOTOGRAMMETRY_OVERLAP 50
 #endif
 
+/** sidelap 1-99 percent */
 #ifndef PHOTOGRAMMETRY_SIDELAP
 #define PHOTOGRAMMETRY_SIDELAP 50
 #endif
 
+/** mm pixel projection size */
 #ifndef PHOTOGRAMMETRY_RESOLUTION
 #define PHOTOGRAMMETRY_RESOLUTION 50
 #endif
@@ -91,10 +94,11 @@ void photogrammetry_calculator_update_camera2flightplan(void)
   // Flightplan Variables
   photogrammetry_height = ((float) photogrammetry_resolution) / pixel_projection_width / 1000.0f;
 
-  if (photogrammetry_height > photogrammetry_height_max)
+  if (photogrammetry_height > photogrammetry_height_max) {
     photogrammetry_height = photogrammetry_height_max;
-  else if (photogrammetry_height < photogrammetry_height_min)
+  } else if (photogrammetry_height < photogrammetry_height_min) {
     photogrammetry_height = photogrammetry_height_min;
+  }
 
   photogrammetry_sidestep = viewing_ratio_width * photogrammetry_height * (1.0f - photogrammetry_sidelap_f);
   photogrammetry_triggerstep = viewing_ratio_height * photogrammetry_height * (1.0f - photogrammetry_overlap_f);

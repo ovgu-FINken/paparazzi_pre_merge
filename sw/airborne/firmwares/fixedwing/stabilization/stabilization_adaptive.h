@@ -48,24 +48,14 @@ extern float h_ctl_pitch_of_roll;
 #define H_CTL_PITCH_SUM_ERR_MAX (MAX_PPRZ/2.)
 
 #define stabilization_adaptive_SetRollIGain(_gain) { \
-  h_ctl_roll_sum_err = 0.; \
-  h_ctl_roll_igain = _gain; \
+    h_ctl_roll_sum_err = 0.; \
+    h_ctl_roll_igain = _gain; \
   }
 
 #define stabilization_adaptive_SetPitchIGain(_gain) { \
-  h_ctl_pitch_sum_err = 0.; \
-  h_ctl_pitch_igain = _gain; \
+    h_ctl_pitch_sum_err = 0.; \
+    h_ctl_pitch_igain = _gain; \
   }
-
-/* inner roll loop parameters */
-extern float h_ctl_ref_roll_angle;
-extern float h_ctl_ref_roll_rate;
-extern float h_ctl_ref_roll_accel;
-
-/* inner pitch loop parameters */
-extern float h_ctl_ref_pitch_angle;
-extern float h_ctl_ref_pitch_rate;
-extern float h_ctl_ref_pitch_accel;
 
 extern bool_t use_airspeed_ratio;
 

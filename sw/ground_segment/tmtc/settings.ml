@@ -34,7 +34,7 @@ let conf_xml = Xml.parse_file (conf_dir // "conf.xml")
 
 let one_ac = fun (notebook:GPack.notebook) ac_name ->
   (* Get the setting file *)
-  let xml_file = Env.paparazzi_home // "var" // ac_name // "settings.xml" in
+  let xml_file = Env.paparazzi_home // "var" // "aircrafts" // ac_name // "settings.xml" in
   if not (Sys.file_exists xml_file) then
     Printf.fprintf stderr "A/C '%s' not compiled: %s not found\n%!" ac_name xml_file
   else
@@ -55,11 +55,11 @@ let one_ac = fun (notebook:GPack.notebook) ac_name ->
     (* Build the buttons and sliders *)
     let xml = Xml.parse_file xml_file in
     let xmls = Xml.children (ExtXml.child xml "dl_settings") in
-    let settings = new Page_settings.settings xmls callback (fun _ _ -> ()) in
+    let settings = new Page_settings.settings xmls callback ac_id (fun _ _ -> ()) in
 
     (* Bind to values updates *)
     let get_dl_value = fun _sender vs ->
-      settings#set (Pprz.int_assoc "index" vs) (Pprz.float_assoc "value" vs)
+      settings#set (Pprz.int_assoc "index" vs) (Some (string_of_float (Pprz.float_assoc "value" vs)))
     in
     ignore (Tele_Pprz.message_bind "DL_VALUE" get_dl_value);
 

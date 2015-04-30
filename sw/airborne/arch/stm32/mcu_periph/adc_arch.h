@@ -32,46 +32,69 @@
 
 #include BOARD_CONFIG
 
-// NB_ADCx_CHANNELS
 enum adc1_channels {
-#ifdef USE_AD1_1
-  ADC1_C1,
+#ifdef AD1_1_CHANNEL
+  AD1_1,
 #endif
-#ifdef USE_AD1_2
-  ADC1_C2,
+#ifdef AD1_2_CHANNEL
+  AD1_2,
 #endif
-#ifdef USE_AD1_3
-  ADC1_C3,
+#ifdef AD1_3_CHANNEL
+  AD1_3,
 #endif
-#ifdef USE_AD1_4
-  ADC1_C4,
+#ifdef AD1_4_CHANNEL
+  AD1_4,
 #endif
-  NB_ADC1_CHANNELS
+  ADC1_END
 };
 
 enum adc2_channels {
-#ifdef USE_AD2_1
-  ADC2_C1,
+#ifdef AD2_1_CHANNEL
+  AD2_1 = ADC1_END,
 #endif
-#ifdef USE_AD2_2
-  ADC2_C2,
+#ifdef AD2_2_CHANNEL
+  AD2_2,
 #endif
-#ifdef USE_AD2_3
-  ADC2_C3,
+#ifdef AD2_3_CHANNEL
+  AD2_3,
 #endif
-#ifdef USE_AD2_4
-  ADC2_C4,
+#ifdef AD2_4_CHANNEL
+  AD2_4,
 #endif
-  NB_ADC2_CHANNELS
+  ADC2_END
 };
 
-#ifdef NB_ADC
-#undef NB_ADC
+enum adc3_channels {
+#ifdef AD3_1_CHANNEL
+  AD3_1 = ADC2_END,
 #endif
+#ifdef AD3_2_CHANNEL
+  AD3_2,
+#endif
+#ifdef AD3_3_CHANNEL
+  AD3_3,
+#endif
+#ifdef AD3_4_CHANNEL
+  AD3_4,
+#endif
+  ADC3_END
+};
 
-#define NB_ADC (NB_ADC1_CHANNELS + NB_ADC2_CHANNELS)
+#if USE_ADC_WATCHDOG
 
-#define AdcBank0(x) (x)
-#define AdcBank1(x) (x+NB_ADC)
+/* Watchdog callback type definition
+ */
+typedef void (*adc_watchdog_callback)(void);
+
+/* Watchdog register function
+ *
+ * @param adc adc bank to monitor
+ * @param chan adc channel to monitor
+ * @param low low threshhold for callback trigger
+ * @param high high threshhold for callback trigger
+ */
+extern void register_adc_watchdog(uint32_t adc, uint8_t chan, uint16_t low, uint16_t high, adc_watchdog_callback cb);
+
+#endif
 
 #endif /* ADC_ARCH_H */

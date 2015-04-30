@@ -42,22 +42,9 @@
 #define LED_4_BANK 1
 #define LED_4_PIN 31
 
-#ifndef USE_LED_5
-#define USE_LED_5 1
-#endif
-#define LED_5_BANK 1
-#define LED_5_PIN 18
+#define POWER_SWITCH_GPIO GPIOB,GPIO18
 
-#define POWER_SWITCH_LED 5
-
-#ifndef USE_LED_6
-#define USE_LED_6 1
-#endif
-#define LED_6_BANK 1
-#define LED_6_PIN 22
-
-#define CAM_SWITCH_LED 6
-
+#define CAM_SWITCH_GPIO GPIOB,GPIO22
 
 /* PPM : rc rx on P0.28 ( CAP0.2 ) */
 #define PPM_PINSEL PINSEL1
@@ -74,7 +61,7 @@
 
 /* select P0.13 (ADC_SPARE) as AD1.4 for ADC_0 */
 #define ADC_0 AdcBank1(4)
-#ifdef USE_ADC_0
+#if USE_ADC_0
 #ifndef USE_AD1
 #define USE_AD1
 #endif
@@ -83,7 +70,7 @@
 
 /* select P0.4 (SCK_0) as AD0.6 for ADC_1 */
 #define ADC_1 AdcBank0(6)
-#ifdef USE_ADC_1
+#if USE_ADC_1
 #ifndef USE_AD0
 #define USE_AD0
 #endif
@@ -92,7 +79,7 @@
 
 /* select P0.5 (MISO_0) as AD0.7 for ADC_2 */
 #define ADC_2 AdcBank0(7)
-#ifdef USE_ADC_2
+#if USE_ADC_2
 #ifndef USE_AD0
 #define USE_AD0
 #endif
@@ -101,7 +88,7 @@
 
 /* select P0.6 (MOSI_0) as AD1.0 for ADC_3 */
 #define ADC_3 AdcBank1(0)
-#ifdef USE_ADC_3
+#if USE_ADC_3
 #ifndef USE_AD1
 #define USE_AD1
 #endif

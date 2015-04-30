@@ -31,21 +31,11 @@
 #include "boards/ardrone/at_com.h"
 
 #define GPS_NB_CHANNELS 12
-extern bool_t gps_ardrone2_available;
 
 /*
- * The GPS event
+ * The GPS event (dummy)
  */
-#define GpsEvent(_sol_available_callback) {        \
-    if (gps_ardrone2_available) {                   \
-    	if (gps.fix == GPS_FIX_3D) {               \
-        gps.last_fix_ticks = sys_time.nb_sec_rem;  \
-        gps.last_fix_time = sys_time.nb_sec;       \
-      }                                            \
-      _sol_available_callback();                   \
-      gps_ardrone2_available = FALSE;               \
-    }                                              \
-  }
+#define GpsEvent() {}
 
 void gps_ardrone2_parse(navdata_gps_t *navdata_gps);
 

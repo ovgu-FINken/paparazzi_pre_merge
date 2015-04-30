@@ -30,7 +30,7 @@ type t = <
     connect_shift_lateral : (float -> unit) -> unit;
     connect_launch : (float -> unit) -> unit;
     connect_kill : (float -> unit) -> unit;
-    connect_mode : (float -> unit) -> unit;
+    connect_mode : float -> (float -> unit) -> unit;
     connect_flight_time : (float -> unit) -> unit;
 
     connect_apt : (unit -> float) -> (float -> unit) -> unit;
@@ -60,7 +60,5 @@ type strip_param = {
   alt_shift_minus : float; }
 
 
-val scrolled : GBin.scrolled_window
-
-val add : Pprz.values -> strip_param -> t
+val add : Pprz.values -> strip_param -> GPack.box -> t
 (** [add config params] *)

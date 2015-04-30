@@ -26,9 +26,7 @@
 
 SRC_ARCH = arch/sim
 
-CC = g++
-
-SIMDIR = $(PAPARAZZI_SRC)/sw/simulator
+OPT ?= 2
 
 # Launch with "make Q=''" to get full command display
 Q=@
@@ -36,9 +34,19 @@ Q=@
 CFLAGS  = -W -Wall
 CFLAGS += $(INCLUDES)
 CFLAGS += $($(TARGET).CFLAGS)
-CFLAGS += $(LOCAL_CFLAGS)
-CFLAGS += -O2
+CFLAGS += $(USER_CFLAGS)
+CFLAGS += -O$(OPT)
 CFLAGS += -g
+CFLAGS += -std=gnu99
+CFLAGS += $(shell pkg-config --cflags-only-I ivy-glib)
+
+CXXFLAGS  = -W -Wall
+CXXFLAGS += $(INCLUDES)
+CXXFLAGS += $($(TARGET).CFLAGS)
+CXXFLAGS += $(USER_CFLAGS)
+CXXFLAGS += -O$(OPT)
+CXXFLAGS += -g
+CXXFLAGS += $(shell pkg-config --cflags-only-I ivy-glib)
 
 LDFLAGS	+= $($(TARGET).LDFLAGS)
 
@@ -48,7 +56,8 @@ LDFLAGS	+= $($(TARGET).LDFLAGS)
 
 $(TARGET).srcsnd = $(notdir $($(TARGET).srcs))
 $(TARGET).objso	= $($(TARGET).srcs:%.c=$(OBJDIR)/%.o)
-$(TARGET).objs	= $($(TARGET).objso:%.S=$(OBJDIR)/%.o)
+$(TARGET).objsoxx = $($(TARGET).objso:%.cpp=$(OBJDIR)/%.o)
+$(TARGET).objs	= $($(TARGET).objsoxx:%.S=$(OBJDIR)/%.o)
 
 all compile: check_jsbsim $(OBJDIR)/simsitl
 
@@ -59,7 +68,7 @@ check_jsbsim:
 
 $(OBJDIR)/simsitl : $($(TARGET).objs)
 	@echo LD $@
-	$(Q)$(CC) $(CFLAGS) -o $@ $($(TARGET).objs) $(LDFLAGS)
+	$(Q)$(CXX) $(CXXFLAGS) -o $@ $($(TARGET).objs) $(LDFLAGS)
 
 
 %.s: %.c
@@ -74,30 +83,28 @@ $(OBJDIR)/%.s: %.c
 	$(CC) $(CFLAGS) -S -o $@ $<
 
 $(OBJDIR)/%.s: %.cpp
-	@echo CC $@
+	@echo CXX $@
 	$(Q)test -d $(dir $@) || mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -S -o $@ $<
+	$(CXX) $(CXXFLAGS) -S -o $@ $<
 
 $(OBJDIR)/%.o: %.c $(OBJDIR)/../Makefile.ac
 	@echo CC $@
 	$(Q)test -d $(dir $@) || mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+	$(Q)$(CC) -MMD $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.cpp $(OBJDIR)/../Makefile.ac
-	@echo CC $@
+	@echo CXX $@
 	$(Q)test -d $(dir $@) || mkdir -p $(dir $@)
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+	$(Q)$(CXX) -MMD $(CXXFLAGS) -c -o $@ $<
 
 .PHONY: all compile check_jsbsim
+
 
 #
 # Dependencies
 #
-$(OBJDIR)/.depend:
-	@test -d $(OBJDIR) || mkdir -p $(OBJDIR)
-	@echo DEPEND $@
-	$(Q)$(CC) -MM -MG $(CFLAGS) $($(TARGET).srcs) | sed 's|\([^\.]*\.o\)|$(OBJDIR)/\1|' > $@
-
 ifneq ($(MAKECMDGOALS),clean)
--include $(OBJDIR)/.depend
+DEPS = $(addprefix $(OBJDIR)/,$($(TARGET).srcs:.c=.d))
+DEPS += $(addprefix $(OBJDIR)/,$($(TARGET).srcs:.cpp=.d))
+-include $(DEPS)
 endif

@@ -50,7 +50,8 @@ else ifeq ($(ARCH), stm32)
 imu_CFLAGS += -DIMU_B2_I2C_DEV=i2c2 -DUSE_I2C2
 endif
 
-# Keep CFLAGS/Srcs for imu in separate expression so we can assign it to other targets
-# see: conf/autopilot/subsystems/lisa_passthrough/imu_b2_v1.1.makefile for example
-ap.CFLAGS += $(imu_CFLAGS)
-ap.srcs += $(imu_srcs)
+# add it for all targets except sim, fbw and nps
+ifeq (,$(findstring $(TARGET),sim fbw nps))
+$(TARGET).CFLAGS += $(imu_CFLAGS)
+$(TARGET).srcs += $(imu_srcs)
+endif

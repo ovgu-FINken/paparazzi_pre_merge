@@ -10,6 +10,7 @@
       <subsystem name="radio_control" type="spektrum">
         <define name="RADIO_MODE" value="RADIO_FLAP"/>
         <define name="RADIO_KILL_SWITCH" value="RADIO_GEAR"/>
+	<define name="SPEKTRUM_BIND_PIN_HIGH"/>
 				<!--
         <configure name="USE_SECONDARY_SPEKTRUM_RECEIVER" value="1"/>
 				/-->
@@ -26,7 +27,7 @@
       <configure name="MODEM_PORT"  value="UART3"/>
 		</subsystem>
     <subsystem name="imu"           type="aspirin_v2.1"/>
-    <subsystem name="stabilization" type="int_euler"/>
+    <subsystem name="stabilization" type="int_quat"/>
     <subsystem name="ahrs"          type="int_cmpl_quat">
       <define name="AHRS_GRAVITY_HEURISTIC_FACTOR" value="0"/>
     </subsystem>
@@ -39,11 +40,11 @@
 			<define name="SONAR_I2C_DEV" value="i2c2"/>
 			<define name="USE_I2C2" />
 		</load>
-		<load name="mavlink_decoder.xml">
+		<!--<load name="mavlink_decoder.xml">
 			<configure name="MAVLINK_PORT" value="UART2" />
 			<configure name="MAVLINK_BAUD" value="B115200" />
-		</load>
-		<load name="px4flow.xml" />
+		</load>-->
+		<!--<load name="px4flow.xml" />-->
 		<load name="nav_finken.xml" />
         <load name="finken_model.xml" />
         <load name="finken_ir_adc.xml">

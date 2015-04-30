@@ -34,6 +34,9 @@ class widget :
   unit ->
   object
     method add_info_georef : string -> < pos : Latlong.geographic > -> unit
+    method edit_georef_name : string -> string -> unit
+    method delete_georef : string -> unit
+    method clear_georefs : unit -> unit
     method altitude : Latlong.geographic -> int
     method any_event : GdkEvent.any -> bool
     method arc :
@@ -76,6 +79,7 @@ class widget :
     method menubar : GMenu.menu_shell
     method mouse_motion : GdkEvent.Motion.t -> bool
     method move_item :
+      ?z:float ->
       GnomeCanvas.re_p GnoCanvas.item -> Latlong.geographic -> unit
     method moveto : Latlong.geographic -> unit
     method of_world : Latlong.fmeter * Latlong.fmeter -> Latlong.geographic
@@ -118,5 +122,6 @@ class widget :
     method zoom_adj : GData.adjustment
     method zoom_down : unit -> unit
     method zoom_in_place : float -> unit
+    method zoom_in_center : float -> unit
     method zoom_up : unit -> unit
   end

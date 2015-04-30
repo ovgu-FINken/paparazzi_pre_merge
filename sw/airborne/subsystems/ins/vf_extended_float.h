@@ -32,23 +32,30 @@
 
 #define VFF_STATE_SIZE 4
 
-extern float vff_z;
-extern float vff_zdot;
-extern float vff_bias;
-extern float vff_offset;
-extern float vff_P[VFF_STATE_SIZE][VFF_STATE_SIZE];
-extern float vff_zdotdot;
+struct VffExtended {
+  /* state vector */
+  float z;           ///< z-position estimate in m (NED, z-down)
+  float zdot;        ///< z-velocity estimate in m/s (NED, z-down)
+  float bias;        ///< accel bias estimate in m/s^2
+  float offset;      ///< baro offset estimate
 
-extern float vff_z_meas;
-extern float vff_z_meas_baro;
+  float zdotdot;     ///< z-acceleration in m/s^2 (NED, z-down)
+  float z_meas;      ///< last z measurement in m
+  float z_meas_baro; ///< last z measurement from baro in m
 
+  float P[VFF_STATE_SIZE][VFF_STATE_SIZE];  ///< covariance matrix
+};
+
+extern struct VffExtended vff;
+
+extern void vff_init_zero(void);
 extern void vff_init(float z, float zdot, float accel_bias, float baro_offset);
-extern void vff_propagate(float accel);
+extern void vff_propagate(float accel, float dt);
 extern void vff_update_baro(float z_meas);
-extern void vff_update_alt(float z_meas);
+extern void vff_update_z(float z_meas);
 extern void vff_update_offset(float offset);
 extern void vff_update_baro_conf(float z_meas, float conf);
-extern void vff_update_alt_conf(float z_meas, float conf);
+extern void vff_update_z_conf(float z_meas, float conf);
 //extern void vff_update_vz_conf(float vz_meas, float conf);
 extern void vff_realign(float z_meas);
 

@@ -24,7 +24,7 @@
  * @brief finken nav
  */
 
-#include "subsystems/nav.h"
+#include "subsystems/navigation/common_flight_plan.h"
 #include "generated/flight_plan.h"
 
 // Imu is required

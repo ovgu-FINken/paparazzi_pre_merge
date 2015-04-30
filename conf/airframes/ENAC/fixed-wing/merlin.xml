@@ -18,7 +18,6 @@
     <subsystem name="radio_control" type="ppm"/>
     <subsystem name="telemetry"     type="transparent"/>
     <subsystem name="control"/>
-    <subsystem name="ahrs"          type="infrared"/>
     <subsystem name="ins"           type="alt_float"/>
     <subsystem name="gps"           type="ublox"/>
     <subsystem name="navigation"/>
@@ -36,6 +35,7 @@
 
   <modules>
     <load name="infrared_adc.xml"/>
+    <load name="ahrs_infrared.xml"/>
     <!--load name="ins_vn100.xml"/-->
   </modules>
 
@@ -177,7 +177,6 @@
  </section>
 
   <section name="NAV">
-    <define name="NAV_PITCH" value="0."/>
     <define name="NAV_GLIDE_PITCH_TRIM" value="0"/>
   </section>
 

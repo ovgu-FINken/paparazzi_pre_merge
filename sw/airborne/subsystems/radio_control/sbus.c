@@ -21,147 +21,61 @@
 
 /** @file subsystems/radio_control/sbus.c
  *
- * Futaba SBUS decoder
+ * Single SBUS radio_control
  */
 
 #include "subsystems/radio_control.h"
 #include "subsystems/radio_control/sbus.h"
 #include BOARD_CONFIG
-#include "mcu_periph/uart.h"
-#include "mcu_periph/gpio.h"
-#include <string.h>
-
-/*
- * SBUS protocol and state machine status
- */
-#define SBUS_START_BYTE 0x0f
-#define SBUS_END_BYTE 0x00
-#define SBUS_BIT_PER_CHANNEL 11
-#define SBUS_BIT_PER_BYTE 8
-#define SBUS_FLAGS_BYTE 22
-#define SBUS_FRAME_LOST_BIT 2
-
-#define SBUS_STATUS_UNINIT      0
-#define SBUS_STATUS_GOT_START   1
-
-/** Set polarity using RC_POLARITY_GPIO.
- * SBUS signal has a reversed polarity compared to normal UART
- * this allows to using hardware UART peripheral by changing
- * the input signal polarity.
- * Setting this gpio ouput high inverts the signal,
- * output low sets it to normal polarity.
- */
-#ifndef RC_SET_POLARITY
-#define RC_SET_POLARITY gpio_set
-#endif
 
 
 /** SBUS struct */
-struct _sbus sbus;
+struct Sbus sbus;
 
 // Telemetry function
-#if DOWNLINK
-#ifdef FBW
-#define DOWNLINK_TELEMETRY &telemetry_Fbw
-#else
-#define DOWNLINK_TELEMETRY DefaultPeriodic
-#endif
-
+#if PERIODIC_TELEMETRY
 #include "subsystems/datalink/telemetry.h"
 
-static void send_sbus(void) {
-  // Using PPM message for simplicity
-  DOWNLINK_SEND_PPM(DefaultChannel, DefaultDevice,
-      &radio_control.frame_rate, SBUS_NB_CHANNEL, sbus.pulses);
+static void send_sbus(struct transport_tx *trans, struct link_device *dev)
+{
+  // Using PPM message
+  pprz_msg_send_PPM(trans, dev, AC_ID,
+                    &radio_control.frame_rate, SBUS_NB_CHANNEL, sbus.ppm);
 }
 #endif
 
 // Init function
-void radio_control_impl_init(void) {
-  sbus.frame_available = FALSE;
-  sbus.status = SBUS_STATUS_UNINIT;
-
-  // Set UART parameters (100K, 8 bits, 2 stops, even parity)
-  uart_periph_set_bits_stop_parity(&SBUS_UART_DEV, UBITS_8, USTOP_2, UPARITY_EVEN);
-  uart_periph_set_baudrate(&SBUS_UART_DEV, B100000);
-
-  // Set polarity
-#ifdef RC_POLARITY_GPIO_PORT
-  gpio_setup_output(RC_POLARITY_GPIO_PORT, RC_POLARITY_GPIO_PIN);
-  RC_SET_POLARITY(RC_POLARITY_GPIO_PORT, RC_POLARITY_GPIO_PIN);
-#endif
+void radio_control_impl_init(void)
+{
+  sbus_common_init(&sbus, &SBUS_UART_DEV);
 
   // Register telemetry message
-#if DOWNLINK
-  register_periodic_telemetry(DOWNLINK_TELEMETRY, "PPM", send_sbus);
+#if PERIODIC_TELEMETRY
+  register_periodic_telemetry(DefaultPeriodic, "PPM", send_sbus);
 #endif
 }
 
-
-/** Decode the raw buffer */
-static void decode_sbus_buffer (const uint8_t *src, uint16_t *dst, bool_t *available)
-{
-  // reset counters
-  uint8_t byteInRawBuf = 0;
-  uint8_t bitInRawBuf = 0;
-  uint8_t channel = 0;
-  uint8_t bitInChannel = 0;
-
-  // clear bits
-  memset (dst, 0, SBUS_NB_CHANNEL*sizeof(uint16_t));
-
-  // decode sbus data
-  for (uint8_t i=0; i< (SBUS_NB_CHANNEL*SBUS_BIT_PER_CHANNEL); i++) {
-    if (src[byteInRawBuf] & (1<<bitInRawBuf))
-      dst[channel] |= (1<<bitInChannel);
-
-    bitInRawBuf++;
-    bitInChannel++;
-
-    if (bitInRawBuf == SBUS_BIT_PER_BYTE) {
-      bitInRawBuf = 0;
-      byteInRawBuf++;
-    }
-    if (bitInChannel == SBUS_BIT_PER_CHANNEL) {
-      bitInChannel = 0;
-      channel++;
-    }
-  }
-  // test frame lost flag
-  *available = !bit_is_set(src[SBUS_FLAGS_BYTE], SBUS_FRAME_LOST_BIT);
-}
 
 // Decoding event function
 // Reading from UART
-void sbus_decode_event(void) {
-  uint8_t rbyte;
-  if (uart_char_available(&SBUS_UART_DEV)) {
-    do {
-      rbyte = uart_getch(&SBUS_UART_DEV);
-      switch (sbus.status) {
-        case SBUS_STATUS_UNINIT:
-          // Wait for the start byte
-          if (rbyte == SBUS_START_BYTE) {
-            sbus.status++;
-            sbus.idx = 0;
-          }
-          break;
-        case SBUS_STATUS_GOT_START:
-          // Store buffer
-          sbus.buffer[sbus.idx] = rbyte;
-          sbus.idx++;
-          if (sbus.idx == SBUS_BUF_LENGTH) {
-            // Decode if last byte is the correct end byte
-            if (rbyte == SBUS_END_BYTE) {
-              decode_sbus_buffer(sbus.buffer, sbus.pulses, &sbus.frame_available);
-            }
-            sbus.status = SBUS_STATUS_UNINIT;
-          }
-          break;
-        default:
-          break;
-      }
-    } while (uart_char_available(&SBUS_UART_DEV));
-  }
+static inline void sbus_decode_event(void)
+{
+  sbus_common_decode_event(&sbus, &SBUS_UART_DEV);
 }
 
+void radio_control_impl_event(void (* _received_frame_handler)(void))
+{
+  sbus_decode_event();
+  if (sbus.frame_available) {
+    radio_control.frame_cpt++;
+    radio_control.time_since_last_frame = 0;
+    if (radio_control.radio_ok_cpt > 0) {
+      radio_control.radio_ok_cpt--;
+    } else {
+      radio_control.status = RC_OK;
+      NormalizePpmIIR(sbus.pulses, radio_control);
+      _received_frame_handler();
+    }
+    sbus.frame_available = FALSE;
+  }
+}

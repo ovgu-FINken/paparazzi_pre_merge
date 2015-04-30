@@ -27,11 +27,12 @@
 #ifndef STABILIZATION_ATTITUDE_H
 #define STABILIZATION_ATTITUDE_H
 
-
+#include "firmwares/rotorcraft/stabilization.h"
+#include "math/pprz_algebra_int.h"
 #include STABILIZATION_ATTITUDE_TYPE_H
 
 extern void stabilization_attitude_init(void);
-extern void stabilization_attitude_read_rc(bool_t in_flight);
+extern void stabilization_attitude_read_rc(bool_t in_flight, bool_t in_carefree, bool_t coordinated_turn);
 extern void stabilization_attitude_enter(void);
 extern void stabilization_attitude_set_failsafe_setpoint(void);
 extern void stabilization_attitude_set_rpy_setpoint_i(struct Int32Eulers *rpy);

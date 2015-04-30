@@ -27,32 +27,15 @@
 #define STD_H
 
 #include <inttypes.h>
-//#include <stdbool.h>
+#include <stdbool.h>
 #include <math.h>
 
-/* some helper macros */
-#define DO_PRAGMA(x) _Pragma (#x)
-#define VALUE_TO_STRING(x) #x
-#define VALUE(x) VALUE_TO_STRING(x)
-
 /* some convenience macros to print debug/config messages at compile time */
-#define MESSAGE(x) DO_PRAGMA(message (x))
-#define TODO(x) DO_PRAGMA(message ("TODO - " x))
-#define INFO(x) DO_PRAGMA(message ("Info: " x))
-#define INFO_VALUE(x,v) DO_PRAGMA(message ("Info: " x VALUE(v)))
-#define INFO_VAR(var) DO_PRAGMA(message ("INFO: " #var " = " VALUE(var)))
+#include "message_pragmas.h"
 
-/* only if PRINT_CONFIG is true */
-#if PRINT_CONFIG
-#define PRINT_CONFIG_MSG(x) DO_PRAGMA(message ("Config: " x))
-#define PRINT_CONFIG_MSG_VALUE(x,v) DO_PRAGMA(message ("Config: " x VALUE(v))
-#define PRINT_CONFIG_VAR(var) DO_PRAGMA(message ("Config: " #var " = " VALUE(var)))
-#else
-#define PRINT_CONFIG_MSG(x)
-#define PRINT_CONFIG_MSG_VALUE(x,v)
-#define PRINT_CONFIG_VAR(var)
-#endif
-
+/* stringify a define, e.g. one that was not quoted */
+#define _STRINGIFY(s) #s
+#define STRINGIFY(s) _STRINGIFY(s)
 
 #ifndef FALSE
 #define FALSE 0
@@ -70,7 +53,15 @@
 #endif
 
 /* Boolean values */
+#ifdef RTOS_IS_CHIBIOS
+/* make bool_t an alias to bool instead of uint8_t dor chibios port
+  probably a bad idea since sizeof(bool) is 4, and this will break
+  message coding/decoding **** FIX NEEDEED ****
+*/
+typedef bool bool_t;
+#else
 typedef uint8_t bool_t;
+#endif
 
 /* Unit (void) values */
 typedef uint8_t unit_t;
@@ -87,12 +78,6 @@ typedef uint8_t unit_t;
 #define M_PI_2 (M_PI/2)
 #endif
 
-#ifndef cbi
-#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
 
 #ifndef bit_is_set
 #define bit_is_set(x, b) ((x >> b) & 0x1)
@@ -120,38 +105,35 @@ typedef uint8_t unit_t;
 #define ABS(val) ((val) < 0 ? -(val) : (val))
 #endif
 
-#define Bound(_x, _min, _max) { if (_x > _max) _x = _max; else if (_x < _min) _x = _min; }
+#define Bound(_x, _min, _max) { if (_x > (_max)) _x = (_max); else if (_x < (_min)) _x = (_min); }
 #define BoundInverted(_x, _min, _max) {           \
-    if ((_x < _min) && (_x > _max)) {             \
-      if (abs(_x - _min) < abs(_x - _max))        \
-        _x = _min;                                \
+    if ((_x < (_min)) && (_x > (_max))) {         \
+      if (abs(_x - (_min)) < abs(_x - (_max)))    \
+        _x = (_min);                              \
       else                                        \
-        _x = _max;                                \
+        _x = (_max);                              \
     }                                             \
   }
 #define BoundWrapped(_x, _min, _max) {            \
-    if (_max > _min)                              \
+    if ((_max) > (_min))                          \
       Bound(_x, _min, _max)                       \
     else                                          \
       BoundInverted(_x, _min, _max)               \
   }
 #define BoundAbs(_x, _max) Bound(_x, -(_max), (_max))
 #define Chop(_x, _min, _max) ( (_x) < (_min) ? (_min) : (_x) > (_max) ? (_max) : (_x) )
-#define ChopAbs(x, max) Chop(x, -max, max)
+#define ChopAbs(x, max) Chop(x, -(max), (max))
 
 #define DeadBand(_x, _v) {						\
-    if (_x > _v)							\
-      _x = _x -_v;							\
-    else if  (_x < -_v)							\
-      _x = _x +_v;							\
-    else								\
-      _x = 0;								\
+    if (_x > (_v))                              \
+      _x = _x -(_v);                            \
+    else if  (_x < -(_v))                       \
+      _x = _x +(_v);                            \
+    else                                        \
+      _x = 0;                                   \
   }
 
 #define Blend(a, b, rho) (((rho)*(a))+(1-(rho))*(b))
-
-#define ScalarProduct(x1,y1,x2,y2) ((x1)*(x2)+(y1)*(y2))
-
 
 #define RunOnceEvery(_prescaler, _code) {		\
     static uint16_t prescaler = 0;			\
@@ -247,5 +229,13 @@ static inline bool_t str_equal(const char * a, const char * b) {
   }
   return TRUE;
 }
+
+#ifdef __GNUC__
+#  define UNUSED __attribute__((__unused__))
+#  define WEAK __attribute__((weak))
+#else
+#  define UNUSED
+#  define WEAK
+#endif
 
 #endif /* STD_H */

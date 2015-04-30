@@ -28,6 +28,9 @@
 #define FINKEN_MODEL_SENSORS_H
 
 #include "std.h"
+#include "mcu_periph/link_device.h"
+#include "subsystems/datalink/transport.h"
+#include "subsystems/datalink/telemetry.h"
 
 struct sensor_model_s {
   float   distance_z;
@@ -50,6 +53,6 @@ extern struct sensor_model_s finken_sensor_model;
 extern void finken_sensor_model_init(void);
 extern void finken_sensor_model_periodic(void);
 
-extern void send_finken_sensor_model_telemetry(void);
+extern void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_device* link);
 
 #endif

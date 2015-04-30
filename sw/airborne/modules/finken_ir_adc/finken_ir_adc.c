@@ -1,7 +1,6 @@
 #include "modules/finken_ir_adc/finken_ir_adc.h"
 #include "mcu_periph/adc.h"
 #include "subsystems/datalink/downlink.h"
-#include "subsystems/datalink/telemetry.h"
 #include "mcu_periph/uart.h"
 #include "messages.h"
 
@@ -78,8 +77,10 @@ void finken_ir_adc_periodic(void)
     update_ir_distance_equalized_from_ir_distance();
 }
 
-void send_finken_ir_adc_telemetry(void)
+void send_finken_ir_adc_telemetry(struct transport_tx *trans, struct link_device* link)
 {
+    trans=trans;
+    link=link;
     DOWNLINK_SEND_FINKEN_IR_ADC(DefaultChannel, DefaultDevice,
         &ir_distance,
         &ir_measurement

@@ -21,7 +21,6 @@
  */
 
 #include "modules/finken_model/finken_model_system.h"
-#include "subsystems/datalink/telemetry.h"
 #include "subsystems/navigation/common_flight_plan.h"
 
 /* input */
@@ -137,8 +136,10 @@ void update_actuators_set_point()
 	// TODO: Theta
 }
 
-void send_finken_system_model_telemetry(void)
+void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link)
 {
+  trans=trans;
+  link=link;
   DOWNLINK_SEND_FINKEN_SYSTEM_MODEL(
     DefaultChannel,
     DefaultDevice,

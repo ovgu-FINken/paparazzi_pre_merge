@@ -21,7 +21,6 @@
  */
 
 #include "modules/finken_model/finken_model_environment.h"
-#include "subsystems/datalink/telemetry.h"
 
 /* input */
 #include "modules/finken_model/finken_model_sensors.h"
@@ -66,8 +65,10 @@ void finken_environment_model_periodic(void){
   finken_environment_model.alpha    = alpha;
 }
 
-void send_finken_environment_model_telemetry(void)
+void send_finken_environment_model_telemetry(struct transport_tx *trans, struct link_device* link)
 {
+  trans=trans;
+  link=link;
   DOWNLINK_SEND_FINKEN_ENVIRONMENT_MODEL(
     DefaultChannel,
     DefaultDevice,

@@ -27,7 +27,6 @@
 #include "subsystems/navigation/common_nav.h"
 #include "generated/flight_plan.h"
 #include "subsystems/ins.h"
-#include "subsystems/gps.h"
 #include "math/pprz_geodetic_float.h"
 
 float dist2_to_home;
@@ -45,15 +44,16 @@ int32_t nav_utm_north0 = NAV_UTM_NORTH0;
 uint8_t nav_utm_zone0 = NAV_UTM_ZONE0;
 float max_dist_from_home = MAX_DIST_FROM_HOME;
 
-/** \brief Computes square distance to the HOME waypoint potentially sets
- * \a too_far_from_home
+/** Computes squared distance to the HOME waypoint.
+ * Updates #dist2_to_home and potentially sets #too_far_from_home
  */
-void compute_dist2_to_home(void) {
-  struct EnuCoor_f* pos = stateGetPositionEnu_f();
+void compute_dist2_to_home(void)
+{
+  struct EnuCoor_f *pos = stateGetPositionEnu_f();
   float ph_x = waypoints[WP_HOME].x - pos->x;
   float ph_y = waypoints[WP_HOME].y - pos->y;
-  dist2_to_home = ph_x*ph_x + ph_y *ph_y;
-  too_far_from_home = dist2_to_home > (MAX_DIST_FROM_HOME*MAX_DIST_FROM_HOME);
+  dist2_to_home = ph_x * ph_x + ph_y * ph_y;
+  too_far_from_home = dist2_to_home > (MAX_DIST_FROM_HOME * MAX_DIST_FROM_HOME);
 #if defined InAirspace
   too_far_from_home = too_far_from_home || !(InAirspace(pos_x, pos_y));
 #endif
@@ -63,84 +63,77 @@ void compute_dist2_to_home(void) {
 static float previous_ground_alt;
 
 /** Reset the UTM zone to current GPS fix */
-unit_t nav_reset_utm_zone(void) {
-
-  struct UtmCoor_f utm0_old;
-  utm0_old.zone = nav_utm_zone0;
-  utm0_old.north = nav_utm_north0;
-  utm0_old.east = nav_utm_east0;
-  utm0_old.alt = ground_alt;
-  struct LlaCoor_f lla0;
-  lla_of_utm_f(&lla0, &utm0_old);
-
-#ifdef GPS_USE_LATLONG
-  /* Set the real UTM zone */
-  nav_utm_zone0 = (DegOfRad(gps.lla_pos.lon/1e7)+180) / 6 + 1;
-#else
-  nav_utm_zone0 = gps.utm_pos.zone;
-#endif
+unit_t nav_reset_utm_zone(void)
+{
 
   struct UtmCoor_f utm0;
   utm0.zone = nav_utm_zone0;
-  utm_of_lla_f(&utm0, &lla0);
+  utm0.north = nav_utm_north0;
+  utm0.east = nav_utm_east0;
+  utm0.alt = ground_alt;
+  ins_reset_utm_zone(&utm0);
 
+  /* Set the real UTM ref */
+  nav_utm_zone0 = utm0.zone;
   nav_utm_east0 = utm0.east;
   nav_utm_north0 = utm0.north;
-
-  stateSetLocalUtmOrigin_f(&utm0);
 
   return 0;
 }
 
 /** Reset the geographic reference to the current GPS fix */
-unit_t nav_reset_reference( void ) {
-#ifdef GPS_USE_LATLONG
-  /* Set the real UTM zone */
-  nav_utm_zone0 = (DegOfRad(gps.lla_pos.lon/1e7)+180) / 6 + 1;
+unit_t nav_reset_reference(void)
+{
+  /* realign INS */
+  ins_reset_local_origin();
 
-  /* Recompute UTM coordinates in this zone */
-  struct LlaCoor_f lla;
-  lla.lat = gps.lla_pos.lat/1e7;
-  lla.lon = gps.lla_pos.lon/1e7;
-  struct UtmCoor_f utm;
-  utm.zone = nav_utm_zone0;
-  utm_of_lla_f(&utm, &lla);
-  nav_utm_east0 = utm.east;
-  nav_utm_north0 = utm.north;
-#else
-  nav_utm_zone0 = gps.utm_pos.zone;
-  nav_utm_east0 = gps.utm_pos.east/100;
-  nav_utm_north0 = gps.utm_pos.north/100;
-#endif
+  /* Set nav UTM ref */
+  nav_utm_east0 = state.utm_origin_f.east;
+  nav_utm_north0 = state.utm_origin_f.north;
+  nav_utm_zone0 = state.utm_origin_f.zone;
 
+  /* Ground alt */
   previous_ground_alt = ground_alt;
-  ground_alt = gps.hmsl/1000.;
+  ground_alt = state.utm_origin_f.alt;
 
-  // reset state UTM ref
-  struct UtmCoor_f utm0 = { nav_utm_north0, nav_utm_east0, ground_alt, nav_utm_zone0 };
-  stateSetLocalUtmOrigin_f(&utm0);
+  return 0;
+}
 
-  // realign INS if needed
-  ins.hf_realign = TRUE;
-  ins.vf_realign = TRUE;
+/** Reset the altitude reference to the current GPS alt */
+unit_t nav_reset_alt(void)
+{
+  ins_reset_altitude_ref();
+
+  /* Ground alt */
+  previous_ground_alt = ground_alt;
+  ground_alt = state.utm_origin_f.alt;
 
   return 0;
 }
 
 /** Shift altitude of the waypoint according to a new ground altitude */
-unit_t nav_update_waypoints_alt( void ) {
+unit_t nav_update_waypoints_alt(void)
+{
   uint8_t i;
-  for(i = 0; i < NB_WAYPOINT; i++) {
+  for (i = 0; i < NB_WAYPOINT; i++) {
     waypoints[i].a += ground_alt - previous_ground_alt;
   }
   return 0;
 }
 
-void common_nav_periodic_task_4Hz() {
+void common_nav_periodic_task_4Hz()
+{
   RunOnceEvery(4, { stage_time++;  block_time++; });
 }
 
-void nav_move_waypoint(uint8_t wp_id, float ux, float uy, float alt) {
+/** Move a waypoint to given UTM coordinates.
+ * @param[in] wp_id Waypoint ID
+ * @param[in] ux    UTM x (east) coordinate
+ * @param[in] uy    UTM y (north) coordinate
+ * @param[in] alt   Altitude above MSL.
+ */
+void nav_move_waypoint(uint8_t wp_id, float ux, float uy, float alt)
+{
   if (wp_id < nb_waypoint) {
     float dx, dy;
     dx = ux - nav_utm_east0 - waypoints[WP_HOME].x;

@@ -1,7 +1,7 @@
 #
 # tiny_0.99.makefile
 #
-# http://paparazzi.enac.fr/wiki/Tiny_v0.99
+# http://wiki.paparazziuav.org/wiki/Tiny_v0.99
 #
 
 ARCH=lpc21
@@ -36,15 +36,6 @@ MODEM_BAUD ?= B57600
 GPS_PORT ?= UART1
 GPS_BAUD ?= B38400
 
-
-
-ADC_IR_TOP ?= ADC_0
-ADC_IR1 ?= ADC_1
-ADC_IR2 ?= ADC_2
-ADC_IR_NB_SAMPLES ?= 16
-ADC_GYRO_NB_SAMPLES ?= 16
-
-ADC_GENERIC_NB_SAMPLES ?= 16
 
 #
 # you can use different actuators by adding a configure option to your firmware section

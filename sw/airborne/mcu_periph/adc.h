@@ -31,18 +31,11 @@
  *  - register it with the ::adc_buf_channel function
  */
 
-#ifndef _ADC_H_
-#define _ADC_H_
+#ifndef MCU_PERIPH_ADC_H
+#define MCU_PERIPH_ADC_H
 
 #include <inttypes.h>
 #include "mcu_periph/adc_arch.h"
-
-/* Allow driver implementation to define
- * number of available ADCs implicitly
- */
-#ifndef NB_ADC
-#define NB_ADC 8
-#endif
 
 #define MAX_AV_NB_SAMPLE 0x20
 #define DEFAULT_AV_NB_SAMPLE 0x20
@@ -74,8 +67,9 @@ struct adc_buf {
     Registers channel_buf as buffer for ADC channel 1, with max index 12
     (12 samples).
 */
-void adc_buf_channel(uint8_t adc_channel, struct adc_buf* s, uint8_t av_nb_sample);
+void adc_buf_channel(uint8_t adc_channel, struct adc_buf *s, uint8_t av_nb_sample);
 
 /** Starts conversions */
-void adc_init( void );
+void adc_init(void);
+
 #endif
