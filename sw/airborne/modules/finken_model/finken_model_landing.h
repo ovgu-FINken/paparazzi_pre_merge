@@ -29,20 +29,13 @@
 
 #include "std.h"
 #include "modules/finken_model/finken_model_actuators.h"
+#include "modules/finken_model/finken_model_system.h"
 #include "mcu_periph/link_device.h"
 #include "subsystems/datalink/transport.h"
 #include "subsystems/datalink/telemetry.h"
 
-struct system_model_s {
-  float distance_z;
-  float velocity_theta;
-  float velocity_x;
-  float velocity_y;
-  float thrust;
-};
 
-extern struct system_model_s finken_landing_model;
-extern struct actuators_model_s finken_actuators_set_point;
+extern bool finken_has_landed;
 
 extern void finken_landing_model_init(void);
 extern void finken_landing_model_periodic(void);
