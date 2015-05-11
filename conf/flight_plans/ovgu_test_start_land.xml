@@ -11,7 +11,7 @@
 	<blocks>
 		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
             <set value="0" var="autopilot_flight_time"/>
-            <attitude pitch="0.0" roll="0.0" throttle="finken_starting_model.thrust" until="finken_starting_model.has_started" vmode="throttle"/>
+            <attitude pitch="0.0" roll="0.0" throttle="finken_actuators_model.thrust" until="finken_has_started" vmode="throttle"/>
 			<deroute block="inair"/>
 		</block>
         
@@ -26,7 +26,7 @@
 		</block>
 
 		<block key="l" name="Landing" strip_button="Landing" strip_icon="land-rignt.png">
-			<attitude pitch="0.0" roll="0.0" throttle="finken_landing_model.thrust" until="finken_landing_model.has_landed" vmode="throttle"/>
+			<attitude pitch="0.0" roll="0.0" throttle="finken_actuators_model.thrust" until="finken_has_landed" vmode="throttle"/>
             <deroute block="default"/>
 		</block>
 		
