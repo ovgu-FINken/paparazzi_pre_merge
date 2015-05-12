@@ -20,12 +20,12 @@
  *
  */
 
-/** @file finken_model_landing.h
+/** @file finken_model_starting_landing.h
  *  @brief module for the system
  */
 
-#ifndef FINKEN_MODEL_LANDING_H
-#define FINKEN_MODEL_LANDING_H
+#ifndef FINKEN_MODEL_STARTIN_LANDING_H
+#define FINKEN_MODEL_STARTIN_LANDING_H
 
 #include "std.h"
 #include "modules/finken_model/finken_model_actuators.h"
@@ -35,12 +35,15 @@
 #include "subsystems/datalink/telemetry.h"
 
 
+extern bool finken_has_started;
 extern bool finken_has_landed;
 
-extern void finken_landing_model_init(void);
-extern void finken_landing_model_periodic(void);
-void update_finken_landing_model(void);
+extern uint16_t finken_last_stage_time;
 
-extern void send_finken_landing_model_telemetry(struct transport_tx *trans, struct link_device* link);
+extern void finken_starting_landing_model_init(void);
+extern void finken_starting_landing_model_periodic(void);
+void update_finken_starting_landing_model(void);
+
+extern void send_finken_starting_landing_model_telemetry(struct transport_tx *trans, struct link_device* link);
 
 #endif

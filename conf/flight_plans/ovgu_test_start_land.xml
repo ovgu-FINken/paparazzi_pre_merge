@@ -6,6 +6,7 @@
   </waypoints>
 	<header>
 		#include "modules/finken_model/finken_model_system.h"
+        #include "modules/finken_model/finken_model_starting_landing.h"
 		#include "subsystems/electrical.h"
 	</header>
 	<blocks>
