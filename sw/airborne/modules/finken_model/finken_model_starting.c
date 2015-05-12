@@ -80,7 +80,7 @@ void finken_starting_model_periodic(void)
 {
 	update_finken_starting_model();
 	
-    
+    //smooth starting in C
     
 }
 
