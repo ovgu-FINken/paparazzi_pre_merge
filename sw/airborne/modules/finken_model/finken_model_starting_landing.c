@@ -22,6 +22,7 @@
 
 #include "modules/finken_model/finken_model_starting_landing.h"
 #include "subsystems/navigation/common_flight_plan.h"
+#include "subsystems/electrical.h"
 
 /* input */
 #include "modules/finken_model/finken_model_sensors.h"
@@ -60,69 +61,69 @@
 struct system_model_s finken_starting_landing_model;
 //struct actuators_model_s finken_actuators_set_point;
 
-bool finken_has_started = false;
-bool finken_has_landed = false;
-
 uint16_t finken_last_stage_time = 0;
 
 void update_actuators_set_point(void);
 
 void finken_starting_landing_model_init(void) {
-  finken_starting_landing_model.distance_z     = 0.0;
-  finken_starting_landing_model.velocity_theta = 0.0;
-  finken_starting_landing_model.velocity_x     = 0.0;
-  finken_starting_landing_model.velocity_y     = 0.0;
+    finken_starting_landing_model.distance_z     = 0.0;
+    finken_starting_landing_model.velocity_theta = 0.0;
+    finken_starting_landing_model.velocity_x     = 0.0;
+    finken_starting_landing_model.velocity_y     = 0.0;
 
-	finken_actuators_set_point.alpha  = 0.0;
+    finken_actuators_set_point.alpha  = 0.0;
 	finken_actuators_set_point.beta   = 0.0;
 	finken_actuators_set_point.theta  = 0.0;
 	finken_actuators_set_point.thrust = 0.0;
+    
+    register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_starting_landing_model_telemetry);
+    
+    bool finken_has_started = false;
+    bool finken_has_landed = false;
+    bool finken_landing_mode = false;
 
-  register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_starting_landing_model_telemetry);
 }
 
 void finken_starting_landing_model_periodic(void)
 {
 	update_finken_starting_landing_model();
-
+    
+    //decide, whether the copter is landing or starting with the block information
+    
+    
     //smooth starting
-    
-    
-    
+    // to do ...
+
+
     //smooth landing
-    if( stage_time < 25){
-        finken_last_stage_time = stage_time;
+    
+    // set the last stage time only once to 10
+    if (!finken_landing_mode) {
+        finken_last_stage_time = 10;
+        finken_landing_mode = true;
     }
     
-    
-    if( stage_time >= 5 && stage_time < 10 ){
-        finken_system_set_point.distance_z = 0.45;
-        
-    } else if( stage_time >= 10 && stage_time < 15 ){
-        finken_system_set_point.distance_z = 0.35;
-        
-    } else if( stage_time >= 15 && stage_time < 25 ){
-        finken_system_set_point.distance_z = 0.25;
-        
-    } else if( stage_time >= 25 ){
-
-        //decrease thrust manually
-        
-        while( finken_actuators_set_point.thrust > 0 && stage_time >= (finken_last_stage_time + 1) ){
-            
-            finken_actuators_set_point.thrust -= 0.05;
-            
-            if( finken_actuators_set_point.thrust <= 0){
-                finken_actuators_set_point.thrust = 0;
-                finken_has_landed = true;
-                break;
+    //get the copter to 40 cm height in the first 10 seconds
+    if( stage_time >= 0 && stage_time < 10 ){
+        finken_system_set_point.distance_z = 0.40;
+    }
+    else {
+        // decrease the height smooth till 25 cm - each second 1 cm
+        if ( stage_time >= 10 && stage_time < 30 && finken_system_set_point.distance_z >= 0.25 ) {
+            if ( (finken_last_stage_time + 1) <= stage_time) {
+                finken_system_set_point.distance_z -= 0.01;
+                finken_last_stage_time = stage_time;
             }
-            
-            finken_last_stage_time = stage_time;
+        }
+        // decrease the thrust below 25 cm - because of bad values
+        else {
+            if ( (finken_last_stage_time + 1) <= stage_time && finken_actuators_set_point.thrust > 0) {
+                finken_actuators_set_point.thrust -= compensate_battery_drop(0.05);
+                finken_has_landed = true;
+                finken_last_stage_time = stage_time;
+            }
         }
     }
-    
-    
 }
 
 void update_finken_starting_landing_model(void)
