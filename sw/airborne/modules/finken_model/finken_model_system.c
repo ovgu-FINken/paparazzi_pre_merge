@@ -41,24 +41,32 @@
 #endif
 
 #ifndef FINKEN_THRUST_P
-#define FINKEN_THRUST_P /* 0.15 */0.10
+#define FINKEN_THRUST_P 0.1f
 #endif
 
 #ifndef FINKEN_THRUST_I
-#define FINKEN_THRUST_I /*  0.05  */0.05
+#define FINKEN_THRUST_I 0.0f
 #endif
 
+#ifndef FINKEN_THRUST_D
+#define FINKEN_THRUST_D 0.00f
+#endif
+
+
+#ifndef FINKEN_BASE_THRUST
+#define FINKEN_BASE_THRUST 0.5f
+#endif
 
 #ifndef FINKEN_SYSTEM_UPDATE_FREQ
 #define FINKEN_SYSTEM_UPDATE_FREQ 30
 #endif
 
-#ifndef FINKEN_VERTICAL_VELOCITY_FACTOR
-#define FINKEN_VERTICAL_VELOCITY_FACTOR 0.04
-#endif
+#define SIZE 20
 
 struct system_model_s finken_system_model;
 struct system_model_s finken_system_set_point;
+
+static float error_z[SIZE];
 
 void update_actuators_set_point(void);
 
@@ -72,6 +80,9 @@ void finken_system_model_init(void) {
 	finken_actuators_set_point.beta   = 0.0;
 	finken_actuators_set_point.theta  = 0.0;
 	finken_actuators_set_point.thrust = 0.0;
+
+	for(unsigned int i=0;i<sizeof(error_z)/sizeof(float);i++)
+		error_z[i]=0.0f;
 
   register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_system_model_telemetry);
 }
@@ -96,44 +107,41 @@ void update_finken_system_model(void)
 /*
  * Use finken_system_set_point to calculate new actuator settings
  */
-float sum_error_x = 0;
-float sum_error_y = 0;
-float sum_error_z = 0;
-float distance_z_old = 0.0; 
 
 
 void update_actuators_set_point()
 {
-	/* front , back */
+	/*
+	// front , back
 	float error_x =   finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
-	/* left , right */
+	// left , right
 	float error_y =   finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
 
 	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
 	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
 
+	*/
+	static int next=0;
+	//if(autopilot_mode == AP_MODE_NAV && stage_time > 0) 
+	//	error_z[next] = 0.0f; 
+	//else 
+		error_z[next] = finken_system_set_point.distance_z - finken_system_model.distance_z; 
 
-	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z; 
-	if(autopilot_mode == AP_MODE_NAV && stage_time > 0) 
-	{
-		sum_error_z += error_z;
-	} 
-	else 
-	{
-		sum_error_z = 0;
-	}
+	float sum_error_z = 0.0f;
+	//float d_error_z = error_z[next] - error_z[(next-1)%SIZE];
 
-	float velocity_z = (finken_system_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
+	//for(unsigned int i=0;i<SIZE;i++)
+	//	sum_error_z += error_z[i];
 
-	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
-	finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
+	//sum_error_z /= SIZE * FINKEN_SYSTEM_UPDATE_FREQ;
 
-	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
+	finken_actuators_set_point.thrust =  error_z[next] * FINKEN_THRUST_P;
+	//finken_actuators_set_point.thrust += sum_error_z   * FINKEN_THRUST_I;
+	//finken_actuators_set_point.thrust += d_error_z     * FINKEN_THRUST_D;
+	finken_actuators_set_point.thrust += FINKEN_BASE_THRUST;
 
 
-	distance_z_old = finken_system_model.distance_z;
-
-	// TODO: Theta
+	//next=(next+1)%SIZE;
 }
 
 void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link)
