@@ -101,6 +101,8 @@ float sum_error_y = 0;
 float sum_error_z = 0;
 float distance_z_old = 0.0; 
 
+//uint8_t inair_state = 0;
+
 
 void update_actuators_set_point()
 {
@@ -111,6 +113,21 @@ void update_actuators_set_point()
 
 	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
 	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
+
+	/*if(inair_state == 0)
+	{
+		finken_system_set_point.distance_z = 0.70;
+		if(finken_system_model.distance_z >= 0.70 && stage_time > 15) inair_state = 1;
+	}
+	else if(inair_state == 1)
+	{
+		finken_system_set_point.distance_z = 0.90;
+		if(finken_system_model.distance_z >= 0.75 && stage_time > 30) inair_state = 2;
+	}
+	else if(inair_state == 2)
+	{
+		finken_system_set_point.distance_z = 0.70;
+	}*/
 
 
 	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z; 
