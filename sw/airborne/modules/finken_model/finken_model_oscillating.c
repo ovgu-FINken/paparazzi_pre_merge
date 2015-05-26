@@ -39,7 +39,7 @@ void finken_oscillating_model_init(void) {
 
     
     height_oscillating_down = 0.40;
-    height_oscillating_up = 1.0;
+    height_oscillating_up = 0.9;
     finken_oscillating_last_time = 0;
     height_changing_rate = 0.05;
     go_down = false;
