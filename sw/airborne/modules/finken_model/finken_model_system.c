@@ -58,7 +58,7 @@
 #endif
 
 struct system_model_s finken_system_model;
-struct actuators_model_s finken_actuators_set_point;
+struct system_model_s finken_system_set_point;
 
 void update_actuators_set_point(void);
 
