@@ -86,9 +86,9 @@ void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_
     &finken_sensor_model.distance_d_front,
     &finken_sensor_model.distance_d_right,
     &finken_sensor_model.distance_d_left,
-    &finken_sensor_model.distance_d_back,
+    &finken_sensor_model.distance_d_back/*,
     &finken_sensor_model.acceleration_x,
     &finken_sensor_model.acceleration_y,
-    &finken_sensor_model.acceleration_z
+    &finken_sensor_model.acceleration_z*/
   );
 }
