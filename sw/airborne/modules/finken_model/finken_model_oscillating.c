@@ -20,6 +20,7 @@ float height_oscillating_up;
 float time_oscillating;
 float height_changing_rate;
 bool go_down;
+bool search_neighbor;
 
 
 void update_actuators_set_point(void);
@@ -44,6 +45,7 @@ void finken_oscillating_model_init(void) {
     height_changing_rate = 0.05;
     go_down = false;
     finken_oscillating_mode = false;
+    search_neighbor = true;
 
 }
 
@@ -52,27 +54,45 @@ void finken_oscillating_model_periodic(void)
  
 //    update_finken_oscillating_model();
     
+    
     if ( finken_oscillating_mode ) {
 
         if ( (finken_oscillating_last_time + 1) <= stage_time ){
 
             finken_oscillating_last_time = stage_time;
             
-            if ( go_down ){
-                if ( finken_system_set_point.distance_z > height_oscillating_down ){
-                    finken_system_set_point.distance_z -= height_changing_rate;
-                } else {
-                    finken_system_set_point.distance_z = height_oscillating_down;
-                    go_down = false;
-                }
+            if(search_neighbor){
             
-            } else {
-                if ( finken_system_set_point.distance_z < height_oscillating_up ){
-                    finken_system_set_point.distance_z += height_changing_rate;
+                if ( go_down ){
+                    if ( finken_system_set_point.distance_z > height_oscillating_down ){
+                        finken_system_set_point.distance_z -= height_changing_rate;
+                    } else {
+                        finken_system_set_point.distance_z = height_oscillating_down;
+                        go_down = false;
+                    }
+                
                 } else {
-                    finken_system_set_point.distance_z = height_oscillating_up;
-                    go_down = true;
+                    if ( finken_system_set_point.distance_z < height_oscillating_up ){
+                        finken_system_set_point.distance_z += height_changing_rate;
+                    } else {
+                        finken_system_set_point.distance_z = height_oscillating_up;
+                        go_down = true;
+                    }
                 }
+                
+                switch ( AC_ID ){
+                    case 202:   //purple
+                                if ( finken_sensor_model.distance_d_right > 40 && finken_sensor_model.distance_d_right < 60 ){
+                                    search_neighbor = false;
+                                }
+                        break;
+                    case 203:   //green
+                                if ( finken_sensor_model.distance_d_left > 40 && finken_sensor_model.distance_d_left < 60 ){
+                                    search_neighbor = false;
+                                }
+                        break;
+                }
+                
             }
         }
     }
