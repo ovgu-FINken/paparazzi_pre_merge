@@ -6,10 +6,12 @@
   <process name="Main">
 
     <mode name="default" key_press="d">
-      <message name="ROTORCRAFT_STATUS"        period="2.0"/>
-      <message name="ALIVE"                    period="2.0"/>
-      <message name="DL_VALUE"                 period="2.0"/>
+      <message name="ROTORCRAFT_STATUS"        period="2.1"/>
+      <message name="ALIVE"                    period="2.2"/>
+      <message name="DL_VALUE"                 period="2.3"/>
       <message name="ROTORCRAFT_NAV_STATUS"    period="2.0"/>
+      <message name="ROTORCRAFT_FP"            period="1.5"/>
+      <message name="WP_MOVED"                 period="12.6"/>
     </mode>
 
     <mode name="extended">
