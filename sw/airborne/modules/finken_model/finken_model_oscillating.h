@@ -9,8 +9,8 @@
 #include "subsystems/datalink/telemetry.h"
 
 extern bool finken_oscillating_mode;
-
 extern uint16_t finken_oscillating_last_time;
+extern bool search_neighbor;
 
 extern void finken_oscillating_model_init(void);
 extern void finken_oscillating_model_periodic(void);

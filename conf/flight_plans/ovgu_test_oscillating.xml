@@ -28,6 +28,7 @@
         <block name="oscillating">
             <set value="true" var="finken_oscillating_mode" />
 	    <set value="0" var="finken_oscillating_last_time" />
+	    <set value="true" var="search_neighbor" />		
             <attitude pitch="0.0" roll="0.0" throttle="finken_actuators_model.thrust" until="65 > electrical.vsupply" vmode="throttle"/>
             <deroute block="Landing"/>
         </block>
