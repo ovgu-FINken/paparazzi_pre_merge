@@ -59,20 +59,39 @@ void finken_oscillating_model_periodic(void)
 
 	switch ( AC_ID ){
                     case 202:   //purple
-                                if ( finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60 ){
-                                    search_neighbor = false;
-                                } else {
-					search_neighbor = true;
+                                if ( finken_sensor_model.distance_d_back > 30 && finken_sensor_model.distance_d_back < 60 ){
+					search_neighbor = false;
+				} else {
+					if ( finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60 ){
+                                    		search_neighbor = false;
+                                	} else {
+						search_neighbor = true;
+					}
 				}
                         break;
                     case 203:   //green
-                                if ( finken_sensor_model.distance_d_left > 40 && finken_sensor_model.distance_d_left < 60 ){
-                                    search_neighbor = false;
-                                } else {
-					search_neighbor = true;
+                                if ( finken_sensor_model.distance_d_back > 30 && finken_sensor_model.distance_d_back < 60 ){
+					search_neighbor = false;
+				} else {
+					if ( finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60 ){
+                                    		search_neighbor = false;
+                                	} else {
+						search_neighbor = true;
+					}
 				}
                         break;
-			default: break;
+		    case 201:   //white
+                                if ( finken_sensor_model.distance_d_back > 30 && finken_sensor_model.distance_d_back < 60 ){
+					search_neighbor = false;
+				} else {
+					if ( finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60 ){
+                                    		search_neighbor = false;
+                                	} else {
+						search_neighbor = true;
+					}
+				}
+                        break;
+		    default: break;
                 }
 
         if ( (finken_oscillating_last_time + 1) <= stage_time ){
