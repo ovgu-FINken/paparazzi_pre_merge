@@ -57,11 +57,24 @@ void finken_oscillating_model_periodic(void)
     
     if ( finken_oscillating_mode ) {
 
+	switch ( AC_ID ){
+                    case 202:   //purple
+                                if ( finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60 ){
+                                    search_neighbor = false;
+                                }
+                        break;
+                    case 203:   //green
+                                if ( finken_sensor_model.distance_d_left > 40 && finken_sensor_model.distance_d_left < 60 ){
+                                    search_neighbor = false;
+                                }
+                        break;
+                }
+
         if ( (finken_oscillating_last_time + 1) <= stage_time ){
 
             finken_oscillating_last_time = stage_time;
             
-            if(search_neighbor){
+            if(true){
             
                 if ( go_down ){
                     if ( finken_system_set_point.distance_z > height_oscillating_down ){
@@ -79,20 +92,6 @@ void finken_oscillating_model_periodic(void)
                         go_down = true;
                     }
                 }
-                
-                switch ( AC_ID ){
-                    case 202:   //purple
-                                if ( finken_sensor_model.distance_d_right > 40 && finken_sensor_model.distance_d_right < 60 ){
-                                    search_neighbor = false;
-                                }
-                        break;
-                    case 203:   //green
-                                if ( finken_sensor_model.distance_d_left > 40 && finken_sensor_model.distance_d_left < 60 ){
-                                    search_neighbor = false;
-                                }
-                        break;
-                }
-                
             }
         }
     }

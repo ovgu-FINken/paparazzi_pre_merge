@@ -2147,6 +2147,7 @@
     <field name="alpha_setpoint"            type="float" alt_unit="degree"/>
 		<field name="beta_setpoint"             type="float" alt_unit="degree"/>
     <field name="thrust_setpoint"            type="float" alt_unit="degree"/>
+	<field name = "height_setpoint" type = "float" />
   </message>
 
   <message name="PPRZ_DEBUG" id="247">
