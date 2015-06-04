@@ -58,8 +58,9 @@ void finken_oscillating_model_periodic(void)
     if ( finken_oscillating_mode ) {
 
 	switch ( AC_ID ){
-                    case 202:   //purple
-                                if ( finken_sensor_model.distance_d_back > 30 && finken_sensor_model.distance_d_back < 60 ){
+
+		    case 201:   //white (front+right)
+                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ){
 					search_neighbor = false;
 				} else {
 					if ( finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60 ){
@@ -69,8 +70,19 @@ void finken_oscillating_model_periodic(void)
 					}
 				}
                         break;
-                    case 203:   //green
-                                if ( finken_sensor_model.distance_d_back > 30 && finken_sensor_model.distance_d_back < 60 ){
+                    case 202:   //purple (front+right)
+                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ){
+					search_neighbor = false;
+				} else {
+					if ( finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60 ){
+                                    		search_neighbor = false;
+                                	} else {
+						search_neighbor = true;
+					}
+				}
+                        break;
+                    case 203:   //green (front+left)
+                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ){
 					search_neighbor = false;
 				} else {
 					if ( finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60 ){
@@ -80,8 +92,8 @@ void finken_oscillating_model_periodic(void)
 					}
 				}
                         break;
-		    case 201:   //white
-                                if ( finken_sensor_model.distance_d_back > 30 && finken_sensor_model.distance_d_back < 60 ){
+		    case 204:   //blue (front+left)
+                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ){
 					search_neighbor = false;
 				} else {
 					if ( finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60 ){
