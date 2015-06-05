@@ -1,0 +1,16 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="nav">
+  <doc>
+    <description>
+			Navigation for finken-robots
+    </description>
+  </doc>
+  <header>
+    <file name="nav_finken.h"/>
+  </header>
+  <makefile>
+    <file name="nav_finken.c"/>
+  </makefile>
+</module>
+
