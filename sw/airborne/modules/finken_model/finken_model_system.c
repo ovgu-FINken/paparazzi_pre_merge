@@ -58,7 +58,7 @@
 #endif
 
 struct system_model_s finken_system_model;
-struct actuators_model_s finken_actuators_set_point;
+struct system_model_s finken_system_set_point;
 
 void update_actuators_set_point(void);
 
@@ -149,7 +149,8 @@ void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_
     &finken_system_model.velocity_y,
     &finken_actuators_set_point.alpha,
     &finken_actuators_set_point.beta,
-    &finken_actuators_set_point.thrust
+    &finken_actuators_set_point.thrust,
+    &finken_system_set_point.distance_z
   );
 }
 

@@ -26,7 +26,6 @@
 #include "modules/finken_model/finken_model_sensors.h"
 
 struct environment_model_s finken_environment_model;
-struct system_model_s finken_system_set_point;
 
 void finken_environment_model_init(void) {
   finken_environment_model.alpha    = 0.0;

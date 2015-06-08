@@ -39,13 +39,14 @@
 		<load name="sonar_array_i2c.xml">
 			<define name="SONAR_I2C_DEV" value="i2c2"/>
 			<define name="USE_I2C2" />
+			<define name="I2C2_CLOCK_SPEED" value="5000" />
 		</load>
 		<!--<load name="mavlink_decoder.xml">
 			<configure name="MAVLINK_PORT" value="UART2" />
 			<configure name="MAVLINK_BAUD" value="B115200" />
 		</load>-->
 		<!--<load name="px4flow.xml" />-->
-		<load name="nav_finken.xml" />
+<!-- 		<load name="nav_finken.xml" /> -->
         <load name="finken_model.xml" />
         <load name="finken_ir_adc.xml">
             <configure name="ADC_IR" value="ADC_3"/>
@@ -210,7 +211,7 @@
   <section name="AUTOPILOT">
     <define name="MODE_MANUAL" value="AP_MODE_ATTITUDE_DIRECT"/>
     <define name="MODE_AUTO1"  value="AP_MODE_NAV"/>
-    <define name="MODE_AUTO2"  value="AP_MODE_RATE_DIRECT"/>
+    <define name="MODE_AUTO2"  value="AP_MODE_MODULE"/>
 		<define name="USE_KILL_SWITCH_FOR_MOTOR_ARMING" value="TRUE"/>
 
   </section>
