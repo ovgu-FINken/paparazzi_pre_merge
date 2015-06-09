@@ -27,6 +27,8 @@
 #include "modules/finken_model/finken_model_sensors.h"
 #include "modules/finken_model/finken_model_environment.h"
 
+#include "subsystems/radio_control.h"
+#include "arch/stm32/subsystems/radio_control/spektrum_arch.h"
 
 #include "firmwares/rotorcraft/autopilot.h"
 #include <math.h>
@@ -109,8 +111,8 @@ void update_actuators_set_point()
 	/* left , right */
 	float error_y =   finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
 
-	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
-	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
+	finken_actuators_set_point.beta = (float)radio_control.values[RADIO_ROLL] / 13000 *10;
+	finken_actuators_set_point.alpha = (float)radio_control.values[RADIO_PITCH] /13000 * 10;
 
 
 	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z; 
@@ -135,6 +137,8 @@ void update_actuators_set_point()
 
 	// TODO: Theta
 }
+
+
 
 void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link)
 {

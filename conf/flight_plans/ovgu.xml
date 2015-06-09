@@ -7,6 +7,7 @@
 	<header>
 		#include "sonar/sonar_array_i2c.h"
 		#include "nav/nav_finken.h"
+		#include "finken_model/finken_model_actuators.h"
 	</header>
 <!--
 	<exceptions>
@@ -16,7 +17,7 @@
 /-->
   <blocks>
 		<block name="default">
-			<attitude pitch="0.0" roll="0.0" throttle="0.6" until="FALSE" vmode="throttle"/> 
+			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta" throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle"/> 
 		</block>
 		
   </blocks>
