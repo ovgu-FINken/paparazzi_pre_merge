@@ -1923,9 +1923,6 @@
     <field name="distance_d_rigth" type="int16" alt_unit="cm"/>
     <field name="distance_d_left"  type="int16" alt_unit="cm"/>
     <field name="distance_d_back"  type="int16" alt_unit="cm"/>
-    <field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
-    <field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
-    <field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
   </message>
 
 
@@ -2132,21 +2129,12 @@
     <field name="vy"   type="float" unit="m/s"/>
     <field name="vz"   type="float" unit="m/s"/>
   </message>
-
-
-  <message name="FINKEN_ENVIRONMENT_MODEL" id="245">
-    <field name="alpha"            type="float" alt_unit="degree"/>
-    <field name="distance"         type="int16" alt_unit="cm"/>
-  </message>
-
-  <message name="FINKEN_SYSTEM_MODEL" id="246">
-    <field name="distance_z"       type="float" alt_unit="cm"/>
-    <field name="velocity_theta"   type="float" alt_unit="m/s"/>
-    <field name="velocity_x"       type="float" alt_unit="m/s"/>
-    <field name="velocity_y"       type="float" alt_unit="m/s"/>
-    <field name="alpha_setpoint"            type="float" alt_unit="degree"/>
-		<field name="beta_setpoint"             type="float" alt_unit="degree"/>
-    <field name="thrust_setpoint"            type="float" alt_unit="degree"/>
+  
+	<message name="FINKEN_SYSTEM_SET_POINT" id="246">
+		<field name="distance_z" type="float" unit="m"/>
+		<field name="yaw"        type="float" unit="deg"/>
+		<field name="velocity_x" type="float" unit="m/s"/>
+		<field name="velocity_y" type="float" unit="m/s"/>
   </message>
 
   <message name="PPRZ_DEBUG" id="247">
@@ -2194,23 +2182,18 @@
     <field name="barometer" type="float" unit="Pa" /> -->
   </message>
 
-  <message name="AFL_COEFFS" id="250">
-      <field name="roll_a"   type="float"/>
-      <field name="roll_b"  type="float"/>
-      <field name="roll_c"  type="float"/>
-      <field name="pitch_a"  type="float"/>
-      <field name="pitch_b"   type="float"/>
-      <field name="pitch_c"   type="float"/>
-      <field name="yaw_a"   type="float"/>
-      <field name="yaw_b"  type="float"/>
-      <field name="yaw_c"  type="float"/>
+  <message name="FINKEN_ACTUATORS_SET_POINT" id="250">
+    <field name="pitch"            type="float" alt_unit="degree"/>
+    <field name="roll"             type="float" alt_unit="degree"/>
+    <field name="yaw"              type="float" alt_unit="degree"/>
+    <field name="thrust"           type="float" alt_unit="%"/>
   </message>
 
   <message name="FINKEN_ACTUATORS_MODEL" id="251">
-    <field name="alpha"  type="float" alt_unit="degree"/>
-    <field name="beta"   type="float" alt_unit="degree"/>
-    <field name="theta"  type="float" alt_unit="degree"/>
-    <field name="thrust" type="float" alt_unit="degree"/>
+    <field name="pitch"            type="float" alt_unit="degree"/>
+    <field name="roll"             type="float" alt_unit="degree"/>
+    <field name="yaw"              type="float" alt_unit="degree"/>
+    <field name="thrust"           type="float" alt_unit="%"/>
   </message>
 
  <message name="FINKEN_IR_ADC" id="252">
