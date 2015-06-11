@@ -21,7 +21,7 @@ struct pid_controller
 } ;
 
 extern void newPIDController(float p, float i, float d);
-extern void setMinMax(float minParam, float maxParam, struct pid_controller con);
-extern void adjust(float error, struct pid_controller con);
+extern void setMinMax(float minParam, float maxParam, struct pid_controller *con);
+extern void adjust(float error, struct pid_controller *con);
 
 #endif /* FINKEN_MODEL_PID_H_ */

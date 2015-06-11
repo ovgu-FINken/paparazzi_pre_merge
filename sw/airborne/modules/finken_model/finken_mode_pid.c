@@ -28,7 +28,7 @@ struct pid_controller newPIDController(float p, float i, float d)
 	return con;
 }
 
-void setMinMax(float minParam, float maxParam, struct pid_controller con)
+void setMinMax(float minParam, float maxParam, struct pid_controller *con)
 {
 	con.min = minParam;
 	con.max = maxParam;
@@ -36,31 +36,31 @@ void setMinMax(float minParam, float maxParam, struct pid_controller con)
 }
 
 //Todo minDist - dist
-void adjust(float error, struct pid_controller con)
+void adjust(float error, struct pid_controller *con)
 {
 	float time_step = getTimeStep(); 	//Todo irgendwie zeitlichen Abstand bestimmen
 
-	con.integral = con.integral + (error * time_step);
-	float derivative = (error - con.previousError) / time_step;
+	con->integral = con->integral + (error * time_step);
+	float derivative = (error - con->previousError) / time_step;
 
-	if(con.previousError == 0)
+	if(con->previousError == 0)
 	{
 		derivative = 0;
 	}
 
-	con.previousError = error;
+	con->previousError = error;
 
-	float res = (con.p * error) + (con.i * con.integral) + (con.d * derivative);
+	float res = (con->p * error) + (con->i * con->integral) + (con->d * derivative);
 
-	if(con.checkMinMax == 1)
+	if(con->checkMinMax == 1)
 	{
-		if(res < con.min)
+		if(res < con->min)
 		{
-			res = con.min;
+			res = con->min;
 		}
-		else if( res > con.max)
+		else if( res > con->max)
 		{
-			res = con.max;
+			res = con->max;
 		}
 	}
 }

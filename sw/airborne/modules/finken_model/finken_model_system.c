@@ -72,65 +72,23 @@ float TOLERABLE_PROXY_DIST = 0.7;	//minimum treshold - if less, begin collision 
 float FLIGHT_HEIGHT = 1.30;			//the target altitude we will try to maintain at all times
 float MIN_HEIGHT = 0.75;			//the minimum altitude before we can begin using sonars
 
-//float proxy_dist =
-
-//end init
+struct pid_controller zPIDController;
+struct pid_controller xPIDController;
+struct pid_controller yPIDController;
 
 void init_pid()
 {
-	--[[storage for measured distances--]]
-	proxyDist = {}	-- current readings from FRONT, BACK, RIGHT and LEFT sensor (in that order)
-	oldProxyDist = {}
-	--indexing in lua begins from 1 by default, but arrays are actually index-value hashtables and even a negative index is allowed
-	for i=1,4 do
-		proxyDist[i] = _MAX_PROXY_DIST
-		oldProxyDist[i] = proxyDist[i]
-	end
-	irDist = 0	-- current readings from the IR sensor
-	oldIRDist = irDist
-	-- end-of-sensor-storage
+	zPIDController = newPIDController(1,0,1); // zero integral coeff, because limiting the PID output will mess up the integral part
+	setMinMax(-30,30, &zPIDController);
 
-	--[[Quadbot--]]
-	local object1 = simGetObjectHandle('SimFinken')
-	script = simGetScriptAssociatedWithObject(object1)
+	// PID Controller: try to control roll and pitch directly from the measured distance
+	xPIDController = newPIDController(4.7, 0, 6.9);
+			//newDirectDistToAngleController({4.7,0,6.9}, _TOLERABLE_PROXY_DIST)
+	setMinMax(-6, 6, &xPIDController);
 
-	--[[Controllers--]]
-	-- z-axis control: convert IR readings to throttle in order to maintain stable height
-	zPIDController = newPIDController(1, 0, 1) -- zero integral coeff, because limiting the PID output will mess up the integral part
-	zPIDController.setMinMax(-30, 30)	-- upper and lower bounds, avoid bursts
-	-- x,y-axis controllers:
-	_CMode_NONE = 0;
-	_CModeLinear = 1;	-- SIMULATION ONLY! For testing the zPIDController, of no importance for the final task
-	_CModeDirectPID = 2;
-	controllerMode = _CModeDirectPID
-		--[[ SIMULATION ONLY! A dummy-controller to create simple x,y-flight so we can focus only on testing how the zPIDController works
-			1) if distance from wall is too small (<= _TOLERABLE_PROXY_DIST): tilt robot against it, begin retreat
-			2) if distance from wall is moderate: level the robot to horizontal position
-			3) if distance from wall is too big (>= 2.5*_TOLERABLE_PROXY_DIST): tilt robot toward it, begin approach
-		--]]
-		xLinearController = newLinearController(script, 'pitch', _TOLERABLE_PROXY_DIST, 2.5*_TOLERABLE_PROXY_DIST, -5, 10)
-		--yLinearController = newLinearController(script, 'roll', _TOLERABLE_PROXY_DIST, 2.5*_TOLERABLE_PROXY_DIST, -5, 5)
-		--end-of-simulation-dummy-controller
-	--[[ PID Controller: try to control roll and pitch directly from the measured distance --]]
-	xPID_Direct = newDirectDistToAngleController({4.7,0,6.9}, _TOLERABLE_PROXY_DIST)
-	xPID_Direct.setMinMax(-6, 6)
-	--yPID_Direct = newDirectDistToAngleController({4.7,0,6.9}, _TOLERABLE_PROXY_DIST)
-	--yPID_Direct.setMinMax(-8, 8)
-	-- end-of-controllers
-
-	 --[[Handles for sensors--]]
-	local proxyHandleNames = {
-		'SimFinken_sensor_front',
-		'SimFinken_sensor_back',
-		'SimFinken_sensor_right',
-		'SimFinken_sensor_left'
-	}
-	proxyHandles = {}
-	for i=1,4 do
-		proxyHandles[i] = simGetObjectHandle(proxyHandleNames[i])
-	end
-	irHandle = simGetObjectHandle('SimFinken_sensor_IR')
-	--end-of-handles
+	yPIDController = newPIDController(4.7, 0, 6.9);
+			//newDirectDistToAngleController({4.7,0,6.9}, _TOLERABLE_PROXY_DIST)
+	setMinMax(-6, 6, &yPIDController);	// oder -8, 8? Wieso unterschiedlich?
 }
 
 void finken_system_model_init(void)
@@ -178,6 +136,28 @@ float sum_error_y = 0;
 float sum_error_z = 0;
 float distance_z_old = 0.0; 
 
+float oldIRDist = 0;
+
+float pid_thrust(float irDist)
+{
+	float target, curr, error;
+
+	float dt = 0.1;	//Todo find correct time step
+
+	// height control
+	target = (FLIGHT_HEIGHT - irDist)/dt;
+	curr = (irDist - oldIRDist)/dt;
+	error = target - curr;
+	float targetThrottle = adjust(error, &zPIDController);
+	return 50 + targetThrottle;
+}
+
+float pid_planar(float sonar_dist_front, float sonar_dist_back, struct pid_controller *pid)
+{
+//	float sonar_dist = sonar_dist_front - sonar_dist_back;	Todo Controller muss angepasst werden, aber zum Testen erstmal nur Front
+
+	return adjust(sonar_dist_front, pid);		//return pitch or roll
+}
 
 void update_actuators_set_point()
 {
@@ -208,9 +188,17 @@ void update_actuators_set_point()
 	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
 
-	distance_z_old = finken_system_model.distance_z;
+	finken_actuators_set_point.thrust = pid_thrust(finken_system_model.distance_z);
 
-	// TODO: Theta
+	// TURN OFF x-y control until safe altitude is reached
+	if(finken_system_model.distance_z > MIN_HEIGHT)
+	{
+		finken_actuators_set_point.alpha = pid(finken_sensor_model.distance_d_front, finken_sensor_model.distance_d_back, &xPIDController);	//pitch
+		finken_actuators_set_point.beta = pid(finken_sensor_model.distance_d_left, finken_sensor_model.distance_d_right, &yPIDController);	//roll
+	}
+
+
+	distance_z_old = finken_system_model.distance_z;
 }
 
 void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link)
@@ -229,159 +217,3 @@ void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_
     &finken_actuators_set_point.thrust
   );
 }
-
-//require "utilitiesFun"
-//
-//if (sim_call_type==sim_childscriptcall_initialization) then
-//
-//	--[[global constants (anything that is not marked as 'local' is globally accessible--]]
-//	_DEG_TO_GRAD_COEFF = math.pi / 180
-//	_MAX_PROXY_DIST = 5.00	-- max measurable distance from the sonar
-//	_MAX_IR_DIST = 2.00		-- max measurable distance from IR sensor
-//	_TOLERABLE_PROXY_DIST = 0.7	-- minimum treshhold - if less, begin collision avoidance
-//	_FLIGHT_HEIGHT = 1.30	-- the target altitude we will try to maintain at all times
-//	_MIN_HEIGHT = 0.75		-- the minimum altitude before we can begin using sonars
-//
-//	-- SIMULATION ONLY: lower resolution from 50ms (20Hz) to 250ms (4Hz) to simulate worse sensor update rate
-//	-- fix for the problem of v-rep not working correctly if we change the timestep from the drop-down box
-//	_UPDATE_RATE_COEFF = 5	-- WARNING: change "local _UPDATE_RATE_COEFF = 5" in "utilitiesFun.lua" if you change the value here!
-//	tickCounter = 0
-//	-- end-of-update-rate-control-variables
-//
-//	--[[storage for measured distances--]]
-//	proxyDist = {}	-- current readings from FRONT, BACK, RIGHT and LEFT sensor (in that order)
-//	oldProxyDist = {}
-//	--indexing in lua begins from 1 by default, but arrays are actually index-value hashtables and even a negative index is allowed
-//	for i=1,4 do
-//		proxyDist[i] = _MAX_PROXY_DIST
-//		oldProxyDist[i] = proxyDist[i]
-//	end
-//	irDist = 0	-- current readings from the IR sensor
-//	oldIRDist = irDist
-//	-- end-of-sensor-storage
-//
-//	--[[Quadbot--]]
-//	local object1 = simGetObjectHandle('SimFinken')
-//	script = simGetScriptAssociatedWithObject(object1)
-//
-//	--[[Controllers--]]
-//	-- z-axis control: convert IR readings to throttle in order to maintain stable height
-//	zPIDController = newPIDController(1, 0, 1) -- zero integral coeff, because limiting the PID output will mess up the integral part
-//	zPIDController.setMinMax(-30, 30)	-- upper and lower bounds, avoid bursts
-//	-- x,y-axis controllers:
-//	_CMode_NONE = 0;
-//	_CModeLinear = 1;	-- SIMULATION ONLY! For testing the zPIDController, of no importance for the final task
-//	_CModeDirectPID = 2;
-//	controllerMode = _CModeDirectPID
-//		--[[ SIMULATION ONLY! A dummy-controller to create simple x,y-flight so we can focus only on testing how the zPIDController works
-//			1) if distance from wall is too small (<= _TOLERABLE_PROXY_DIST): tilt robot against it, begin retreat
-//			2) if distance from wall is moderate: level the robot to horizontal position
-//			3) if distance from wall is too big (>= 2.5*_TOLERABLE_PROXY_DIST): tilt robot toward it, begin approach
-//		--]]
-//		xLinearController = newLinearController(script, 'pitch', _TOLERABLE_PROXY_DIST, 2.5*_TOLERABLE_PROXY_DIST, -5, 10)
-//		--yLinearController = newLinearController(script, 'roll', _TOLERABLE_PROXY_DIST, 2.5*_TOLERABLE_PROXY_DIST, -5, 5)
-//		--end-of-simulation-dummy-controller
-//	--[[ PID Controller: try to control roll and pitch directly from the measured distance --]]
-//	xPID_Direct = newDirectDistToAngleController({4.7,0,6.9}, _TOLERABLE_PROXY_DIST)
-//	xPID_Direct.setMinMax(-6, 6)
-//	--yPID_Direct = newDirectDistToAngleController({4.7,0,6.9}, _TOLERABLE_PROXY_DIST)
-//	--yPID_Direct.setMinMax(-8, 8)
-//	-- end-of-controllers
-//
-//	 --[[Handles for sensors--]]
-//	local proxyHandleNames = {
-//		'SimFinken_sensor_front',
-//		'SimFinken_sensor_back',
-//		'SimFinken_sensor_right',
-//		'SimFinken_sensor_left'
-//	}
-//	proxyHandles = {}
-//	for i=1,4 do
-//		proxyHandles[i] = simGetObjectHandle(proxyHandleNames[i])
-//	end
-//	irHandle = simGetObjectHandle('SimFinken_sensor_IR')
-//	--end-of-handles
-//end
-//
-//
-//if (sim_call_type==sim_childscriptcall_actuation) then
-//
-//	-- SIMULATION ONLY: Use to simulate lower update rate
-//	tickCounter = tickCounter + 1
-//	if(tickCounter > _UPDATE_RATE_COEFF) then
-//		tickCounter = 1
-//	end
-//	if(tickCounter > 1) then
-//		return
-//	end
-//	--end-of-update-rate-control
-//
-//	local target, curr, error
-//	local dt = simGetSimulationTimeStep() -- timestep between calls - system update frequency
-//	dt = dt * _UPDATE_RATE_COEFF	-- SIMULATION ONLY: update-rate control
-//
-//	--[[height control--]]
-//	target = (_FLIGHT_HEIGHT - irDist)/dt
-//	curr = (irDist - oldIRDist)/dt
-//	error = target - curr
-//	local targetThrottle = zPIDController.adjust(error)
-//	simSetScriptSimulationParameter(script,'throttle', 50 + targetThrottle)
-//	-- end-of-height-control
-//
-//	--[[TURN OFF x-y control until safe altitude is reached--]]
-//	if(irDist > _MIN_HEIGHT) then
-//		if(controllerMode == _CModeLinear) then
-//			xLinearController.adjust(proxyDist[1])
-//		elseif(controllerMode == _CModeDirectPID) then
-//			local pitch = xPID_Direct.adjust(proxyDist[1])
-//			simSetScriptSimulationParameter(script, 'pitch', pitch)
-//		end
-//	end
-//	-- end-of-x-control
-//end
-//
-//--[[WARNING: simulation is simplified, IGNORE problems regarding real-time behaviour
-//	1) assume all sensors readings are precise (no need for filtering)
-//	2) any computation is immediate (zero delay)
-//--]]
-//if (sim_call_type==sim_childscriptcall_sensing) then
-//
-//	-- SIMULATION ONLY: Use to simulate lower update rate
-//	if(tickCounter > 1) then
-//		return
-//	end
-//	-- end-of-update-rate-control
-//
-//	local pitch = simGetScriptSimulationParameter(script,'pitch') * _DEG_TO_GRAD_COEFF
-//	local roll = simGetScriptSimulationParameter(script,'roll') * _DEG_TO_GRAD_COEFF
-//	local cosX = math.cos(pitch)
-//	local cosY = math.cos(roll)
-//
-//	local res,dist,coeff
-//	-- sonar readings
-//	for i=1,4 do
-//		res,dist = simReadProximitySensor(proxyHandles[i])
-//		if(res == 1) then
-//			coeff = cosX
-//			if(i >= 3) then
-//				coeff = cosY
-//			end
-//			oldProxyDist[i] = proxyDist[i]
-//			proxyDist[i] = coeff*dist
-//		end
-//	end
-//
-//	-- IR height readings
-//	res,dist = simReadProximitySensor(irHandle)
-//	if(res == 1) then
-//		local tgX = math.tan(roll)
-//		local tgY = math.tan(pitch)
-//		coeff = 1 / math.sqrt(1 + tgX^2 + tgY^2)
-//		oldIRDist = irDist
-//		irDist = dist*coeff
-//	end
-//end
-//
-//
-//if (sim_call_type==sim_childscriptcall_cleanup) then
-//end
