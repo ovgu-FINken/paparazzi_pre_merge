@@ -80,8 +80,13 @@ void finken_system_model_init(void) {
 
 void finken_system_model_periodic(void)
 {
+
 	update_finken_system_model();
 	update_actuators_set_point();
+	obstacle_avoid();
+}
+void obstacle_void(){
+
 }
 
 void update_finken_system_model(void)
@@ -106,9 +111,9 @@ float distance_z_old = 0.0;
 
 void update_actuators_set_point()
 {
-	/* front , back */
+	/* front , back x pitch*/
 	float error_x =   finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
-	/* left , right */
+	/* left , right  y roll*/
 	float error_y =   finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
 
 	finken_actuators_set_point.beta = (float)radio_control.values[RADIO_ROLL] / 13000 *10;
@@ -135,7 +140,7 @@ void update_actuators_set_point()
 
 	distance_z_old = finken_system_model.distance_z;
 
-	// TODO: Theta
+
 }
 
 
