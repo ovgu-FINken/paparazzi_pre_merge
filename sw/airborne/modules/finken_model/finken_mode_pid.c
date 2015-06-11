@@ -7,9 +7,10 @@
 
 #include "finken_model_pid.h"
 
-//struct pid_controller controller_;
-
-
+/*
+ * Maybe this method isn't even necessary. You could possibly create the struct directly where you want to have it.
+ * Eitherways, this method returns a new pid_controller with default settings.
+ */
 struct pid_controller newPIDController(float p, float i, float d)
 {
 	struct pid_controller con;
@@ -28,6 +29,9 @@ struct pid_controller newPIDController(float p, float i, float d)
 	return con;
 }
 
+/**
+ * Set the min an max values of a pid_controller, which is passed as a parameter.
+ */
 void setMinMax(float minParam, float maxParam, struct pid_controller *con)
 {
 	con.min = minParam;
@@ -35,10 +39,12 @@ void setMinMax(float minParam, float maxParam, struct pid_controller *con)
 	con.checkMinMax = 1;
 }
 
-//Todo minDist - dist
+/*
+ * This is the main method of the pid_controller. the error should be the distance to the desired distance.
+ */
 void adjust(float error, struct pid_controller *con)
 {
-	float time_step = getTimeStep(); 	//Todo irgendwie zeitlichen Abstand bestimmen
+	float time_step = 0.1; 	//Todo this should be the duration since the last function call. I don't know how to retrieve this yet.
 
 	con->integral = con->integral + (error * time_step);
 	float derivative = (error - con->previousError) / time_step;
