@@ -80,14 +80,16 @@ struct pid_controller yPIDController;
 //this is for creating the different pids and assigning minmax-values to them.
 void init_pid()
 {
-	zPIDController = newPIDController(1,0,1); // zero integral coeff, because limiting the PID output will mess up the integral part
-	setMinMax(-30,30, &zPIDController);
+	zPIDController.p = 1;// zero integral coeff, because limiting the PID output will mess up the integral part
+	zPIDController.d = 1;
 
 	// PID Controller: try to control roll and pitch directly from the measured distance
-	xPIDController = newPIDController(4.7, 0, 6.9);
+	xPIDController.p = 4.7;
+	xPIDController.d = 6.9;
 	setMinMax(-6, 6, &xPIDController);
 
-	yPIDController = newPIDController(4.7, 0, 6.9);
+	yPIDController.p = 4.7;
+	yPIDController.d = 6.9;
 	setMinMax(-6, 6, &yPIDController);		// Todo or -8, 8? Why different to xPID?
 }
 
@@ -103,7 +105,7 @@ void finken_system_model_init(void)
    finken_actuators_set_point.theta  = 0.0;
    finken_actuators_set_point.thrust = 0.0;
 
-   init_pid();
+//   init_pid();
 
    register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_system_model_telemetry);
 }
@@ -163,33 +165,33 @@ float pid_planar(float sonar_dist_front, float sonar_dist_back, struct pid_contr
 void update_actuators_set_point()
 {
 	/* front , back */
-	float error_x =   finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
-	/* left , right */
-	float error_y =   finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
-
-	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
-	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
-
-
-	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z; 
-	if(autopilot_mode == AP_MODE_NAV && stage_time > 0) 
+//	float error_x =   finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
+//	/* left , right */
+//	float error_y =   finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
+//
+//	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
+//	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
+//
+//
+	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z;
+	if(autopilot_mode == AP_MODE_NAV && stage_time > 0)
 	{
 		sum_error_z += error_z;
-	} 
-	else 
+	}
+	else
 	{
 		sum_error_z = 0;
 	}
 
-	//the height controller. Since we will use a different one, it is currently not included.
-	//finken_actuators_set_point.thrust = pid_thrust(finken_system_model.distance_z);
+//	the height controller. Since we will use a different one, it is currently not included.
+//	finken_actuators_set_point.thrust = pid_thrust(finken_system_model.distance_z);
 
 	//turn off x-y control until safe altitude is reached
-	if(finken_system_model.distance_z > MIN_HEIGHT)
-	{
-		finken_actuators_set_point.alpha = pid(finken_sensor_model.distance_d_front, finken_sensor_model.distance_d_back, &xPIDController);	//pitch
-		finken_actuators_set_point.beta = pid(finken_sensor_model.distance_d_left, finken_sensor_model.distance_d_right, &yPIDController);	//roll
-	}
+//	if(finken_system_model.distance_z > MIN_HEIGHT)
+//	{
+//		finken_actuators_set_point.alpha = pid_planar(finken_sensor_model.distance_d_front, finken_sensor_model.distance_d_back, &xPIDController);	//pitch
+//		finken_actuators_set_point.beta = pid_planar(finken_sensor_model.distance_d_left, finken_sensor_model.distance_d_right, &yPIDController);	//roll
+//	}
 
 	distance_z_old = finken_system_model.distance_z;
 }
