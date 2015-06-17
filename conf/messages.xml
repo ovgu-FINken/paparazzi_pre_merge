@@ -2214,8 +2214,10 @@
   </message>
 
  <message name="FINKEN_IR_ADC" id="252">
-    <field name="ir_distance" type="float" alt_unit="cm"/>
-    <field name="ir_measurement" type="uint16"/>
+    <field name="distance" type="float" alt_unit="m"/>
+    <field name="distance_close" type="float" alt_unit="m"/>
+    <field name="measurement" type="uint16"/>
+    <field name="data_available" type="uint8"/>
 	</message>
 
   <message name="I2C_ERRORS" id="253">

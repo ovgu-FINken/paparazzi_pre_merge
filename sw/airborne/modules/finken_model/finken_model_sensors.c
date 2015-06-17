@@ -49,7 +49,7 @@ void finken_sensor_model_init(void)
 
 void finken_sensor_model_periodic(void)
 {
-  finken_sensor_model.distance_z       = ir_distance_equalized;
+  finken_sensor_model.distance_z       = ir_distance;
 	if(sonar_values.front < 200)
 		finken_sensor_model.distance_d_front = sonar_values.front;
 	else
