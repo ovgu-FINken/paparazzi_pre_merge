@@ -182,3 +182,90 @@ end
 function getRealValue(feed, errorScaleCoeff, pidScaleCoeff)
   return feed / (errorScaleCoeff*pidScaleCoeff)
 end
+
+function newIntegerModel()
+  
+  --ALL DATA IS TO BE REPRESENTED AS INTEGERS
+  
+  local _DIST_SCALER = 1000
+  local _TRIG_SCALER = 1000
+  
+  local _TOLERABLE_PROXY_DIST = getAsIntScaled(0.70, _DIST_SCALER)
+  local _FLIGHT_HEIGHT = getAsIntScaled(1.30, _DIST_SCALER) -- = 1300
+  
+  local _DEG_TO_RAD_COEFF = getAsIntScaled( (math.pi / 180), _TRIG_SCALER) -- = 174
+  local proxyDist = {}	
+  local oldProxyDist = {}
+  
+  local irDist = 0
+  local oldIRDist = 0
+  
+  function sense(sonars, ir, roll, pitch)
+    
+    for i=1,4 do
+      oldProxyDist[i] = proxyDist[i]
+    end
+    local alpha = getAsIntScaled(pitch, _DEG_TO_RAD_COEFF)
+    local beta = getAsIntScaled(roll, _DEG_TO_RAD_COEFF)
+    local cosA = intCos(alpha) -- already scaled up by _TRIG_SCALER
+    local cosB = intCos(beta)
+    -- update x
+    proxyDist[1] = getAsIntScaled(sonars[1], _DIST_SCALER) * cosA
+    proxyDist[2] = getAsIntScaled(sonars[2], _DIST_SCALER) * cosA
+    -- update y
+    proxyDist[3] = getAsIntScaled(sonars[3], _DIST_SCALER) * cosB
+    proxyDist[4] = getAsIntScaled(sonars[4], _DIST_SCALER) * cosB
+    for i=1,4 do
+      proxyDist[i] = getAsInt(proxyDist[i]/_TRIG_SCALER) --scale down by _TRIG_SCALER
+    end
+    
+    oldIRDist = irDist
+    local tanA = intTan(pitch)
+    local tanB = intTan(roll)
+    --[[
+    formula: realIR = ir / sqrt(1 + tanA_unscaled^2 + tanB_unscaled^2)
+    tanA and tanB are scaled by _TRIG_SCALER and ^2 adds one extra scale up
+    => scale 1 twice by _TRIG_SCALER
+    => sqrt will scale down by _TRIG_SCALER once, but the rest will remain in the denominator
+    => multiply the result once by _TRIG_SCALER to eleminate it from the denominator
+    --]]
+    local irScaled = getAsIntScaled(ir, _DIST_SCALER)
+    local scaledAB = _TRIG_SCALER * _TRIG_SCALER + tanA * tanA + tanB * tanB
+    local coeff = getAsInt(math.sqrt(scaledAB))
+    irDist = getAsInt( irScaled * _TRIG_SCALER / coeff)
+  end
+  
+  function actuate()
+    
+  end
+  --APPROX TRIGONOMETRY--
+  -- always give angle in rads
+  -- always receive a result which is _TRIG_SCALER times greater than the actual
+  function intSin(angle)
+    return angle
+  end
+  
+  function intCos(angle)
+    --approx function: 1 - (angle^2)/2
+    --[[ 
+    here: angle is deg * _DEG_TO_RAD_COEFF, but _DEG_TO_RAD_COEFF is already scaled by _TRIG_SCALER
+    => angle ^ 2 means we have scaled by _TRIG_SCALER * _TRIG_SCALER
+    => we must scale it down once
+    => we must also scale 1 up once, e.g we want _TRIG_SCALER * (1 - (angle_not_scaled^2)/2)
+    --]]
+    local scaled1 = _TRIG_SCALER -- 1 * 1000
+    local thi2half = (angle * angle) / (2 * _TRIG_SCALER)
+    local diff = scaled1 - getAsInt(thi2half)	
+    return diff
+  end
+  
+  function intTan(angle)
+    return angle
+  end
+  --end-of-TRIGONOMETRY
+  
+  return {
+      sense = sense
+  }
+  
+end
