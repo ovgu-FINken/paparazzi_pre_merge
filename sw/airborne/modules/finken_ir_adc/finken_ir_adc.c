@@ -5,15 +5,15 @@
 #include "messages.h"
 
 
-#define IR_FAR_SAMPLE_SIZE 6
+#define IR_FAR_SAMPLE_SIZE 7
 // adc-values to distance (in meters!)
-static const uint16_t ir_in_samples_far[IR_FAR_SAMPLE_SIZE] = {800, 830, 900, 1150, 1650, 2700};
-static const float ir_out_samples_far[IR_FAR_SAMPLE_SIZE] = {1.30, 1.00, .80, .60, .40, .20};
+static const uint16_t ir_in_samples_far[IR_FAR_SAMPLE_SIZE] = {800, 830, 900, 1150, 1650, 2700, 3500};
+static const float ir_out_samples_far[IR_FAR_SAMPLE_SIZE] = {1.30, 1.00, .80, .60, .40, .20, 0.14};
 
-#define IR_CLOSE_SAMPLE_SIZE 3
+#define IR_CLOSE_SAMPLE_SIZE 2
 // adc-values to distance (in meters!)
-static const uint16_t ir_in_samples_close[IR_CLOSE_SAMPLE_SIZE] = {0, 2300, 2700};
-static const float ir_out_samples_close[IR_CLOSE_SAMPLE_SIZE] = {0.0, .10, .20};
+static const uint16_t ir_in_samples_close[IR_CLOSE_SAMPLE_SIZE] = {0, 3500};
+static const float ir_out_samples_close[IR_CLOSE_SAMPLE_SIZE] = {0.0, .14};
 
 uint16_t ir_measurement;
 float ir_distance;
@@ -32,9 +32,12 @@ static float finken_ir_adc_far(uint16_t value){
 		int i;
     for(i = 1; value > ir_in_samples_far[i]; i++);
 
+		uint16_t dV = value - ir_in_samples_far[i-1] ;
+		uint16_t dX = ir_in_samples_far[i] - ir_in_samples_far[i-1];
+		return ir_out_samples_far[i-1] + (ir_out_samples_far[i] - ir_out_samples_far[i-1]) * dV / dX;
     // w: something in range [0;1], for position in interval between i - 1 and i
-    float w = (value - ir_in_samples_far[i - 1]) / (ir_in_samples_far[i] - ir_in_samples_far[i - 1]);
-    return (1.0 - w) * ir_out_samples_far[i - 1] + w * ir_out_samples_far[i];
+    //float w = (value - ir_in_samples_far[i - 1]) / (ir_in_samples_far[i] - ir_in_samples_far[i - 1]);
+    //return (1.0 - w) * ir_out_samples_far[i - 1] + w * ir_out_samples_far[i];
 }
 
 static float finken_ir_adc_close(uint16_t value){ 
@@ -48,9 +51,9 @@ static float finken_ir_adc_close(uint16_t value){
 		int i;
     for(i = 1; value > ir_in_samples_close[i]; i++);
 
-    // w: something in range [0;1], for position in interval between i - 1 and i
-    float w = (value - ir_in_samples_close[i - 1]) / (ir_in_samples_close[i] - ir_in_samples_close[i - 1]);
-    return (1.0 - w) * ir_out_samples_close[i - 1] + w * ir_out_samples_close[i];
+    uint16_t dV = value - ir_in_samples_close[i-1] ;
+		uint16_t dX = ir_in_samples_close[i] - ir_in_samples_close[i-1];
+		return ir_out_samples_close[i-1] + (ir_out_samples_close[i] - ir_out_samples_close[i-1]) * dV / dX;
 }
 
 void finken_ir_adc_init(void)
