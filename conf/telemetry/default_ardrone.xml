@@ -5,16 +5,6 @@
 
 	<process name="Main">
 		<mode name="default" key_press="d">
-			<message name="FINKEN_SENSOR_MODEL" period="0.9" />
-			<message name="ALIVE" period="2.1" />
-			<message name="ROTORCRAFT_STATUS" period="1.2" />
-			<message name="SONAR_ARRAY" period="5"/>
-			<message name="FINKEN_ACTUATORS_MODEL" period="3.2" />
-			<message name="I2C_ERRORS" period="4.1" />
-      <message name="VERTICAL_ENERGY" period="2.2"/>
-		</mode>
-
-		<mode name="default_alt2" >
 			<message name="FINKEN_SENSOR_MODEL" period="2" />
 			<message name="ROTORCRAFT_NAV_STATUS" period="1.6" />
 			<message name="ALIVE" period="2.1" />
@@ -22,7 +12,14 @@
 			<message name="I2C_ERRORS" period="4.1" />
 		</mode>
 
-
+		<mode name="default_sonar_messungen">
+			<message name="FINKEN_SENSOR_MODEL" period="0.9" />
+			<message name="ALIVE" period="2.1" />
+			<message name="ROTORCRAFT_STATUS" period="1.2" />
+			<message name="SONAR_ARRAY" period="5"/>
+			<message name="FINKEN_ACTUATORS_MODEL" period="3.2" />
+			<message name="I2C_ERRORS" period="4.1" />
+		</mode>
 		<mode name="fast_sonar">
 			<message name="ALIVE" period="2.1" />
 			<message name="ROTORCRAFT_STATUS" period="1.2" />
