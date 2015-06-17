@@ -83,10 +83,6 @@ void finken_system_model_periodic(void)
 
 	update_finken_system_model();
 	update_actuators_set_point();
-	obstacle_avoid();
-}
-void obstacle_void(){
-
 }
 
 void update_finken_system_model(void)
@@ -132,8 +128,10 @@ void update_actuators_set_point()
 
 	float velocity_z = (finken_system_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
 
-	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
-	finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
+	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT
+			+ error_z * FINKEN_THRUST_P;
+	//as comment to test: integral part is bad for stability when switching from takeoff to inair state
+	//finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
 
 	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 

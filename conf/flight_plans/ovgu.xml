@@ -16,10 +16,23 @@
 	</exceptions>
 /-->
   <blocks>
+
 		<block name="default">
-			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta" yaw="finken_actuators_model.theta" throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle"/> 
+			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="FALSE" vmode="throttle" />
+		</block>
+
+		<block name="inair">
+			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta" throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle"/> 
 		</block>
 		
+		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
+      <set value="0" var="autopilot_flight_time"/>
+			<set value="0.5" var="finken_system_set_point.distance_z"/>
+			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta" throttle="compensate_battery_drop(0.37)" until="stage_time > 2" vmode="throttle" />
+			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta" throttle="compensate_battery_drop(0.41)" until="stage_time > 2" vmode="throttle" />
+     <deroute block="inair"/>
+		</block>
+
   </blocks>
 <!--
 	<blocks>
@@ -33,6 +46,7 @@
 		</block>
 		<block name="default">
 			<attitude pitch="0" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
+
 		</block>
 /-->
 <!--
