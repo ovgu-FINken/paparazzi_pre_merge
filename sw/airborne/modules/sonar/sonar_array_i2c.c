@@ -155,14 +155,6 @@ static void sonar_read_range(enum Sonars sonar)
 
 }
 
-static void sonar_read_all(void)
-{
-#ifndef SITL
-	for(enum Sonars sonar = FRONT; sonar <= LEFT; sonar++)
-		sonar_read_range(sonar);
-#endif
-}
-
 /** Read I2C value to update sonar measurement and request new value
 */
 void sonar_array_i2c_periodic(void)
