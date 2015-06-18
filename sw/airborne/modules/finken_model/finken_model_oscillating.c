@@ -335,6 +335,7 @@ void finken_oscillating_model_periodic(void)
                     } else {
                         go_down = false;
                     }
+                    check_direction = false;
                 }
             
                 if ( go_down ){
