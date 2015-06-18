@@ -1,0 +1,22 @@
+digraph FSM {
+
+	nodesep=0.8;
+	
+	0:ne -> 0:nw [label="search_neighbor=true\ncheck_direction=false"];
+	
+	0 -> 1:n [label="search_neighbor=true\ncheck_direction=true"];
+
+	0 -> 2 [label="search_neighbor=false\ncheck_direction=false"];
+
+	1 -> 0 [label="search_neighbor=true\ncheck_direction=false"];
+
+	1:nw -> 1 [label="search_neighbor=true\ncheck_direction=false"];
+	
+	1:s -> 2 [label="search_neighbor=false\ncheck_direction=false"];
+
+	2 -> 0 [label="search_neighbor=true\ncheck_direction=true"];
+
+	2 -> 1 [label="search_neighbor=true\ncheck_direction=true"];
+
+	2:s -> 2:s [label="search_neighbor=false\ncheck_direction=false"];
+}
