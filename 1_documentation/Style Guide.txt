@@ -1,0 +1,7 @@
+Font: Georgia, 12pt (Headings bold and 18pt)
+
+Linespace: 1,5
+
+Orientation: justified
+
+Write your name in the upper right corner.
