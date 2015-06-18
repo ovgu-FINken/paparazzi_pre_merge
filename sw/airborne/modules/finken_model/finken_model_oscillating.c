@@ -25,23 +25,40 @@ bool search_neighbor;
 bool check_direction;
 int state;
 
+enum sonar_direction{front, side};
+
+int16_t getSensorValue(uint8 ac_id, enum sensor_pos){
+    
+    if( sensor_pos == front ){
+        
+        return finken_sensor_model.distance_d_front;
+        
+    } else {
+        
+        switch (ac_id) {
+                
+            case 201: //white
+                return finken_sensor_model.distance_d_right;
+                
+            case 202: //purple
+                return finken_sensor_model.distance_d_right;
+                
+            case 203: //green
+                return finken_sensor_model.distance_d_left;
+                
+            case 204: //blue
+                return finken_sensor_model.distance_d_left;
+                
+            default: return 0;
+        }
+    }
+}
+
 
 void update_actuators_set_point(void);
 
 void finken_oscillating_model_init(void) {
-//    finken_oscillating_model.distance_z     = 0.0;
-//    finken_oscillating_model.velocity_theta = 0.0;
-//    finken_oscillating_model.velocity_x     = 0.0;
-//    finken_oscillating_model.velocity_y     = 0.0;
-//
-//    finken_actuators_set_point.alpha  = 0.0;
-//	finken_actuators_set_point.beta   = 0.0;
-//	finken_actuators_set_point.theta  = 0.0;
-//	finken_actuators_set_point.thrust = 0.0;
-//    
-//    register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_oscillating_model_telemetry);
 
-    
     height_oscillating_down = 0.40;
     height_oscillating_up = 0.9;
     middle = ((height_oscillating_up - height_oscillating_down) / 2) + height_oscillating_down;
@@ -52,273 +69,73 @@ void finken_oscillating_model_init(void) {
     search_neighbor = true;
     check_direction = false;
     state = 0;
-
 }
 
 void finken_oscillating_model_periodic(void)
 {
- 
-//    update_finken_oscillating_model();
-    
-    
-    if ( finken_oscillating_mode ) {
-
-	switch ( AC_ID ){
-
-		    case 201:   //white (front+right)
-                        switch ( state ){
-                            case 0: // no copters found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                     finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                         finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            case 1: // one copter found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                     finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                         finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            case 2: // both copters found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                     finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                         finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            default: break;
+        if ( finken_oscillating_mode ) {
+        
+            switch ( state ){
+                case 0: // no copters found
+                    if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND &&
+                         getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                        search_neighbor = false;
+                        check_direction = false;
+                        state = 2;
+                    } else {
+                        if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND ||
+                             getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                            search_neighbor = true;
+                            check_direction = true;
+                            state = 1;
+                        } else {
+                            search_neighbor = true;
+                            check_direction = false;
+                            state = 0;
                         }
-                        break;
-            
-            case 202:   //purple (front+right)
-                        switch ( state ){
-                            case 0: // no copters found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            case 1: // one copter found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            case 2: // both copters found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_right > 30 && finken_sensor_model.distance_d_right < 60) {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            default: break;
+                    }
+                    break;
+                case 1: // one copter found
+                    if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND &&
+                         getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                        search_neighbor = false;
+                        check_direction = false;
+                        state = 2;
+                    } else {
+                        if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND ||
+                             getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                            search_neighbor = true;
+                            check_direction = false;
+                            state = 1;
+                        } else {
+                            search_neighbor = true;
+                            check_direction = false;
+                            state = 0;
                         }
-                        break;
-            
-            case 203:   //green (front+left)
-                        switch ( state ){
-                            case 0: // no copters found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            case 1: // one copter found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            case 2: // both copters found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            default: break;
+                    }
+                    break;
+                case 2: // both copters found
+                    if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND &&
+                         getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                        search_neighbor = false;
+                        check_direction = false;
+                        state = 2;
+                    } else {
+                        if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND ||
+                             getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                            search_neighbor = true;
+                            check_direction = true;
+                            state = 1;
+                        } else {
+                            search_neighbor = true;
+                            check_direction = true;
+                            state = 0;
                         }
-                        break;
-            
-		    case 204:   //blue (front+left)
-                        switch ( state ){
-                            case 0: // no copters found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            case 1: // one copter found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = false;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            case 2: // both copters found
-                                if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 &&
-                                    finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                    search_neighbor = false;
-                                    check_direction = false;
-                                    state = 2;
-                                } else {
-                                    if ( finken_sensor_model.distance_d_front > 30 && finken_sensor_model.distance_d_front < 60 ||
-                                        finken_sensor_model.distance_d_left > 30 && finken_sensor_model.distance_d_left < 60) {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 1;
-                                    } else {
-                                        search_neighbor = true;
-                                        check_direction = true;
-                                        state = 0;
-                                    }
-                                }
-                                break;
-                            default: break;
-                        }
-                        break;
-            
-		    default:    break;
-    }
+                    }
+                    break;
+                default: break;
+            }
+        }
 
         if ( (finken_oscillating_last_time + 1) <= stage_time ){
 
