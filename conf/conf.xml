@@ -24,10 +24,10 @@
   <aircraft
    name="Quad_Lia_ovgu_03"
    ac_id="3"
-   airframe="airframes/ovgu/teststand.xml"
+   airframe="airframes/ovgu/quadrotor_lia_ovgu.xml"
    radio="radios/spektrum.xml"
-   telemetry="telemetry/demo_rotorcraft.xml"
-   flight_plan="flight_plans/ovgu_test_oscillating.xml"
+   telemetry="telemetry/ultrasound_rotorcraft.xml"
+   flight_plan="flight_plans/ovgu.xml"
    settings="settings/rotorcraft_basic.xml settings/control/rotorcraft_guidance.xml settings/control/stabilization_att_int.xml settings/control/stabilization_rate.xml settings/estimation/ahrs_int_cmpl_quat.xml"
    settings_modules=""
    gui_color="white"

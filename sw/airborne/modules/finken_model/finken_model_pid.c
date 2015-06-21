@@ -21,10 +21,8 @@ void setMinMax(float minParam, float maxParam, struct pid_controller *con)
 /*
  * This is the main method of the pid_controller. the error should be the distance to the desired distance.
  */
-float adjust(float error, struct pid_controller *con)
+float adjust(float error, float time_step, struct pid_controller *con)
 {
-	float time_step = 0.1; 	//Todo this should be the duration since the last function call. I don't know how to retrieve this yet.
-
 	con->integral = con->integral + (error * time_step);
 	float derivative = (error - con->previousError) / time_step;
 

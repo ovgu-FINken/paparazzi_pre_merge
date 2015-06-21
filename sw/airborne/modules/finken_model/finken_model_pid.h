@@ -25,6 +25,6 @@ struct pid_controller
 } ;
 
 extern void setMinMax(float minParam, float maxParam, struct pid_controller *con);
-extern float adjust(float error, struct pid_controller *con);
+extern float adjust(float error, float time_step, struct pid_controller *con);
 
 #endif /* FINKEN_MODEL_PID_H_ */
