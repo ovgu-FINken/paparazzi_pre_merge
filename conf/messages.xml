@@ -1913,8 +1913,8 @@
 		<field name="sonar_right" type="uint16" alt_unit="cm"/>
 		<field name="sonar_back" type="uint16" alt_unit="cm"/>
 		<field name="sonar_left" type="uint16" alt_unit="cm"/>
-		<field name="sonar_failsave_pitch" type="float" alt_unit="deg"/>
-		<field name="sonar_failsave_roll" type="float" alt_unit="deg"/>
+		<!--<field name="sonar_failsave_pitch" type="float" alt_unit="deg"/>
+		<field<d name="sonar_failsave_roll" type="float" alt_unit="deg"/>-->
 	</message>
 
   <message name="FINKEN_SENSOR_MODEL" id="217">
@@ -1923,9 +1923,9 @@
     <field name="distance_d_rigth" type="int16" alt_unit="cm"/>
     <field name="distance_d_left"  type="int16" alt_unit="cm"/>
     <field name="distance_d_back"  type="int16" alt_unit="cm"/>
-    <field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
+    <!--<field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
     <field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
-    <field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
+    <field name="acceleration_z"   type="float" alt_unit="m/s^2"/>-->
   </message>
 
 
@@ -2147,6 +2147,7 @@
     <field name="alpha_setpoint"            type="float" alt_unit="degree"/>
 		<field name="beta_setpoint"             type="float" alt_unit="degree"/>
     <field name="thrust_setpoint"            type="float" alt_unit="degree"/>
+	<field name = "height_setpoint" type = "float" />
   </message>
 
   <message name="PPRZ_DEBUG" id="247">

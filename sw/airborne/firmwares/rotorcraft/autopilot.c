@@ -385,7 +385,7 @@ void autopilot_set_mode(uint8_t new_autopilot_mode)
     new_autopilot_mode = MODE_STARTUP;
   }
 
-  if (new_autopilot_mode != autopilot_mode) {
+if (new_autopilot_mode != autopilot_mode) {
     /* horizontal mode */
     switch (new_autopilot_mode) {
       case AP_MODE_FAILSAFE:

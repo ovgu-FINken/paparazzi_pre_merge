@@ -35,9 +35,9 @@ void finken_sensor_model_init(void)
   finken_sensor_model.distance_d_right = 0;
   finken_sensor_model.distance_d_back  = 0;
   finken_sensor_model.distance_d_left  = 0;
-  finken_sensor_model.acceleration_x   = 0.0;
-  finken_sensor_model.acceleration_y   = 0.0;
-  finken_sensor_model.acceleration_z   = 0.0;
+  //finken_sensor_model.acceleration_x   = 0.0;
+  //finken_sensor_model.acceleration_y   = 0.0;
+  //finken_sensor_model.acceleration_z   = 0.0;
   finken_sensor_model.velocity_alpha   = 0.0;
   finken_sensor_model.velocity_beta    = 0.0;
   finken_sensor_model.velocity_theta   = 0.0;
@@ -66,9 +66,9 @@ void finken_sensor_model_periodic(void)
 		finken_sensor_model.distance_d_left  = sonar_values.left;
 	else
 		finken_sensor_model.distance_d_left  = 200;
-  finken_sensor_model.acceleration_x   = 0.0;
-  finken_sensor_model.acceleration_y   = 0.0;
-  finken_sensor_model.acceleration_z   = 0.0;
+  //finken_sensor_model.acceleration_x   = 0.0;
+  //finken_sensor_model.acceleration_y   = 0.0;
+  //finken_sensor_model.acceleration_z   = 0.0;
   finken_sensor_model.velocity_alpha   = 0.0;
   finken_sensor_model.velocity_beta    = 0.0;
   finken_sensor_model.velocity_theta   = 0.0;
@@ -86,9 +86,9 @@ void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_
     &finken_sensor_model.distance_d_front,
     &finken_sensor_model.distance_d_right,
     &finken_sensor_model.distance_d_left,
-    &finken_sensor_model.distance_d_back,
-    &finken_sensor_model.acceleration_x,
-    &finken_sensor_model.acceleration_y,
-    &finken_sensor_model.acceleration_z
+    &finken_sensor_model.distance_d_back
+    //&finken_sensor_model.acceleration_x,
+    //&finken_sensor_model.acceleration_y,
+    //&finken_sensor_model.acceleration_z
   );
 }
