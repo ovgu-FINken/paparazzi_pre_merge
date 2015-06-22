@@ -1,86 +1,64 @@
 <!-- DOCTYPE flight_plan SYSTEM "flight_plan.dtd" -->
 
-<flight_plan NAME="Fink" LON0="1.27289" MAX_DIST_FROM_HOME="1000" GROUND_ALT="185" SECURITY_HEIGHT="25" QFU="270" ALT="250" LAT0="43.46223">
-  <waypoints>
-    <waypoint name="HOME" x="0.0" y="120.0" alt="250."/>
-  </waypoints>
+<flight_plan NAME="Fink" LON0="1.27289" MAX_DIST_FROM_HOME="1000"
+	GROUND_ALT="185" SECURITY_HEIGHT="25" QFU="270" ALT="250" LAT0="43.46223">
+	<waypoints>
+		<waypoint name="HOME" x="0.0" y="120.0" alt="250." />
+	</waypoints>
 	<header>
 		#include "sonar/sonar_array_i2c.h"
 		#include "nav/nav_finken.h"
 		#include "finken_model/finken_model_actuators.h"
 	</header>
-<!--
-	<exceptions>
-		<exception cond="(100 > sonar_values.back || 100 > sonar_values.front ) && ((sonar_values.right > sonar_values.back && sonar_values.left > sonar_values.back) || (sonar_values.right > sonar_values.front && sonar_values.left > sonar_values.front))" deroute="failsave_pitch"/>
-		<exception cond="(100 > sonar_values.right || 100 > sonar_values.left )" deroute="failsave_roll"/>
-	</exceptions>
-/-->
-  <blocks>
+	<!-- <exceptions> <exception cond="(100 > sonar_values.back || 100 > sonar_values.front 
+		) && ((sonar_values.right > sonar_values.back && sonar_values.left > sonar_values.back) 
+		|| (sonar_values.right > sonar_values.front && sonar_values.left > sonar_values.front))" 
+		deroute="failsave_pitch"/> <exception cond="(100 > sonar_values.right || 
+		100 > sonar_values.left )" deroute="failsave_roll"/> </exceptions> / -->
+	<blocks>
 		<block name="default">
-			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="FALSE" vmode="throttle" />
+			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="FALSE"
+				vmode="throttle" />
 		</block>
 
 		<block name="inair">
-			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta" throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle"/> 
+			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta"
+				throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle" />
 		</block>
-		
+
 		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
-      <set value="0" var="autopilot_flight_time"/>
-			<set value="0.5" var="finken_system_set_point.distance_z"/>
-			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta" throttle="compensate_battery_drop(0.37)" until="stage_time > 2" vmode="throttle" />
-			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta" throttle="compensate_battery_drop(0.41)" until="stage_time > 2" vmode="throttle" />
-     <deroute block="inair"/>
+			<set value="0" var="autopilot_flight_time" />
+			<set value="0.5" var="finken_system_set_point.distance_z" />
+			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta"
+				throttle="compensate_battery_drop(0.37)" until="stage_time > 2"
+				vmode="throttle" />
+			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta"
+				throttle="compensate_battery_drop(0.41)" until="stage_time > 2"
+				vmode="throttle" />
+			<deroute block="inair" />
 		</block>
 
-  </blocks>
-<!--
-	<blocks>
-		<block name="failsave_pitch">
-			<attitude pitch="sonar_failsave_pitch()" roll="0" throttle="0.6" until="sonar_values.back > 100" vmode="throttle"/>
-			<deroute block="default"/>
-		</block>
-		<block name="failsave_roll">
-			<attitude pitch="0" roll="sonar_failsave_roll()" throttle="0.6" until="sonar_values.right > 100" vmode="throttle"/>
-			<deroute block="default"/>
-		</block>
-		<block name="default">
-			<attitude pitch="0" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
-		</block>
-/-->
-<!--
-		<block name="start">
-			<for var="i" from="3" to="10">
-				<attitude pitch="0" roll="0" throttle="0.45 * $i / 10" until="stage_time > 0.2" vmode="throttle"/>
-			</for>
-			<attitude pitch="0" roll="0" throttle="0.45" until="stage_time > 0.4" vmode="throttle"/>
-		</block>
-		<block name="land">	
-			<for var="i2" from="1" to="10">
-				<attitude pitch="0" roll="0" throttle="0.45 - 0.45 * $i2 / 10" until="stage_time > 0.1" vmode="throttle"/>
-			</for>
-		</block>
-			<block name="start">
-				<for var="j" from="0" to="10">
-			<for var="i" from="0" to="10">
-				<attitude pitch="0" roll="0" thrott="0.40 * 0.10 * $i" until="stage_time > 0.2" vmode="throttle"/>
-		</block>
-			</fo4
-				<attitude pitch="0" roll="0" throttle=throttle+"$j*0.1" until="stage_time > 0.2" vmode="throttle"/>
-			</for>
-
-/-->
-<!--
-		<block name="rise">
-		</block>
-		<block name="shine">
-		</block>
-		<block name="baby">
-		</block>
-/-->
-<!--
-		<block name="stop">
-			<attitude pitch="0" roll="0" throttle="0.0" until="FALSE" vmode="throttle"/>
-		</block>
-/-->
+	</blocks>
+	<!-- <blocks> <block name="failsave_pitch"> <attitude pitch="sonar_failsave_pitch()" 
+		roll="0" throttle="0.6" until="sonar_values.back > 100" vmode="throttle"/> 
+		<deroute block="default"/> </block> <block name="failsave_roll"> <attitude 
+		pitch="0" roll="sonar_failsave_roll()" throttle="0.6" until="sonar_values.right 
+		> 100" vmode="throttle"/> <deroute block="default"/> </block> <block name="default"> 
+		<attitude pitch="0" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
+		</block> / -->
+	<!-- <block name="start"> <for var="i" from="3" to="10"> <attitude pitch="0" 
+		roll="0" throttle="0.45 * $i / 10" until="stage_time > 0.2" vmode="throttle"/> 
+		</for> <attitude pitch="0" roll="0" throttle="0.45" until="stage_time > 0.4" 
+		vmode="throttle"/> </block> <block name="land"> <for var="i2" from="1" to="10"> 
+		<attitude pitch="0" roll="0" throttle="0.45 - 0.45 * $i2 / 10" until="stage_time 
+		> 0.1" vmode="throttle"/> </for> </block> <block name="start"> <for var="j" 
+		from="0" to="10"> <for var="i" from="0" to="10"> <attitude pitch="0" roll="0" 
+		thrott="0.40 * 0.10 * $i" until="stage_time > 0.2" vmode="throttle"/> </block> 
+		</fo4 <attitude pitch="0" roll="0" throttle=throttle+"$j*0.1" until="stage_time 
+		> 0.2" vmode="throttle"/> </for> / -->
+	<!-- <block name="rise"> </block> <block name="shine"> </block> <block name="baby"> 
+		</block> / -->
+	<!-- <block name="stop"> <attitude pitch="0" roll="0" throttle="0.0" until="FALSE" 
+		vmode="throttle"/> </block> / -->
 </flight_plan>
 

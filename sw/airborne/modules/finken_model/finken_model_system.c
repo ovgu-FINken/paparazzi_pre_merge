@@ -30,6 +30,8 @@
 #include "subsystems/radio_control.h"
 #include "arch/stm32/subsystems/radio_control/spektrum_arch.h"
 
+#include "finken_model_pid.h"
+
 #include "firmwares/rotorcraft/autopilot.h"
 #include <math.h>
 
@@ -60,7 +62,7 @@
 #endif
 
 struct system_model_s finken_system_model;
-struct actuators_model_s finken_actuators_set_point;
+struct system_model_s finken_system_set_point;
 
 void update_actuators_set_point(void);
 
@@ -187,9 +189,9 @@ void update_actuators_set_point()
 	float velocity_z = (finken_system_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
 
 	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
-	finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
+	//finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
 
-	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
+	//finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
 
 //	the height controller. Since we will use a different one, it is currently not included.
