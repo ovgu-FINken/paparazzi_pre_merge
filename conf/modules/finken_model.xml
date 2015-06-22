@@ -33,6 +33,6 @@
 
 		<define name="FINKEN_THRUST_DEFAULT" value="0.45" />
 		<define name="FINKEN_THRUST_LOW" value="0.60" />
-
-	</makefile>
+	<file name="finken_model_pid.c" />
+  </makefile>
 </module>

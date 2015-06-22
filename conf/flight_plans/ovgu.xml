@@ -16,7 +16,6 @@
 	</exceptions>
 /-->
   <blocks>
-
 		<block name="default">
 			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="FALSE" vmode="throttle" />
 		</block>
@@ -46,7 +45,6 @@
 		</block>
 		<block name="default">
 			<attitude pitch="0" roll="0" throttle="0.6" until="FALSE" vmode="throttle"/> 
-
 		</block>
 /-->
 <!--
