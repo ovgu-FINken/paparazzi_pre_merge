@@ -126,6 +126,9 @@ static abi_event accel_ev;
 static abi_event gps_ev;
 
 struct InsInt ins_int;
+int32_t accel_x_low;
+int32_t accel_y_low;
+int32_t accel_z_low;
 
 #if PERIODIC_TELEMETRY
 #include "subsystems/datalink/telemetry.h"
@@ -201,6 +204,10 @@ void ins_int_init(void)
   register_periodic_telemetry(DefaultPeriodic, "INS_Z", send_ins_z);
   register_periodic_telemetry(DefaultPeriodic, "INS_REF", send_ins_ref);
 #endif
+
+accel_x_low = 0;
+accel_y_low = 0;
+accel_z_low = 0;
 }
 
 void ins_reset_local_origin(void)
@@ -266,8 +273,20 @@ void ins_int_propagate(struct Int32Vect3 *accel, float dt)
   /* convert and copy result to ins_int */
   ins_update_from_hff();
 #else
-  ins_int.ltp_accel.x = accel_meas_ltp.x;
-  ins_int.ltp_accel.y = accel_meas_ltp.y;
+  //simple filter
+  //ins_int.ltp_accel.x = (2047*accel_x_low + accel_meas_ltp.x)>>11;
+  //ins_int.ltp_accel.y = (2047*accel_y_low + accel_meas_ltp.y)>>11;
+
+  //ins_int.ltp_accel.x = (127*accel_x_low + accel_meas_ltp.x)/128;
+  //ins_int.ltp_accel.y = (127*accel_y_low + accel_meas_ltp.y)/128;
+
+  //exponentially moving average
+  ins_int.ltp_accel.x = accel_meas_ltp.x*0.984 + 0.016*accel_x_low;
+  ins_int.ltp_accel.y = accel_meas_ltp.y*0.984 + 0.016*accel_y_low;
+
+  accel_x_low = ins_int.ltp_accel.x;
+  accel_y_low = ins_int.ltp_accel.y;
+  
 #endif /* USE_HFF */
 
   ins_ned_to_state();

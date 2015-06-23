@@ -72,6 +72,10 @@ extern void ins_int_init(void);
 extern void ins_int_propagate(struct Int32Vect3 *accel, float dt);
 extern void ins_int_update_gps(struct GpsState *gps_s);
 
+static inline struct NedCoor_i *ins_int_get_accel(void)
+{
+		return &ins_int.ltp_accel;
+}
 
 #ifndef DefaultInsImpl
 #define DefaultInsImpl ins_int

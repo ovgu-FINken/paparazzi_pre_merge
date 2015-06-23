@@ -30,6 +30,11 @@
 
 #include "firmwares/rotorcraft/autopilot.h"
 #include <math.h>
+#include "state.h"
+#include "math/pprz_algebra_int.h"
+#include "math/pprz_geodetic_int.h"
+#include "math/pprz_simple_matrix.h"
+
 
 // TODO: sane values
 #ifndef FINKEN_SYSTEM_P
@@ -48,13 +53,45 @@
 #define FINKEN_THRUST_I /*  0.05  */0.05
 #endif
 
+#ifndef FINKEN_VELOCITY_X_P
+#define FINKEN_VELOCITY_X_P 0.05
+#endif
+
+#ifndef FINKEN_VELOCITY_Y_P
+#define FINKEN_VELOCITY_Y_P 0.05
+#endif
+
+#ifndef FINKEN_VELOCITY_X_D
+#define FINKEN_VELOCITY_X_D 0.5
+#endif
+
+#ifndef FINKEN_VELOCITY_Y_D
+#define FINKEN_VELOCITY_Y_D 0.5
+#endif
+
 
 #ifndef FINKEN_SYSTEM_UPDATE_FREQ
 #define FINKEN_SYSTEM_UPDATE_FREQ 30
 #endif
 
+#ifndef FINKEN_SYSTEM_DT
+#define FINKEN_SYSTEM_DT 1/FINKEN_SYSTEM_UPDATE_FREQ
+#endif
+
 #ifndef FINKEN_VERTICAL_VELOCITY_FACTOR
 #define FINKEN_VERTICAL_VELOCITY_FACTOR 0.04
+#endif
+
+#ifndef FINKEN_VELOCITY_CONTROL_MODE
+#define FINKEN_VELOCITY_CONTROL_MODE 0
+#endif
+
+#ifndef FINKEN_VELOCITY_X
+#define FINKEN_VELOCITY_X 0.5	// m/sec
+#endif
+
+#ifndef FINKEN_VELOCITY_Y
+#define FINKEN_VELOCITY_Y 0.5	// m/sec --> ACCEL_BFP_OF_REAL
 #endif
 
 struct system_model_s finken_system_model;
@@ -67,6 +104,10 @@ void finken_system_model_init(void) {
   finken_system_model.velocity_theta = 0.0;
   finken_system_model.velocity_x     = 0.0;
   finken_system_model.velocity_y     = 0.0;
+
+	finken_system_model.acceleration_x = 0.0;
+	finken_system_model.acceleration_y = 0.0;
+	finken_system_model.acceleration_z = 0.0;
 
 	finken_actuators_set_point.alpha  = 0.0;
 	finken_actuators_set_point.beta   = 0.0;
@@ -82,15 +123,47 @@ void finken_system_model_periodic(void)
 	update_actuators_set_point();
 }
 
+//float local_accel[3][1];	
+//float global_accel[3][1];
+struct Int32Eulers *angles; //roll = phi; pitch = theta; jaw = psi
+struct Int32RMat R;
+struct Int32Eulers *angels_t;
+struct Int32Vect3 global_accel;
+struct Int32Vect3 local_accel;
+struct NedCoor_i *ned_accel_i;
+//struct Int32Eulers angles;
+
 void update_finken_system_model(void)
 {
 	if(finken_sensor_model.distance_z < 2.5) {
 		finken_system_model.distance_z     = finken_sensor_model.distance_z;
 	}
-	
-  finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
-  finken_system_model.velocity_x     = finken_sensor_model.velocity_x;
-  finken_system_model.velocity_y     = finken_sensor_model.velocity_y;
+
+	//if(!bit_is_set(state.accel_status, ACCEL_NED_I))	{
+		ned_accel_i = stateGetAccelNed_i();
+		local_accel.x   = ned_accel_i->x;	//north
+		local_accel.y   = ned_accel_i->y;	//east
+		local_accel.z   = 0;//ned_accel_i->z;	//down	
+	//}
+	/*else{
+ 		local_accel.x  = 0.0;
+ 		local_accel.y   = 0.0;
+ 		local_accel.z   = 0.0;
+	}*/
+
+	angles = stateGetNedToBodyEulers_i();
+	int32_rmat_of_eulers_321(&R, angles);	//from local to global
+
+	//int32_rmat_transp_vmult(&global_accel, &R, &local_accel);	//transform local acceleration into global coordinate system
+	global_accel.x = local_accel.x;
+	global_accel.y = local_accel.y;
+
+
+	finken_system_model.velocity_x    += global_accel.x * FINKEN_SYSTEM_DT;//(((global_accel.x) >> 10) + ((global_accel.x) % 1024)) * FINKEN_SYSTEM_DT;//finken_sensor_model.acceleration_x * FINKEN_SYSTEM_DT;
+	finken_system_model.velocity_y    += global_accel.y * FINKEN_SYSTEM_DT;//(((global_accel.y) >> 10) + ((global_accel.y) % 1024)) * FINKEN_SYSTEM_DT;//finken_sensor_model.acceleration_y * FINKEN_SYSTEM_DT;
+
+	finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
+
 }
 
 /*
@@ -99,18 +172,30 @@ void update_finken_system_model(void)
 float sum_error_x = 0;
 float sum_error_y = 0;
 float sum_error_z = 0;
-float distance_z_old = 0.0; 
-
+float distance_z_old = 0.0;
 
 void update_actuators_set_point()
 {
-	/* front , back */
-	float error_x =   finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
-	/* left , right */
-	float error_y =   finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
 
-	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
-	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
+	if(FINKEN_VELOCITY_CONTROL_MODE)	{
+
+		float error_x_p = (FINKEN_VELOCITY_X - finken_system_model.velocity_x) * FINKEN_VELOCITY_X_P;
+		float error_y_p = (FINKEN_VELOCITY_Y - finken_system_model.velocity_y) * FINKEN_VELOCITY_Y_P;
+		float error_x_d = (0 - finken_system_model.acceleration_x) * FINKEN_VELOCITY_X_D;	//constant velocity
+		float error_y_d = (0 - finken_system_model.acceleration_y) * FINKEN_VELOCITY_Y_D;	//constant velocity
+
+		finken_actuators_set_point.beta = error_x_p + error_x_d;
+		finken_actuators_set_point.alpha = error_y_p + error_y_d;
+	}
+	else	{
+		/* front , back */
+		float error_x =   finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
+		/* left , right */
+		float error_y =   finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
+
+		finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
+		finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
+	}
 
 
 	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z; 

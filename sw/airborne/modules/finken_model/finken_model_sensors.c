@@ -26,6 +26,12 @@
 #include "modules/sonar/sonar_array_i2c.h"
 #include "modules/finken_ir_adc/finken_ir_adc.h"
 
+#include "state.h"
+#include "subsystems/ins/ins_int.h"
+
+//#include "math/pprz_geodetic_int.h"
+//#include "state.h"
+
 struct sensor_model_s finken_sensor_model;
 
 void finken_sensor_model_init(void)
@@ -47,6 +53,8 @@ void finken_sensor_model_init(void)
   register_periodic_telemetry(DefaultPeriodic, "FINKEN_SENSOR_MODEL", send_finken_sensor_model_telemetry);
 }
 
+//struct NedCoor_i *ned_accel_i;
+
 void finken_sensor_model_periodic(void)
 {
   finken_sensor_model.distance_z       = ir_distance_equalized;
@@ -66,9 +74,18 @@ void finken_sensor_model_periodic(void)
 		finken_sensor_model.distance_d_left  = sonar_values.left;
 	else
 		finken_sensor_model.distance_d_left  = 200;
-  finken_sensor_model.acceleration_x   = 0.0;
-  finken_sensor_model.acceleration_y   = 0.0;
-  finken_sensor_model.acceleration_z   = 0.0;
+
+	struct NedCoor_i *ned_accel_i;	
+	//ned_accel_i = stateGetAccelNed_i();
+	ned_accel_i = ins_int_get_accel();
+	/*	finken_sensor_model.acceleration_x   = (((ned_accel_i->x) >> 10) + (ned_accel_i->x % 1024))/1000.0f;	//north
+		finken_sensor_model.acceleration_y   = (((ned_accel_i->x) >> 10) + (ned_accel_i->y % 1024))/1000.0f;	//east
+		finken_sensor_model.acceleration_z   = (((ned_accel_i->x) >> 10) + (ned_accel_i->z % 1024))/1000.0f;	//down	
+	*/
+	finken_sensor_model.acceleration_x = ned_accel_i->x;
+	finken_sensor_model.acceleration_y = ned_accel_i->y;
+	finken_sensor_model.acceleration_z = ned_accel_i->z;
+	
   finken_sensor_model.velocity_alpha   = 0.0;
   finken_sensor_model.velocity_beta    = 0.0;
   finken_sensor_model.velocity_theta   = 0.0;

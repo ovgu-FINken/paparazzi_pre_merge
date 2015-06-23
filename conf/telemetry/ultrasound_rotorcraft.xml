@@ -42,6 +42,10 @@
       <!--<message name="PX4FLOW"                period="1"/>-->
 		</mode>
 
+    <mode name="accel">
+      <message name="INS"                      period="0.2"/>
+    </mode>
+
     <mode name="ppm">
       <message name="ROTORCRAFT_CMD"           period=".05"/>
       <message name="PPM"                      period="0.5"/>

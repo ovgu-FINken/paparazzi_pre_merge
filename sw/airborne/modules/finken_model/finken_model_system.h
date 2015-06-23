@@ -38,6 +38,9 @@ struct system_model_s {
   float velocity_theta;
   float velocity_x;
   float velocity_y;
+  float acceleration_x;
+  float acceleration_y;
+  float acceleration_z;
 };
 
 extern struct system_model_s finken_system_model;
