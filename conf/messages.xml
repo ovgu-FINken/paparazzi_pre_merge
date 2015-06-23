@@ -2242,21 +2242,14 @@
     <field name="setpoint_z" type="float" unit="m D"/>
   </message>
 
-  <message name="HENRY_GNSS" id="255">
-    <field name="last_imu_update" type="uint32"/>
-    <field name="GPS_time" type="double"/>
-    <field name="GPS_solution_valid" type="uint8"/>
-    <field name="latitude" type="double" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="longitude" type="double" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="altitude" type="double" />
-    <field name="North" type="double" />
-    <field name="East" type="double" />
-    <field name="Down" type="double" />
-    <field name="SVs_Tracked" type="uint8" />
-    <field name="SVs_PVT" type="uint8" />
-    <field name="V_North" type="double"/>
-    <field name="V_East" type="double"/>
-    <field name="V_Down" type="double"/>
+   <message name="X_PID" id="255">
+    <description>Values of the wall/collision-avoidance pid-controller</description>
+    <field name="timestep" type="uint32"/>
+    <field name="p" type="float"/>
+    <field name="i" type="float"/>
+    <field name="d" type="float"/>
+    <field name="error" type="float"/>
+    <field name="out" type="float"/>
   </message>
 
 </msg_class>
@@ -2868,6 +2861,8 @@
     <field name="tx_msgs" type="uint32"/>
     <field name="ping_time" type="float" format="%.2f" unit="ms"/>
   </message>
+  
+ 
 
   <message name="PLUMES" id="100">
     <field name="ids" type="string" format="csv"/>

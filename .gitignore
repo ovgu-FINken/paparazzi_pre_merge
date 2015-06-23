@@ -173,3 +173,6 @@ tests/results/*
 
 *.dSYM
 
+/conf/flight_plans/ovgu.xml.orig
+/conf/modules/finken_model.xml.orig
+/sw/airborne/modules/finken_model/finken_model_system.c.orig
