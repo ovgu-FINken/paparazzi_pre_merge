@@ -80,7 +80,7 @@ struct pid_controller yPIDController;
 
 
 //this is for creating the different pids and assigning minmax-values to them.
-void init_pid()
+static void init_pid()
 {
 	zPIDController.p = 1;// zero integral coeff, because limiting the PID output will mess up the integral part
 	zPIDController.d = 1;
@@ -139,7 +139,7 @@ float distance_z_old = 0.0;
 float oldIRDist = 0;
 
 //This method is for the height controller. Since we will use a different one, it is useless, but not yet deleted. :D
-float pid_thrust(float irDist)
+static float pid_thrust(float irDist)
 {
 	float target, curr, error;
 
@@ -156,7 +156,7 @@ float pid_thrust(float irDist)
 //pid_controller for x and y
 //currently, it will only controll the first sonar-parameter (front or left), which is just for testing. should include an integration
 //of front-back and left-right
-float pid_planar(float sonar_dist_front, float sonar_dist_back, struct pid_controller *pid)
+static float pid_planar(float sonar_dist_front, float sonar_dist_back, struct pid_controller *pid)
 {
 	float sonar_dist = sonar_dist_front - sonar_dist_back;	//Todo controller has to be changed for front-back controlling!
 
