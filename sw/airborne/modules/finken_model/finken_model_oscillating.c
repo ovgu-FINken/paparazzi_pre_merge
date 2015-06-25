@@ -23,11 +23,11 @@ float height_changing_rate;
 bool go_down;
 bool search_neighbor;
 bool check_direction;
-int state;
+int finite_state;
 
 enum sonar_direction{front, side};
 
-int16_t getSensorValue(uint8 ac_id, enum sensor_pos){
+static uint16_t getSensorValue(uint16_t ac_id, enum sonar_direction sensor_pos){
     
     if( sensor_pos == front ){
         
@@ -41,10 +41,10 @@ int16_t getSensorValue(uint8 ac_id, enum sensor_pos){
                 return finken_sensor_model.distance_d_right;
                 
             case 202: //purple
-                return finken_sensor_model.distance_d_right;
+                return finken_sensor_model.distance_d_left;
                 
             case 203: //green
-                return finken_sensor_model.distance_d_left;
+                return finken_sensor_model.distance_d_right;
                 
             case 204: //blue
                 return finken_sensor_model.distance_d_left;
@@ -68,30 +68,30 @@ void finken_oscillating_model_init(void) {
     finken_oscillating_mode = false;
     search_neighbor = true;
     check_direction = false;
-    state = 0;
+    finite_state = 0;
 }
 
 void finken_oscillating_model_periodic(void)
 {
         if ( finken_oscillating_mode ) {
         
-            switch ( state ){
+            switch ( finite_state ){
                 case 0: // no copters found
                     if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND &&
                          getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
                         search_neighbor = false;
                         check_direction = false;
-                        state = 2;
+                        finite_state = 2;
                     } else {
-                        if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND ||
-                             getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                        if ( (getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND) ||
+                             (getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND)) {
                             search_neighbor = true;
                             check_direction = true;
-                            state = 1;
+                            finite_state = 1;
                         } else {
                             search_neighbor = true;
                             check_direction = false;
-                            state = 0;
+                            finite_state = 0;
                         }
                     }
                     break;
@@ -100,17 +100,17 @@ void finken_oscillating_model_periodic(void)
                          getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
                         search_neighbor = false;
                         check_direction = false;
-                        state = 2;
+                        finite_state = 2;
                     } else {
-                        if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND ||
-                             getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                        if ( (getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND) ||
+                             (getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND)) {
                             search_neighbor = true;
                             check_direction = false;
-                            state = 1;
+                            finite_state = 1;
                         } else {
                             search_neighbor = true;
                             check_direction = false;
-                            state = 0;
+                            finite_state = 0;
                         }
                     }
                     break;
@@ -119,17 +119,17 @@ void finken_oscillating_model_periodic(void)
                          getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
                         search_neighbor = false;
                         check_direction = false;
-                        state = 2;
+                        finite_state = 2;
                     } else {
-                        if ( getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND ||
-                             getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND) {
+                        if ( (getSensorValue(AC_ID, front) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, front) < FINKEN_SONAR_UPPER_BOUND) ||
+                             (getSensorValue(AC_ID, side) > FINKEN_SONAR_LOWER_BOUND && getSensorValue(AC_ID, side) < FINKEN_SONAR_UPPER_BOUND)) {
                             search_neighbor = true;
                             check_direction = true;
-                            state = 1;
+                            finite_state = 1;
                         } else {
                             search_neighbor = true;
                             check_direction = true;
-                            state = 0;
+                            finite_state = 0;
                         }
                     }
                     break;
@@ -173,7 +173,6 @@ void finken_oscillating_model_periodic(void)
                 }
             }
         }
-    }
 }
 
 //void update_finken_oscillating_model(void)
