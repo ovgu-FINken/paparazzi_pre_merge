@@ -19,6 +19,7 @@
 			<message name="WP_MOVED" period="2.6" />
 			<message name="INS" period="2.7" />
 			<message name="X_PID" period="0.2" />
+			<message name="FLOAT_PID" period="0.2" />
 		</mode>
 		<mode name="extended">
 			<message name="FINKEN_SENSOR_MODEL" period="1.0" />

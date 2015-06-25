@@ -2233,14 +2233,17 @@
     <field name="bus_number"                  type="uint8"/>
   </message>
 
-  <message name="RDYB_TRAJECTORY" id="254">
-    <field name="commanded_phi" type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="commanded_theta" type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="commanded_psi" type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="setpoint_x" type="float" unit="m N"/>
-    <field name="setpoint_y" type="float" unit="m E"/>
-    <field name="setpoint_z" type="float" unit="m D"/>
+
+   <message name="FLOAT_PID" id="254">
+    <description>Values of the wall/collision-avoidance pid-controller</description>
+    <field name="timestep" type="uint32"/>
+    <field name="p" type="float"/>
+    <field name="i" type="float"/>
+    <field name="d" type="float"/>
+    <field name="error" type="float"/>
+    <field name="out" type="float"/>
   </message>
+
 
    <message name="X_PID" id="255">
     <description>Values of the wall/collision-avoidance pid-controller</description>
