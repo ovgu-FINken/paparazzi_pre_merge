@@ -76,6 +76,14 @@ enum Sonars{
 	END
 };
 
+enum SonarState{
+	READY,
+	RANGING,
+	FETCHING
+};
+
+enum SonarState sonarState[END];
+
 
 struct sonar_values_s sonar_values;
 
@@ -119,6 +127,9 @@ void sonar_array_i2c_init(void)
 	for(unsigned int i=START; i<END; i++)
 		setSonarValue(i, 0);
 
+	for(unsigned int i=START; i<END; i++)
+		sonarState[i] = READY;
+
 	// register telemetry
 	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
 }
@@ -129,30 +140,36 @@ void sonar_array_i2c_init(void)
  */
 static void sonar_start_ranging(enum Sonars sonar)
 {
-	sonar_i2c_write_trans[sonar].buf[0] = 81;
-	i2c_transmit(&SONAR_I2C_DEV, 
+	if(sonarState[sonar] == READY){
+		sonar_i2c_write_trans[sonar].buf[0] = 81;
+		i2c_transmit(&SONAR_I2C_DEV, 
 							 &sonar_i2c_write_trans[sonar],
 							 (SONAR_ADDR_FRONT + sonar) << 1,
 							 1); 
+		sonarState[sonar]= RANGING;
+	}
 }
 
 
 static void sonar_read_range(enum Sonars sonar)
 {
-	//if(sonar_i2c_read_trans[sonar].status == I2CTransDone){
+	if(sonarState[sonar] == FETCHING){
 				uint16_t value = sonar_i2c_read_trans[sonar].buf[0];
 				value<<=8;
 				value |= sonar_i2c_read_trans[sonar].buf[1];
 				setSonarValue(sonar, value);
-	//}
+				sonarState[sonar] = READY;
+	}
 
 	sonar_i2c_read_trans[sonar].buf[0] = 0;
 	sonar_i2c_read_trans[sonar].buf[1] = 0;
-	i2c_receive(&SONAR_I2C_DEV, 
+	if(sonarState[sonar] == RANGING){
+		i2c_receive(&SONAR_I2C_DEV, 
 							&sonar_i2c_read_trans[sonar], 
 				      (SONAR_ADDR_FRONT + sonar)<<1 | 1, 
 				      2);
-
+		sonarState[sonar] = FETCHING;
+	}
 }
 
 static void sonar_read_all(void)
@@ -169,7 +186,7 @@ void sonar_array_i2c_periodic(void)
 {
 #ifndef SITL
 	sonar_read_range(current_sonar);
-	current_sonar ++;
+	current_sonar++;
 	if(current_sonar == END)
 		current_sonar = START;
 	

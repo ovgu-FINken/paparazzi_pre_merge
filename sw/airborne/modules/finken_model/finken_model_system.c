@@ -84,9 +84,7 @@ void finken_system_model_periodic(void)
 
 void update_finken_system_model(void)
 {
-	if(finken_sensor_model.distance_z < 2.5) {
-		finken_system_model.distance_z     = finken_sensor_model.distance_z;
-	}
+	finken_system_model.distance_z     = finken_sensor_model.distance_z;
 	
   finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
   finken_system_model.velocity_x     = finken_sensor_model.velocity_x;

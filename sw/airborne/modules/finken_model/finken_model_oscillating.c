@@ -174,31 +174,3 @@ void finken_oscillating_model_periodic(void)
             }
         }
 }
-
-//void update_finken_oscillating_model(void)
-//{
-//	if(finken_sensor_model.distance_z < 2.5) {
-//		finken_oscillating_model.distance_z     = finken_sensor_model.distance_z;
-//	}
-//	
-//  finken_oscillating_model.velocity_theta = finken_sensor_model.velocity_theta;
-//  finken_oscillating_model.velocity_x     = finken_sensor_model.velocity_x;
-//  finken_oscillating_model.velocity_y     = finken_sensor_model.velocity_y;
-//}
-//
-//void send_finken_oscillating_model_telemetry(struct transport_tx *trans, struct link_device* link)
-//{
-//  trans=trans;
-//  link=link;
-//  DOWNLINK_SEND_FINKEN_SYSTEM_MODEL(
-//    DefaultChannel,
-//    DefaultDevice,
-//    &finken_oscillating_model.distance_z,
-//    &finken_oscillating_model.velocity_theta,
-//    &finken_oscillating_model.velocity_x,
-//    &finken_oscillating_model.velocity_y,
-//    &finken_actuators_set_point.alpha,
-//    &finken_actuators_set_point.beta,
-//    &finken_actuators_set_point.thrust
-//  );
-//}
