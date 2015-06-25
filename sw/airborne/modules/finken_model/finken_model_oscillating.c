@@ -63,7 +63,7 @@ void finken_oscillating_model_init(void) {
     height_oscillating_up = 0.9;
     middle = ((height_oscillating_up - height_oscillating_down) / 2) + height_oscillating_down;
     finken_oscillating_last_time = 0;
-    height_changing_rate = 0.05;
+    height_changing_rate = 0.02;
     go_down = false;
     finken_oscillating_mode = false;
     search_neighbor = true;
