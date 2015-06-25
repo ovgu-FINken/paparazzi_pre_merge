@@ -8,8 +8,8 @@ float timeStep = 0.03;
 int init = 0;
 
 void float_controller_init(void) {
-	initDefaults(xPIDController);
-	initDefaults(yPIDController);
+	initFloatController(&xPIDController);
+	initFloatController(&yPIDController);
 	register_periodic_telemetry(DefaultPeriodic, "FLOAT_PID", send_float_pid_telemetry);
 }
 
@@ -46,7 +46,7 @@ int getYDistanceDiff() {
 	}
 }
 
-void initDefaults(struct pid_controller *con) {
+void initFloatController(struct pid_controller *con) {
 	con->p = 0;
 	con->i = 0.9;
 	con->d = 0.1;

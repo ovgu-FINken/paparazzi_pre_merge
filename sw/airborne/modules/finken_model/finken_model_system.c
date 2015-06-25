@@ -84,10 +84,10 @@ struct pid_controller leftPIDController;
 
 //this is for creating the different pids and assigning minmax-values to them.
 void init_pid() {
-	initDefaults(&frontPIDController);
-	initDefaults(&rightPIDController);
-	initDefaults(&backPIDController);
-	initDefaults(&leftPIDController);
+	initFloatController(&frontPIDController);
+	initFloatController(&rightPIDController);
+	initFloatController(&backPIDController);
+	initFloatController(&leftPIDController);
 }
 
 void finken_system_model_init(void) {

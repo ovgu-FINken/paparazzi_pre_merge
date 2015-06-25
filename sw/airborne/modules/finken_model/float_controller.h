@@ -8,5 +8,5 @@
 
 extern void float_controller_init(void);
 extern void float_controller_periodic(void);
-
+extern void send_float_pid_telemetry(struct transport_tx *trans, struct link_device *link);
 #endif /* SW_AIRBORNE_MODULES_FINKEN_MODEL_FLOAT_CONTROLLER_H_ */

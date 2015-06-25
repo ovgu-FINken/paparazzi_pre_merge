@@ -32,7 +32,7 @@
 		<file name="finken_model_system.c" />
 		<file name="finken_model_actuators.c" />
 		<file name="finken_model_oscillating.c" />
-
+		<file name="float_controller.c" />
 		<define name="FINKEN_THRUST_DEFAULT" value="0.45" />
 		<define name="FINKEN_THRUST_LOW" value="0.60" />
 		<file name="finken_model_pid.c" />
