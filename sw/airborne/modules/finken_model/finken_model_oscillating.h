@@ -8,6 +8,9 @@
 #include "subsystems/datalink/transport.h"
 #include "subsystems/datalink/telemetry.h"
 
+#define FINKEN_SONAR_LOWER_BOUND 30
+#define FINKEN_SONAR_UPPER_BOUND 60
+
 extern bool finken_oscillating_mode;
 extern uint16_t finken_oscillating_last_time;
 extern bool search_neighbor;
