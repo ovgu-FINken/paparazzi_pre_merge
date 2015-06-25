@@ -31,7 +31,6 @@
 #include "arch/stm32/subsystems/radio_control/spektrum_arch.h"
 
 #include "finken_model_pid.h"
-
 #include "firmwares/rotorcraft/autopilot.h"
 #include <math.h>
 
@@ -105,6 +104,7 @@ void finken_system_model_init(void) {
 
 	register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_system_model_telemetry);
 	register_periodic_telemetry(DefaultPeriodic, "X_PID", send_x_pid_telemetry);
+	register_periodic_telemetry(DefaultPeriodic, "FLOAT_DEBUG", send_float_pid_telemetry);
 }
 
 void finken_system_model_periodic(void) {
@@ -197,28 +197,24 @@ void update_actuators_set_point() {
 	// TODO: Theta
 }
 
-void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link)
-{
-  trans=trans;
-  link=link;
-  DOWNLINK_SEND_FINKEN_SYSTEM_MODEL(
-    DefaultChannel,
-    DefaultDevice,
-    &finken_system_model.distance_z,
-    &finken_system_model.velocity_theta,
-    &finken_system_model.velocity_x,
-    &finken_system_model.velocity_y,
-    &finken_actuators_set_point.alpha,
-    &finken_actuators_set_point.beta,
-    &finken_actuators_set_point.thrust,
-    &finken_system_set_point.distance_z
-  );
+void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link) {
+	trans = trans;
+	link = link;
+	DOWNLINK_SEND_FINKEN_SYSTEM_MODEL(DefaultChannel, DefaultDevice, &finken_system_model.distance_z, &finken_system_model.velocity_theta, &finken_system_model.velocity_x,
+			&finken_system_model.velocity_y, &finken_actuators_set_point.alpha, &finken_actuators_set_point.beta, &finken_actuators_set_point.thrust,
+			&finken_system_set_point.distance_z);
 }
 
 void send_x_pid_telemetry(struct transport_tx *trans, struct link_device *link) {
-trans = trans;
-link = link;
-DOWNLINK_SEND_X_PID(DefaultChannel, DefaultDevice, &frontPIDController.t, &frontPIDController.p, &frontPIDController.i, &frontPIDController.d, &frontPIDController.previousError,
-		&frontPIDController.res);
+	trans = trans;
+	link = link;
+	DOWNLINK_SEND_X_PID(DefaultChannel, DefaultDevice, &frontPIDController.t, &frontPIDController.pPart, &frontPIDController.iPart, &frontPIDController.dPart,
+			&frontPIDController.previousError, &frontPIDController.res);
+}
+void send_float_pid_telemetry(struct transport_tx *trans, struct link_device *link) {
+	trans = trans;
+	link = link;
+	DOWNLINK_SEND_FLOAT_DEBUG(DefaultChannel, DefaultDevice, &xFinkenFloatController.t, &xFinkenFloatController.pPart, &xFinkenFloatController.iPart, &xFinkenFloatController.dPart,
+			&xFinkenFloatController.previousError, &xFinkenFloatController.res);
 }
 

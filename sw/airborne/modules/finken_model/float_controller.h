@@ -6,7 +6,14 @@
 #include "subsystems/datalink/transport.h"
 #include "subsystems/datalink/telemetry.h"
 
+extern struct pid_controller xFinkenFloatController;
+extern struct pid_controller yFinkenFloatController;
+
 extern void float_controller_init(void);
 extern void float_controller_periodic(void);
-extern void send_float_pid_telemetry(struct transport_tx *trans, struct link_device *link);
+extern void initFloatController(struct pid_controller *con);
+
+extern int getXDistanceDiff(void);
+extern int getYDistanceDiff(void);
+
 #endif /* SW_AIRBORNE_MODULES_FINKEN_MODEL_FLOAT_CONTROLLER_H_ */

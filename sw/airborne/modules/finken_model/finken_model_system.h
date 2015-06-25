@@ -32,6 +32,7 @@
 #include "mcu_periph/link_device.h"
 #include "subsystems/datalink/transport.h"
 #include "subsystems/datalink/telemetry.h"
+#include "float_controller.h"
 
 struct system_model_s {
   float distance_z;
@@ -49,4 +50,5 @@ void update_finken_system_model(void);
 
 extern void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link);
 extern void send_x_pid_telemetry(struct transport_tx *trans, struct link_device *link);
+extern void send_float_pid_telemetry(struct transport_tx *trans, struct link_device *link);
 #endif

@@ -29,9 +29,10 @@ float adjust(float error, float time_step, struct pid_controller *con) {
 	}
 
 	con->previousError = error;
-
-	float res = (con->p * error) + (con->i * con->integral)
-			+ (con->d * derivative);
+	con->pPart = con->p * error;
+	con->iPart = con->i * con->integral;
+	con->dPart = con->d * derivative;
+	float res = con->pPart + con->iPart + con->dPart;
 
 	if (con->checkMinMax == 1) {
 		if (res < con->min) {
@@ -44,12 +45,22 @@ float adjust(float error, float time_step, struct pid_controller *con) {
 	con->res = res;
 	return res;
 }
-
-void initDefaults(struct pid_controller *con){
+void initWallController(struct pid_controller *con) {
 	con->p = 4.7;
 	con->i = 0;
-	con->d = 6.9;
-	float cap = 12;
+	con->d = 1;
+	float cap = 0;
 	con->min = -cap;
 	con->max = cap;
+	con->checkMinMax = 1;
 }
+//void initWallController(struct pid_controller *con) {
+//	con->p = 4.7;
+//	con->i = 0;
+//	con->d = 1;
+//	float cap = 250;
+//	con->min = -cap;
+//	con->max = cap;
+//	con->checkMinMax = 1;
+//}
+
