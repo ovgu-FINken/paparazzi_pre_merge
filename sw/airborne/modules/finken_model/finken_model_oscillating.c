@@ -28,7 +28,7 @@ void finken_oscillating_model_init(void) {
     height_oscillating_up = 0.9;
     height_oscillating_down = 0.40;
     middle = ((height_oscillating_up - height_oscillating_down) / 2) + height_oscillating_down;
-    height_changing_rate = 0.05;
+    height_changing_rate = 0.02;
     go_down = false;
 }
 
