@@ -113,7 +113,7 @@
       <program name="GCS"/>
     </session>
 
-    <session name="Flight USB-serial@9600 - CHC">
+    <session name="Flight USB-serial@9600 - CHC 1Copter">
       <program name="Data Link">
         <arg flag="-d" constant="/dev/pts/"/>
 	<arg flag="-noac_info" />
@@ -122,7 +122,7 @@
       <program name="GCS"/>
     </session>
 
-    <session name="Flight USB-serial@9600 - CHC 2Copter">
+    <session name="Flight USB-serial@9600 - CHC 2Copters">
       <program name="Data Link">
         <arg flag="-d" constant="/dev/pts/"/>
 	<arg flag="-noac_info" />
@@ -133,6 +133,27 @@
       </program>
       <program name="Server"/>
       <program name="GCS"/>
+    </session>
+
+    <session name="Flight USB-serial@9600 - CHC 4Copters">
+        <program name="Data Link">
+            <arg flag="-d" constant="/dev/pts/"/>
+            <arg flag="-noac_info" />
+        </program>
+        <program name="Data Link">
+            <arg flag="-d" constant="/dev/pts/"/>
+            <arg flag="-noac_info" />
+        </program>
+        <program name="Data Link">
+            <arg flag="-d" constant="/dev/pts/"/>
+            <arg flag="-noac_info" />
+        </program>
+        <program name="Data Link">
+            <arg flag="-d" constant="/dev/pts/"/>
+            <arg flag="-noac_info" />
+        </program>
+        <program name="Server"/>
+        <program name="GCS"/>
     </session>
 
    <session name="Flight USB-serial@57600">
