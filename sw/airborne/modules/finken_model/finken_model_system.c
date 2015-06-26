@@ -27,6 +27,8 @@
 #include "modules/finken_model/finken_model_sensors.h"
 #include "modules/finken_model/finken_model_environment.h"
 
+#include "modules/finken_model/finken_model_statemachine.h"
+
 
 #include "firmwares/rotorcraft/autopilot.h"
 #include <math.h>
@@ -148,7 +150,8 @@ void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_
     &finken_actuators_set_point.alpha,
     &finken_actuators_set_point.beta,
     &finken_actuators_set_point.thrust,
-    &finken_system_set_point.distance_z
+    &finken_system_set_point.distance_z,
+    &finite_state
   );
 }
 
