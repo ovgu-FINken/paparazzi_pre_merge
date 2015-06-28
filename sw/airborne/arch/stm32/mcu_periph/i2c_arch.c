@@ -38,9 +38,6 @@
 #include "mcu_periph/gpio.h"
 
 
-#ifdef I2C_DEBUG_LED
-#include "i2c_debug_led.h"
-#endif // I2C_DEBUG_LED
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
@@ -59,6 +56,10 @@
 // Bit Control
 
 #define BIT_X_IS_SET_IN_REG(X,REG)  (((REG) & (X)) == (X))
+
+#ifdef I2C_DEBUG_LED
+#include "debug_led.h"
+#endif // I2C_DEBUG_LED
 
 // disable and enable irq functions are not implemented in libopencm3 defining them here
 // XXX: consider moving this definitions into libopencm3
@@ -178,7 +179,7 @@ static inline void PPRZ_I2C_SEND_START(struct i2c_periph *periph)
   periph->idx_buf = 0;
 
 #ifdef I2C_DEBUG_LED
-  LED_SHOW_ACTIVE_BITS(regs);
+  LED_SHOW_ACTIVE_BITS(i2c);
 
   LED2_ON();
   LED1_ON();
@@ -721,7 +722,7 @@ static inline void i2c_irq(struct i2c_periph *periph)
     LED1_OFF();
 
     // no transaction and also an error?
-    LED_SHOW_ACTIVE_BITS(regs);
+    LED_SHOW_ACTIVE_BITS(i2c);
 #endif
 
     // If we still get an interrupt but there are no more things to do
@@ -762,7 +763,7 @@ static inline void i2c_irq(struct i2c_periph *periph)
     LED1_OFF();
     LED2_OFF();
 
-    LED_SHOW_ACTIVE_BITS(regs);
+    LED_SHOW_ACTIVE_BITS(i2c);
 #endif
 
     // Notify everyone about the error ...
@@ -835,7 +836,7 @@ static inline void i2c_irq(struct i2c_periph *periph)
       LED2_OFF();
       LED1_OFF();
 
-      LED_SHOW_ACTIVE_BITS(regs);
+      LED_SHOW_ACTIVE_BITS(i2c);
 #endif
 
       // Clear Running Events
