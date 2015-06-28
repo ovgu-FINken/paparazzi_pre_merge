@@ -21,16 +21,15 @@ void setMinMax(float minParam, float maxParam, struct pid_controller *con) {
  */
 float adjust(float error, float time_step, struct pid_controller *con) {
 	con->t = time_step;
-	con->integral = con->integral + (error * time_step);
+//	con->integral = con->integral + (error * time_step);
 	float derivative = (error - con->previousError) / time_step;
 
 	if (con->previousError == 0) {
 		derivative = 0;
 	}
-
+	add_iPart(con, error * time_step);
 	con->previousError = error;
 	con->pPart = con->p * error;
-	con->iPart = con->i * con->integral;
 	con->dPart = con->d * derivative;
 	float res = con->pPart + con->iPart + con->dPart;
 
@@ -45,6 +44,7 @@ float adjust(float error, float time_step, struct pid_controller *con) {
 	con->res = res;
 	return res;
 }
+
 void initWallController(struct pid_controller *con) {
 	con->p = 4.7;
 	con->i = 0;
@@ -53,14 +53,33 @@ void initWallController(struct pid_controller *con) {
 	con->min = -cap;
 	con->max = cap;
 	con->checkMinMax = 1;
+	con->index = 0;
+	con->k = 6;
+	con->iPart = 0;
 }
-//void initWallController(struct pid_controller *con) {
-//	con->p = 4.7;
-//	con->i = 0;
-//	con->d = 1;
-//	float cap = 250;
-//	con->min = -cap;
-//	con->max = cap;
-//	con->checkMinMax = 1;
-//}
+
+void initFloatController(struct pid_controller *con) {
+	initWallController(con);
+	con->p = 1;
+	con->i = 0.0025;
+	con->d = 0;
+	con->checkMinMax = 1;
+	con->min = -15;
+	con->max = 15;
+}
+
+/*
+ * This method allows to add a new i_error into the ringbuffer
+ */
+extern void add_iPart(struct pid_controller *con, float i_error) {
+	con->index = con->index % con->k;
+//	con->iPart = con->iPart - con->ringbuffer[con->index] + i_error;i
+	float sum = 0;
+	for (int i = 0; i < con->k; i++){
+		sum += con->ringbuffer[i];
+	}
+	con->iPart = sum;
+	con->ringbuffer[con->index] = i_error;
+	con->index++;
+}
 

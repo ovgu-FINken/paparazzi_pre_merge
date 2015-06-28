@@ -25,11 +25,20 @@ struct pid_controller
 
 	// debug
 	float t;
-	float pPart, iPart, dPart;
+	float pPart, dPart;
+
+	//Ringbuffer mit addition aller i-Anteile
+	int k;	//Decides the size of the ringbuffer
+	int index; //Shows the position of the next value in the ringbuffer that will be overwritten
+	float iPart; //Shows the sum of all components of the ringbuffer
+	float ringbuffer[6]; //Saves the values of the last k entries
 };
 
 extern void setMinMax(float minParam, float maxParam,
 		struct pid_controller *con);
 extern float adjust(float error, float time_step, struct pid_controller *con);
 extern void initWallController(struct pid_controller *con);
+extern void add_iPart(struct pid_controller *con, float iPart);
+extern void initFloatController(struct pid_controller *con);
+
 #endif /* FINKEN_MODEL_PID_H_ */

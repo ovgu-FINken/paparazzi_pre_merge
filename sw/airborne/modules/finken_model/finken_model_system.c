@@ -83,10 +83,10 @@ struct pid_controller leftPIDController;
 
 //this is for creating the different pids and assigning minmax-values to them.
 void init_pid() {
-	initFloatController(&frontPIDController);
-	initFloatController(&rightPIDController);
-	initFloatController(&backPIDController);
-	initFloatController(&leftPIDController);
+	initWallController(&frontPIDController);
+	initWallController(&rightPIDController);
+	initWallController(&backPIDController);
+	initWallController(&leftPIDController);
 }
 
 void finken_system_model_init(void) {
@@ -173,24 +173,20 @@ void update_actuators_set_point() {
 
 	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
 	//finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
-
 	//finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
-//	the height controller. Since we will use a different one, it is currently not included.
-//	finken_actuators_set_point.thrust = pid_thrust(finken_system_model.distance_z);
 
-	//turn off x-y control until safe altitude is reached
-	if (finken_system_model.distance_z > MIN_HEIGHT) {
-		float front = pid_planar(finken_sensor_model.distance_d_front, &frontPIDController);
-		float back = pid_planar(finken_sensor_model.distance_d_back, &backPIDController);
-		float xDegree = ((front - back) / 141) * 12;
-		finken_actuators_set_point.alpha += xDegree;	//pitch
-
-		float left = pid_planar(finken_sensor_model.distance_d_left, &leftPIDController);
-		float right = pid_planar(finken_sensor_model.distance_d_right, &rightPIDController);
-		float yDegree = ((left - right) / 141) * 12;
-		finken_actuators_set_point.beta += yDegree;	//roll
-	}
+//	if (finken_system_model.distance_z > MIN_HEIGHT) {
+//		float front = pid_planar(finken_sensor_model.distance_d_front, &frontPIDController);
+//		float back = pid_planar(finken_sensor_model.distance_d_back, &backPIDController);
+//		float xDegree = ((front - back) / 141) * 12;
+//		finken_actuators_set_point.alpha += xDegree;	//pitch
+//
+//		float left = pid_planar(finken_sensor_model.distance_d_left, &leftPIDController);
+//		float right = pid_planar(finken_sensor_model.distance_d_right, &rightPIDController);
+//		float yDegree = ((left - right) / 141) * 12;
+//		finken_actuators_set_point.beta += yDegree;	//roll
+//	}
 
 	distance_z_old = finken_system_model.distance_z;
 
@@ -214,7 +210,7 @@ void send_x_pid_telemetry(struct transport_tx *trans, struct link_device *link) 
 void send_float_pid_telemetry(struct transport_tx *trans, struct link_device *link) {
 	trans = trans;
 	link = link;
-	DOWNLINK_SEND_FLOAT_DEBUG(DefaultChannel, DefaultDevice, &xFinkenFloatController.t, &xFinkenFloatController.pPart, &xFinkenFloatController.iPart, &xFinkenFloatController.dPart,
-			&xFinkenFloatController.previousError, &xFinkenFloatController.res);
+	DOWNLINK_SEND_FLOAT_DEBUG(DefaultChannel, DefaultDevice, &yFinkenFloatController.t, &yFinkenFloatController.pPart, &yFinkenFloatController.iPart, &yFinkenFloatController.dPart,
+			&yFinkenFloatController.previousError, &yFinkenFloatController.res);
 }
 

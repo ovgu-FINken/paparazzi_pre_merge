@@ -11,7 +11,6 @@ extern struct pid_controller yFinkenFloatController;
 
 extern void float_controller_init(void);
 extern void float_controller_periodic(void);
-extern void initFloatController(struct pid_controller *con);
 
 extern int getXDistanceDiff(void);
 extern int getYDistanceDiff(void);
