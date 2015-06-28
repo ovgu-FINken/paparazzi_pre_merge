@@ -190,7 +190,8 @@ static inline void PPRZ_I2C_SEND_START(struct i2c_periph *periph)
   LED1_OFF();
   LED2_OFF();
 #endif
-
+	if(periph->watchdog<0)
+		periph->watchdog=0;
   // Enable Error IRQ, Event IRQ but disable Buffer IRQ
   i2c_enable_interrupt(i2c, I2C_CR2_ITERREN);
   i2c_enable_interrupt(i2c, I2C_CR2_ITEVTEN);
@@ -1293,8 +1294,7 @@ static void i2c_wd_check(struct i2c_periph *periph)
 
       i2c_disable_interrupt(i2c, I2C_CR2_ITEVTEN);
       i2c_disable_interrupt(i2c, I2C_CR2_ITERREN);
-
-      i2c_peripheral_disable(i2c);
+			i2c_peripheral_disable(i2c);
 
 #if USE_I2C1
       if (i2c == I2C1) {
@@ -1327,16 +1327,20 @@ static void i2c_wd_check(struct i2c_periph *periph)
 
       /* setup gpios for normal i2c operation again */
       i2c_setup_gpio(i2c);
+			i2c_reset(i2c);
+  		i2c_set_own_7bit_slave_address(I2C2, 0);
 
       periph->trans_insert_idx = 0;
       periph->trans_extract_idx = 0;
       periph->status = I2CIdle;
 
-      i2c_enable_interrupt(i2c, I2C_CR2_ITEVTEN);
-      i2c_enable_interrupt(i2c, I2C_CR2_ITERREN);
 
       i2c_peripheral_enable(i2c);
-      periph->watchdog = 0; // restart watchdog
+      i2c_enable_interrupt(i2c, I2C_CR2_ITEVTEN);
+      i2c_enable_interrupt(i2c, I2C_CR2_ITERREN);
+  		i2c_setbitrate(&i2c2, I2C2_CLOCK_SPEED);
+
+      periph->watchdog = -1; // restart watchdog
 
       periph->errors->timeout_tlow_cnt++;
 
