@@ -81,5 +81,8 @@ extern void add_iPart(struct pid_controller *con, float i_error) {
 	con->iPart = sum;
 	con->ringbuffer[con->index] = i_error;
 	con->index++;
+
+//	Todo 1.) shouldn't the current i_error be added to the sum?
+//	Todo 2.) maybe (iPart /= ringbuffer.size) ?
 }
 

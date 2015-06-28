@@ -13,23 +13,28 @@ void float_controller_init(void) {
 
 void float_controller_periodic(void) {
 	if (oldL != 0) {
-//		if (sonar_values.front != 765) {
-//			int xVelocity = getXDistanceDiff(); // / timeStep;
-//			float xAcceleration = adjust(xVelocity, 1, &xFinkenFloatController);
-//			finken_actuators_set_point.alpha = xAcceleration;
-//		}
-//		if (sonar_values.left != 765) {
-//			int yVelocity = getYDistanceDiff(); // / timeStep;
-//			float yAcceleration = adjust(yVelocity, 1, &yFinkenFloatController);
-//			finken_actuators_set_point.beta = -yAcceleration;
-//		}
+		if (sonar_values.front != 765) {
+			int xVelocity = getXDistanceDiff(); // / timeStep;
+			float xAcceleration = adjust(xVelocity, 1, &xFinkenFloatController);
+			finken_actuators_set_point.alpha = xAcceleration;
+		}
+		if (sonar_values.left != 765) {
+			int yVelocity = getYDistanceDiff(); // / timeStep;
+			float yAcceleration = adjust(yVelocity, 1, &yFinkenFloatController);
+			finken_actuators_set_point.beta = -yAcceleration;
+		}
 	}
+
 	if (sonar_values.left != 765) {
 		oldL = sonar_values.left;
 	}
 	if (sonar_values.front != 765) {
-		oldR = sonar_values.right;
 		oldF = sonar_values.front;
+	}
+	if (sonar_values.right != 765) {
+		oldR = sonar_values.right;
+	}
+	if (sonar_values.back != 765) {
 		oldB = sonar_values.back;
 	}
 }

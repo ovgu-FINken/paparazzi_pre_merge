@@ -176,17 +176,17 @@ void update_actuators_set_point() {
 	//finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
 
-//	if (finken_system_model.distance_z > MIN_HEIGHT) {
-//		float front = pid_planar(finken_sensor_model.distance_d_front, &frontPIDController);
-//		float back = pid_planar(finken_sensor_model.distance_d_back, &backPIDController);
-//		float xDegree = ((front - back) / 141) * 12;
-//		finken_actuators_set_point.alpha += xDegree;	//pitch
-//
-//		float left = pid_planar(finken_sensor_model.distance_d_left, &leftPIDController);
-//		float right = pid_planar(finken_sensor_model.distance_d_right, &rightPIDController);
-//		float yDegree = ((left - right) / 141) * 12;
-//		finken_actuators_set_point.beta += yDegree;	//roll
-//	}
+	if (finken_system_model.distance_z > MIN_HEIGHT) {
+		float front = pid_planar(finken_sensor_model.distance_d_front, &frontPIDController);
+		float back = pid_planar(finken_sensor_model.distance_d_back, &backPIDController);
+		float xDegree = ((front - back) / 141) * 12;
+		finken_actuators_set_point.alpha += xDegree;	//pitch
+
+		float left = pid_planar(finken_sensor_model.distance_d_left, &leftPIDController);
+		float right = pid_planar(finken_sensor_model.distance_d_right, &rightPIDController);
+		float yDegree = ((left - right) / 141) * 12;
+		finken_actuators_set_point.beta += yDegree;	//roll
+	}
 
 	distance_z_old = finken_system_model.distance_z;
 
