@@ -2011,6 +2011,8 @@
 		<field name="Left_State" type="uint8"/>
 		<field name="Back_State" type="uint8"/>
 		<field name="Right_State" type="uint8"/>
+		<field name="I2C2_State" type="uint8" />
+		<field name="I2C2_WD"    type="int16" />
 	</message>
 
   <message name="AHRS_ARDRONE2" id="230">

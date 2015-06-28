@@ -183,8 +183,8 @@ void sonar_array_i2c_periodic(void)
 {
 #ifndef SITL
 	enum Sonars read_sonar = current_sonar;
-	enum Sonars fetch_sonar = (current_sonar+1)%RIGHT;
-	enum Sonars range_sonar = (current_sonar+2)%RIGHT;
+	enum Sonars fetch_sonar = (current_sonar+1)%END;
+	enum Sonars range_sonar = (current_sonar+2)%END;
 	
 	sonar_start_read(read_sonar);
 	sonar_read(fetch_sonar);
@@ -207,7 +207,9 @@ void send_sonar_debug_telemetry(struct transport_tx *trans, struct link_device *
 		sonarState+0,
 		sonarState+1,
 		sonarState+2,
-		sonarState+3
+		sonarState+3,
+		&i2c2.status,
+		&i2c2.watchdog
 	);
 }
 
