@@ -19,7 +19,7 @@ void float_controller_periodic(void) {
 		int yVelocity = getYDistanceDiff() / timeStep;
 
 		float xAcceleration = adjust(-xVelocity, 0.03, &xPIDController);
-		float yAcceleration = adjust(-yVelocity, 0.03, &xPIDController);
+		float yAcceleration = adjust(-yVelocity, 0.03, &yPIDController);
 		finken_actuators_set_point.alpha += xAcceleration;
 		finken_actuators_set_point.beta += yAcceleration;
 	}

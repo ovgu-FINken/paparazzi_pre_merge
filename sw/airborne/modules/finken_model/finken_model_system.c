@@ -172,9 +172,8 @@ void update_actuators_set_point() {
 	float velocity_z = (finken_system_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
 
 	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
-	//finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
-
-	//finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
+//	finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
+//	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
 //	the height controller. Since we will use a different one, it is currently not included.
 //	finken_actuators_set_point.thrust = pid_thrust(finken_system_model.distance_z);
@@ -193,8 +192,6 @@ void update_actuators_set_point() {
 	}
 
 	distance_z_old = finken_system_model.distance_z;
-
-	// TODO: Theta
 }
 
 void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link)
@@ -218,7 +215,14 @@ void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_
 void send_x_pid_telemetry(struct transport_tx *trans, struct link_device *link) {
 trans = trans;
 link = link;
-DOWNLINK_SEND_X_PID(DefaultChannel, DefaultDevice, &frontPIDController.t, &frontPIDController.p, &frontPIDController.i, &frontPIDController.d, &frontPIDController.previousError,
+DOWNLINK_SEND_X_PID(
+		DefaultChannel,
+		DefaultDevice,
+		&frontPIDController.t,
+		&frontPIDController.p,
+		&frontPIDController.i,
+		&frontPIDController.d,
+		&frontPIDController.previousError,
 		&frontPIDController.res);
 }
 
