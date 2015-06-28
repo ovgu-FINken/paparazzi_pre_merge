@@ -105,6 +105,7 @@ enum Sonars current_sonar;
 struct i2c_transaction sonar_i2c_read_trans[END];
 struct i2c_transaction sonar_i2c_write_trans[END];
 
+void send_sonar_debug_telemetry(struct transport_tx *trans, struct link_device *link);
 void sonar_array_i2c_init(void)
 {
 	current_sonar = START;
@@ -132,6 +133,7 @@ void sonar_array_i2c_init(void)
 
 	// register telemetry
 	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
+	register_periodic_telemetry(DefaultPeriodic, "SONAR_DEBUG", send_sonar_debug_telemetry);
 }
 
 
@@ -151,24 +153,27 @@ static void sonar_start_ranging(enum Sonars sonar)
 }
 
 
-static void sonar_read_range(enum Sonars sonar, enum Sonars next)
+static void sonar_start_read(enum Sonars sonar)
 {
-	if(sonarState[sonar] == RANGING){
+	if(sonarState[sonar] == FETCHING){
 		uint16_t value = sonar_i2c_read_trans[sonar].buf[0];
 		value<<=8;
 		value |= sonar_i2c_read_trans[sonar].buf[1];
 		setSonarValue(sonar, value);
 		sonarState[sonar] = READY;
 	}
-
-	if(sonarState[next] == RANGING) {
-		sonar_i2c_read_trans[next].buf[0] = 0;
-		sonar_i2c_read_trans[next].buf[1] = 0;
+}
+	
+static void sonar_read(enum Sonars sonar)
+{
+	if(sonarState[sonar] == RANGING) {
+		sonar_i2c_read_trans[sonar].buf[0] = 0;
+		sonar_i2c_read_trans[sonar].buf[1] = 0;
 		i2c_receive(&SONAR_I2C_DEV, 
-							  &sonar_i2c_read_trans[next], 
-				        (SONAR_ADDR_FRONT + next)<<1 | 1, 
+							  &sonar_i2c_read_trans[sonar], 
+				        (SONAR_ADDR_FRONT + sonar)<<1 | 1, 
 				        2);
-		sonarState[next] = FETCHING;
+		sonarState[sonar] = FETCHING;
 	}
 }
 
@@ -177,14 +182,14 @@ static void sonar_read_range(enum Sonars sonar, enum Sonars next)
 void sonar_array_i2c_periodic(void)
 {
 #ifndef SITL
-	enum Sonars next_sonar = current_sonar+1;
-	if(next_sonar == END)
-		next_sonar = START;
-	sonar_read_range(current_sonar, next_sonar);
+	enum Sonars read_sonar = current_sonar;
+	enum Sonars fetch_sonar = (current_sonar+1)%RIGHT;
+	enum Sonars range_sonar = (current_sonar+2)%RIGHT;
 	
-	next_sonar = current_sonar;
-
-	sonar_start_ranging(current_sonar);
+	sonar_start_read(read_sonar);
+	sonar_read(fetch_sonar);
+	sonar_start_ranging(range_sonar);
+	current_sonar = fetch_sonar;
 #else // SITL
 #warn "SITL not implemented for sonar_array_i2c yet"
 #endif // SITL
@@ -193,6 +198,17 @@ void sonar_array_i2c_periodic(void)
 void sonar_array_i2c_event(void)
 {
 	// i guess it it not possible to query verything so often
+}
+
+void send_sonar_debug_telemetry(struct transport_tx *trans, struct link_device *link){
+	trans=trans;
+	link=link;
+	DOWNLINK_SEND_SONAR_DEBUG(DefaultChannel, DefaultDevice,
+		sonarState+0,
+		sonarState+1,
+		sonarState+2,
+		sonarState+3
+	);
 }
 
 void send_sonar_array_telemetry(struct transport_tx *trans, struct link_device *link)
