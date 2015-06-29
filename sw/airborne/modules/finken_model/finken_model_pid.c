@@ -10,6 +10,7 @@
 /**
  * Set the min an max values of a pid_controller, which is passed as a parameter.
  */
+
 void setMinMax(float minParam, float maxParam, struct pid_controller *con) {
 	con->min = minParam;
 	con->max = maxParam;
