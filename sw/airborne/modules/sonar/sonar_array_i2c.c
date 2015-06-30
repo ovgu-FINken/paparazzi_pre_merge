@@ -76,6 +76,14 @@ enum Sonars{
 	END
 };
 
+enum SonarState{
+	READY,
+	RANGING,
+	FETCHING
+};
+
+enum SonarState sonarState[END];
+
 
 struct sonar_values_s sonar_values;
 
@@ -120,6 +128,9 @@ void sonar_array_i2c_init(void)
 	for(unsigned int i=START; i<END; i++)
 		setSonarValue(i, 0);
 
+	for(unsigned int i=START; i<END; i++)
+		sonarState[i] = READY;
+
 	// register telemetry
 	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
 	register_periodic_telemetry(DefaultPeriodic, "SONAR_DEBUG", send_sonar_debug_telemetry);
@@ -131,11 +142,14 @@ void sonar_array_i2c_init(void)
  */
 static void sonar_start_ranging(enum Sonars sonar)
 {
-	sonar_i2c_write_trans[sonar].buf[0] = 81;
-	i2c_transmit(&SONAR_I2C_DEV, 
+	if(sonarState[sonar] == READY){
+		sonar_i2c_write_trans[sonar].buf[0] = 81;
+		i2c_transmit(&SONAR_I2C_DEV, 
 							 &sonar_i2c_write_trans[sonar],
 							 (SONAR_ADDR_FRONT + sonar) << 1,
 							 1); 
+		sonarState[sonar]= RANGING;
+	}
 }
 
 
