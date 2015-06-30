@@ -11,7 +11,7 @@
 #include <math.h>
 
 bool finken_oscillating_mode;
-int finite_state;
+uint8_t finite_state;
 bool search_neighbor;
 bool check_direction;
 

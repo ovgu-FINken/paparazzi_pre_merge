@@ -13,7 +13,7 @@
 #define FINKEN_SONAR_UPPER_BOUND 60
 
 extern bool finken_oscillating_mode;
-extern int finite_state;
+extern uint8_t finite_state;
 extern bool search_neighbor;
 extern bool check_direction;
 

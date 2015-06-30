@@ -20,7 +20,7 @@
       <message name="DL_VALUE"                 period="2.1"/>
       <message name="ROTORCRAFT_NAV_STATUS"    period="2.0"/>
       <message name="FINKEN_SENSOR_MODEL"      period="0.9"/>
-	    <message name="FINKEN_SYSTEM_MODEL"      period="1.2"/>
+      <message name="FINKEN_SYSTEM_MODEL"      period="1.2"/>
       <message name="I2C_ERRORS"               period="5.0"/>
      </mode>
 
