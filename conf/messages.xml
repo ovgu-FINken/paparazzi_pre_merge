@@ -2006,7 +2006,14 @@
     <field name="cmd_theta"   type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
   </message>
 
-  <!--229 is free -->
+	<message name="SONAR_DEBUG" id="229">
+		<field name="Front_State" type="uint8"/>
+		<field name="Left_State" type="uint8"/>
+		<field name="Back_State" type="uint8"/>
+		<field name="Right_State" type="uint8"/>
+		<field name="I2C2_State" type="uint8" />
+		<field name="I2C2_WD"    type="int16" />
+	</message>
 
   <message name="AHRS_ARDRONE2" id="230">
     <field name="state" type="uint32" />
@@ -2140,15 +2147,15 @@
   </message>
 
   <message name="FINKEN_SYSTEM_MODEL" id="246">
-    <field name="distance_z"       type="float" alt_unit="cm"/>
-    <field name="velocity_theta"   type="float" alt_unit="m/s"/>
-    <field name="velocity_x"       type="float" alt_unit="m/s"/>
-    <field name="velocity_y"       type="float" alt_unit="m/s"/>
-    <field name="alpha_setpoint"            type="float" alt_unit="degree"/>
-    <field name="beta_setpoint"             type="float" alt_unit="degree"/>
-    <field name="thrust_setpoint"            type="float" alt_unit="degree"/>
-	<field name = "height_setpoint" type = "float" />
-    <field name = "finite_state" type = "float" />
+    <field name="distance_z"            type="float" alt_unit="m"/>
+    <field name="velocity_theta"        type="float" alt_unit="m/s"/>
+    <field name="velocity_x"            type="float" alt_unit="m/s"/>
+    <field name="velocity_y"            type="float" alt_unit="m/s"/>
+    <field name="alpha_setpoint"        type="float" alt_unit="degree"/>
+    <field name="beta_setpoint"         type="float" alt_unit="degree"/>
+    <field name="thrust_setpoint"       type="float" alt_unit="degree"/>
+	<field name = "height_setpoint"     type="float" alt_unit="m"/>
+    <field name = "finite_state"        type="float" />
   </message>
 
   <message name="PPRZ_DEBUG" id="247">
