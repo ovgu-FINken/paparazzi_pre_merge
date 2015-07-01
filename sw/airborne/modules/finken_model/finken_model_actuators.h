@@ -36,6 +36,7 @@ struct actuators_model_s {
 	float beta;
 	float theta;
 	float thrust;
+	// int vsupply_tel; //noch nicht Funktionstauglich
 };
 
 extern struct actuators_model_s finken_actuators_model;

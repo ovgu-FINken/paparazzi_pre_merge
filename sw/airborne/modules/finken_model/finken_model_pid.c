@@ -61,12 +61,12 @@ void initWallController(struct pid_controller *con) {
 
 void initFloatController(struct pid_controller *con) {
 	initWallController(con);
-	con->p = 1;
-	con->i = 0.0025;
-	con->d = 0;
+	con->p = 0.1;
+	con->i = 0.0025 / 3;
+	con->d = 0.2;
 	con->checkMinMax = 1;
-	con->min = -15;
-	con->max = 15;
+	con->min = -20;
+	con->max = 20;
 }
 
 /*
@@ -75,12 +75,12 @@ void initFloatController(struct pid_controller *con) {
 extern void add_iPart(struct pid_controller *con, float i_error) {
 	con->index = con->index % con->k;
 //	con->iPart = con->iPart - con->ringbuffer[con->index] + i_error;i
+	con->ringbuffer[con->index] = i_error;
 	float sum = 0;
 	for (int i = 0; i < con->k; i++){
 		sum += con->ringbuffer[i];
 	}
 	con->iPart = sum;
-	con->ringbuffer[con->index] = i_error;
 	con->index++;
 
 //	Todo 1.) shouldn't the current i_error be added to the sum?

@@ -2212,6 +2212,7 @@
     <field name="beta"   type="float" alt_unit="degree"/>
     <field name="theta"  type="float" alt_unit="degree"/>
     <field name="thrust" type="float" alt_unit="degree"/>
+    <!-- <field name="vsupply_tel" type="uint16" alt_unit="volt"/> -->
   </message>
 
  <message name="FINKEN_IR_ADC" id="252">

@@ -41,7 +41,7 @@ void finken_actuators_model_periodic(void) {
 	finken_actuators_model.beta = finken_actuators_set_point.beta;
 	finken_actuators_model.theta = finken_actuators_set_point.theta;
 	finken_actuators_model.thrust = compensate_battery_drop(finken_actuators_set_point.thrust);
-
+	// finken_actuators_model.vsupply_tel=(int) electrical.vsupply*1000;  //noch nicht Funktionstauglich
 }
 
 float compensate_battery_drop(float thrust_setpoint) {
