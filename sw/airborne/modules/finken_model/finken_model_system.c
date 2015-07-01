@@ -95,7 +95,7 @@ void finken_system_model_init(void) {
 	finken_system_model.velocity_theta = 0.0;
 	finken_system_model.velocity_x = 0.0;
 	finken_system_model.velocity_y = 0.0;
-	finken_system_model.reset = false;
+	finken_system_model.reset = 0;
 
 	finken_actuators_set_point.alpha = 0.0;
 	finken_actuators_set_point.beta = 0.0;
@@ -148,9 +148,6 @@ float pid_thrust(float irDist) {
 	return 50 + targetThrottle;
 }
 
-//pid_controller for x and y
-//currently, it will only controll the first sonar-parameter (front or left), which is just for testing. should include an integration
-//of front-back and left-right
 float max_(float x, float y) {
 	return (x < y) ? y : x;
 }
@@ -161,14 +158,17 @@ float pid_planar(float sonar_dist, struct pid_controller *pid) {
 }
 
 void reset(struct pid_controller *con) {
-	for(int i = 0; i < con->k; i++){
+	for (int i = 0; i < con->k; i++) {
 		con->ringbuffer[i] = 0;
 	}
 }
 
 void update_actuators_set_point() {
-	finken_actuators_set_point.beta = (float) radio_control.values[RADIO_ROLL] / 13000 * 10;
-	finken_actuators_set_point.alpha = (float) radio_control.values[RADIO_PITCH] / 13000 * 10;
+	float radioBeta = (float) radio_control.values[RADIO_ROLL] / 13000 * 10;
+	float radioAlpha = (float) radio_control.values[RADIO_PITCH] / 13000 * 10;
+
+	alphaComponents[0] = radioAlpha;
+	betaComponents[0] = radioBeta;
 
 	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z;
 	if (autopilot_mode == AP_MODE_NAV && stage_time > 0) {
@@ -180,8 +180,8 @@ void update_actuators_set_point() {
 	float velocity_z = (finken_system_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
 
 	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
-	//finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
-	//finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
+	finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
+	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
 	//reset all value of PID controller after changing the flight mode
 	if (finken_system_model.reset) {
@@ -191,22 +191,24 @@ void update_actuators_set_point() {
 		reset(&rightPIDController);
 		reset(&xFinkenFloatController);
 		reset(&yFinkenFloatController);
-		finken_system_model.reset = false;
+		finken_system_model.reset = 0;
 	}
 
-//	if (finken_system_model.distance_z > MIN_HEIGHT) {
-	if(0){
+	if (finken_system_model.distance_z > MIN_HEIGHT) {
+		int angleCap = 20;
 		float front = pid_planar(finken_sensor_model.distance_d_front, &frontPIDController);
 		float back = pid_planar(finken_sensor_model.distance_d_back, &backPIDController);
-		float xDegree = ((front - back) / 141) * 12;
-		finken_actuators_set_point.alpha += xDegree;	//pitch
+		float xDegree = ((front - back) / 250) * angleCap;
+//		finken_actuators_set_point.alpha += xDegree;	//pitch
+		alphaComponents[1] = xDegree;
 
 		float left = pid_planar(finken_sensor_model.distance_d_left, &leftPIDController);
 		float right = pid_planar(finken_sensor_model.distance_d_right, &rightPIDController);
-		float yDegree = ((left - right) / 141) * 12;
-		finken_actuators_set_point.beta += yDegree;	//roll
+		float yDegree = ((left - right) / 250) * angleCap;
+//		finken_actuators_set_point.beta += yDegree;	//roll
+		betaComponents[1] = yDegree;
 	}
-
+	updateActuators();
 	distance_z_old = finken_system_model.distance_z;
 
 	// TODO: Theta
@@ -223,8 +225,8 @@ void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_
 void send_x_pid_telemetry(struct transport_tx *trans, struct link_device *link) {
 	trans = trans;
 	link = link;
-	DOWNLINK_SEND_X_PID(DefaultChannel, DefaultDevice, &frontPIDController.t, &frontPIDController.pPart, &frontPIDController.iPart, &frontPIDController.dPart,
-			&frontPIDController.previousError, &frontPIDController.res);
+	DOWNLINK_SEND_X_PID(DefaultChannel, DefaultDevice, &leftPIDController.t, &leftPIDController.pPart, &leftPIDController.iPart, &leftPIDController.dPart,
+			&leftPIDController.previousError, &leftPIDController.res);
 }
 void send_float_pid_telemetry(struct transport_tx *trans, struct link_device *link) {
 	trans = trans;

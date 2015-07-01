@@ -22,7 +22,6 @@ void setMinMax(float minParam, float maxParam, struct pid_controller *con) {
  */
 float adjust(float error, float time_step, struct pid_controller *con) {
 	con->t = time_step;
-//	con->integral = con->integral + (error * time_step);
 	float derivative = (error - con->previousError) / time_step;
 
 	if (con->previousError == 0) {
@@ -47,10 +46,10 @@ float adjust(float error, float time_step, struct pid_controller *con) {
 }
 
 void initWallController(struct pid_controller *con) {
-	con->p = 4.7;
-	con->i = 0;
+	con->p = 5;
+	con->i = 0.5;
 	con->d = 1;
-	float cap = 0;
+	float cap = 250;
 	con->min = -cap;
 	con->max = cap;
 	con->checkMinMax = 1;
@@ -62,11 +61,12 @@ void initWallController(struct pid_controller *con) {
 void initFloatController(struct pid_controller *con) {
 	initWallController(con);
 	con->p = 0.1;
-	con->i = 0.0025 / 3;
-	con->d = 0.2;
+	con->i = 0.1;
+	con->d = 0.1;
 	con->checkMinMax = 1;
-	con->min = -20;
-	con->max = 20;
+	float cap = 0;
+	con->min = -cap;
+	con->max = cap;
 }
 
 /*
@@ -80,10 +80,7 @@ extern void add_iPart(struct pid_controller *con, float i_error) {
 	for (int i = 0; i < con->k; i++){
 		sum += con->ringbuffer[i];
 	}
-	con->iPart = sum;
+	con->iPart = sum * con->i;
 	con->index++;
-
-//	Todo 1.) shouldn't the current i_error be added to the sum?
-//	Todo 2.) maybe (iPart /= ringbuffer.size) ?
 }
 

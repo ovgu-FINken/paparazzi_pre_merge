@@ -16,13 +16,14 @@ void float_controller_periodic(void) {
 		if (sonar_values.front != 765) {
 			int xVelocity = getXDistanceDiff(); // / timeStep;
 			float xAcceleration = adjust(xVelocity, 1, &xFinkenFloatController);
-			finken_actuators_set_point.alpha = xAcceleration;
+			alphaComponents[2] = xAcceleration;
 		}
 		if (sonar_values.left != 765) {
 			int yVelocity = getYDistanceDiff(); // / timeStep;
 			float yAcceleration = adjust(yVelocity, 1, &yFinkenFloatController);
-			finken_actuators_set_point.beta = -yAcceleration;
+			betaComponents[2] = -yAcceleration;
 		}
+		updateActuators();
 	}
 
 	if (sonar_values.left != 765) {
