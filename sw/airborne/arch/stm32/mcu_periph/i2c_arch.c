@@ -38,9 +38,6 @@
 #include "mcu_periph/gpio.h"
 
 
-#ifdef I2C_DEBUG_LED
-#include "i2c_debug_led.h"
-#endif // I2C_DEBUG_LED
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
@@ -59,6 +56,10 @@
 // Bit Control
 
 #define BIT_X_IS_SET_IN_REG(X,REG)  (((REG) & (X)) == (X))
+
+#ifdef I2C_DEBUG_LED
+#include "debug_led.h"
+#endif // I2C_DEBUG_LED
 
 // disable and enable irq functions are not implemented in libopencm3 defining them here
 // XXX: consider moving this definitions into libopencm3
@@ -178,7 +179,7 @@ static inline void PPRZ_I2C_SEND_START(struct i2c_periph *periph)
   periph->idx_buf = 0;
 
 #ifdef I2C_DEBUG_LED
-  LED_SHOW_ACTIVE_BITS(regs);
+  LED_SHOW_ACTIVE_BITS(i2c);
 
   LED2_ON();
   LED1_ON();
@@ -189,7 +190,8 @@ static inline void PPRZ_I2C_SEND_START(struct i2c_periph *periph)
   LED1_OFF();
   LED2_OFF();
 #endif
-
+	if(periph->watchdog<0)
+		periph->watchdog=0;
   // Enable Error IRQ, Event IRQ but disable Buffer IRQ
   i2c_enable_interrupt(i2c, I2C_CR2_ITERREN);
   i2c_enable_interrupt(i2c, I2C_CR2_ITEVTEN);
@@ -721,7 +723,7 @@ static inline void i2c_irq(struct i2c_periph *periph)
     LED1_OFF();
 
     // no transaction and also an error?
-    LED_SHOW_ACTIVE_BITS(regs);
+    LED_SHOW_ACTIVE_BITS(i2c);
 #endif
 
     // If we still get an interrupt but there are no more things to do
@@ -762,7 +764,7 @@ static inline void i2c_irq(struct i2c_periph *periph)
     LED1_OFF();
     LED2_OFF();
 
-    LED_SHOW_ACTIVE_BITS(regs);
+    LED_SHOW_ACTIVE_BITS(i2c);
 #endif
 
     // Notify everyone about the error ...
@@ -835,7 +837,7 @@ static inline void i2c_irq(struct i2c_periph *periph)
       LED2_OFF();
       LED1_OFF();
 
-      LED_SHOW_ACTIVE_BITS(regs);
+      LED_SHOW_ACTIVE_BITS(i2c);
 #endif
 
       // Clear Running Events
@@ -1292,8 +1294,7 @@ static void i2c_wd_check(struct i2c_periph *periph)
 
       i2c_disable_interrupt(i2c, I2C_CR2_ITEVTEN);
       i2c_disable_interrupt(i2c, I2C_CR2_ITERREN);
-
-      i2c_peripheral_disable(i2c);
+			i2c_peripheral_disable(i2c);
 
 #if USE_I2C1
       if (i2c == I2C1) {
@@ -1326,16 +1327,20 @@ static void i2c_wd_check(struct i2c_periph *periph)
 
       /* setup gpios for normal i2c operation again */
       i2c_setup_gpio(i2c);
+			i2c_reset(i2c);
+  		i2c_set_own_7bit_slave_address(I2C2, 0);
 
       periph->trans_insert_idx = 0;
       periph->trans_extract_idx = 0;
       periph->status = I2CIdle;
 
-      i2c_enable_interrupt(i2c, I2C_CR2_ITEVTEN);
-      i2c_enable_interrupt(i2c, I2C_CR2_ITERREN);
 
       i2c_peripheral_enable(i2c);
-      periph->watchdog = 0; // restart watchdog
+      i2c_enable_interrupt(i2c, I2C_CR2_ITEVTEN);
+      i2c_enable_interrupt(i2c, I2C_CR2_ITERREN);
+  		i2c_setbitrate(&i2c2, I2C2_CLOCK_SPEED);
+
+      periph->watchdog = -1; // restart watchdog
 
       periph->errors->timeout_tlow_cnt++;
 
