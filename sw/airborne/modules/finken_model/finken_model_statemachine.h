@@ -9,8 +9,8 @@
 #include "subsystems/datalink/telemetry.h"
 #include "modules/finken_model/finken_model_oscillating.h"
 
-#define FINKEN_SONAR_LOWER_BOUND 25
-#define FINKEN_SONAR_UPPER_BOUND 70
+#define FINKEN_SONAR_LOWER_BOUND 30
+#define FINKEN_SONAR_UPPER_BOUND 60
 
 extern bool finken_oscillating_mode;
 extern uint8_t finite_state;
