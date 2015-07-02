@@ -31,10 +31,10 @@ static uint16_t getSensorValue(uint16_t ac_id, enum sonar_direction sensor_pos){
                 return finken_sensor_model.distance_d_right;
                 
             case 202: //purple
-                return finken_sensor_model.distance_d_left;
+                return finken_sensor_model.distance_d_right;
                 
             case 203: //green
-                return finken_sensor_model.distance_d_right;
+                return finken_sensor_model.distance_d_left;
                 
             case 204: //blue
                 return finken_sensor_model.distance_d_left;

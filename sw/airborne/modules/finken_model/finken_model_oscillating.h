@@ -9,9 +9,6 @@
 #include "subsystems/datalink/telemetry.h"
 #include "modules/finken_model/finken_model_statemachine.h"
 
-#define FINKEN_SONAR_LOWER_BOUND 30
-#define FINKEN_SONAR_UPPER_BOUND 60
-
 extern float height_oscillating_down;
 extern float height_oscillating_up;
 extern float middle;

@@ -24,8 +24,8 @@ void finken_oscillating_model_init(void) {
     height_oscillating_up = 0.9;
     height_oscillating_down = 0.40;
     middle = ((height_oscillating_up - height_oscillating_down) / 2) + height_oscillating_down;
-    // periodic function is called 4 times every second
-    // which results in height changing 2 cm per second
+    // periodic function is called 5 times every second
+    // which results in height changing 2,5 cm per second
     height_changing_rate = 0.005;
     go_down = false;
 }
