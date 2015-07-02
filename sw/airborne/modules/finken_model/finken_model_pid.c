@@ -46,9 +46,9 @@ float adjust(float error, float time_step, struct pid_controller *con) {
 }
 
 void initWallController(struct pid_controller *con) {
-	con->p = 5;
-	con->i = 0.5;
-	con->d = 1;
+	con->p = 2.5;
+	con->i = 0;
+	con->d = 0.2;
 	float cap = 250;
 	con->min = -cap;
 	con->max = cap;
@@ -82,5 +82,11 @@ extern void add_iPart(struct pid_controller *con, float i_error) {
 	}
 	con->iPart = sum * con->i;
 	con->index++;
+}
+
+void reset(struct pid_controller *con) {
+	for (int i = 0; i < con->k; i++) {
+		con->ringbuffer[i] = 0;
+	}
 }
 

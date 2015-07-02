@@ -33,6 +33,7 @@
 #include "subsystems/datalink/transport.h"
 #include "subsystems/datalink/telemetry.h"
 #include "float_controller.h"
+#include "wall_avoidance_controller.h"
 
 struct system_model_s {
   float distance_z;
