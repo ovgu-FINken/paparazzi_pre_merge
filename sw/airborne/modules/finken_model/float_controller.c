@@ -45,7 +45,7 @@ int getYDistanceDiff() {
 	if (sonar_values.left < sonar_values.right) {
 		return sonar_values.left - oldL;
 	} else {
-		return -(sonar_values.right - oldB);
+		return -(sonar_values.right - oldR);
 	}
 }
 
