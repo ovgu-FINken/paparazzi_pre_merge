@@ -6,53 +6,46 @@ struct pid_controller yFinkenFloatController;
 float oldL, oldR, oldF, oldB;
 float timeStep = 0.03;
 float cap = 15;
+
+void updateDistances() {
+	oldL = finken_sensor_model.distance_d_left;
+	oldR = finken_sensor_model.distance_d_right;
+	oldB = finken_sensor_model.distance_d_back;
+	oldF = finken_sensor_model.distance_d_front;
+}
+
 void float_controller_init(void) {
+	updateDistances();
 	initFloatController(&xFinkenFloatController);
 	initFloatController(&yFinkenFloatController);
 }
 
 void float_controller_periodic(void) {
-	if (oldL != 0) {
-		if (sonar_values.front != 765) {
-			int xVelocity = getXDistanceDiff(); // / timeStep;
-			float xAcceleration = adjust(xVelocity, 1, &xFinkenFloatController);
-			alphaComponents[2] = xAcceleration;
-		}
-		if (sonar_values.left != 765) {
-			int yVelocity = getYDistanceDiff(); // / timeStep;
-			float yAcceleration = adjust(yVelocity, 1, &yFinkenFloatController);
-			betaComponents[2] = -yAcceleration;
-		}
-		updateActuators();
-	}
+	int xVelocity = getXDistanceDiff(); // / timeStep;
+	float xAcceleration = adjust(xVelocity, 1, &xFinkenFloatController);
+	alphaComponents[2] = xAcceleration;
 
-	if (sonar_values.left != 765) {
-		oldL = sonar_values.left;
-	}
-	if (sonar_values.front != 765) {
-		oldF = sonar_values.front;
-	}
-	if (sonar_values.right != 765) {
-		oldR = sonar_values.right;
-	}
-	if (sonar_values.back != 765) {
-		oldB = sonar_values.back;
-	}
+	int yVelocity = getYDistanceDiff(); // / timeStep;
+	float yAcceleration = adjust(yVelocity, 1, &yFinkenFloatController);
+	betaComponents[2] = -yAcceleration;
+
+	updateActuators();
+	updateDistances();
 }
 
 int getXDistanceDiff() {
-//	if (sonar_values.front < sonar_values.back) {
-	return sonar_values.front - oldF;
-//	} else {
-//		return -(sonar_values.back - oldB);
-//	}
+	if (sonar_values.front < sonar_values.back) {
+		return sonar_values.front - oldF;
+	} else {
+		return -(sonar_values.back - oldB);
+	}
 }
 
 int getYDistanceDiff() {
-//	if (sonar_values.left < sonar_values.right) {
-	return sonar_values.left - oldL;
-//	} else {
-//		return -(sonar_values.right - oldB);
-//	}
+	if (sonar_values.left < sonar_values.right) {
+		return sonar_values.left - oldL;
+	} else {
+		return -(sonar_values.right - oldB);
+	}
 }
 
