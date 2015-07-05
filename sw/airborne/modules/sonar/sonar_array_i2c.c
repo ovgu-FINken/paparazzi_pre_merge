@@ -195,21 +195,18 @@ void sonar_array_i2c_periodic(void)
 #endif // SITL
 }
 
-void sonar_array_i2c_event(void)
-{
-	// i guess it it not possible to query verything so often
-}
-
 void send_sonar_debug_telemetry(struct transport_tx *trans, struct link_device *link){
 	trans=trans;
 	link=link;
+	int16_t i2c2_wd     = i2c2.watchdog;
+	uint8_t i2c2_status = i2c2.status;
 	DOWNLINK_SEND_SONAR_DEBUG(DefaultChannel, DefaultDevice,
 		sonarState+0,
 		sonarState+1,
 		sonarState+2,
 		sonarState+3,
-		&i2c2.status,
-		&i2c2.watchdog
+		&i2c2_status,
+		&i2c2_wd
 	);
 }
 
