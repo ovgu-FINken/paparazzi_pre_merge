@@ -19,7 +19,6 @@
   </header>
 	<init fun="sonar_array_i2c_init()"/>
   <periodic fun="sonar_array_i2c_periodic()" freq="12"/>
-  <event fun="sonar_array_i2c_event()"/>
 
   <makefile>
     <file name="sonar_array_i2c.c"/>
