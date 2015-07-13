@@ -50,7 +50,7 @@ SRCS = $($(TARGET).srcs)
 #ASRC =
 
 # object files
-COBJ    = $(SRCS:%.c=$(OBJDIR)/%.o)
+COBJ    = $(foreach file,$(basename ${SRCS}),${OBJDIR}/${file}.o)
 AOBJ    = $(ASRC:%.S=$(OBJDIR)/%.o)
 
 # linker script :
@@ -101,9 +101,10 @@ CFLAGS += -Wredundant-decls -Wmissing-declarations
 CFLAGS += -Wstrict-prototypes -Wmissing-prototypes
 CFLAGS += -Wshadow
 CFLAGS += -Wnested-externs
+CFLAGS += -Wno-poison-system-directories
 
 CFLAGS += $(USER_CFLAGS)
-
+CXXFLAGS = ${CFLAGS} -fno-exceptions -fno-rtti
 #CFLAGS += -fno-diagnostics-show-caret
 
 ifneq ($(ARCH_L), )
@@ -195,16 +196,22 @@ sym: $(OBJDIR)/$(TARGET).sym
 
 # Link: create ELF output file from object files.
 .SECONDARY : $(OBJDIR)/$(TARGET).elf
-.PRECIOUS : $(COBJ) $(AOBJ)
-%.elf: $(COBJ) $(AOBJ) | $(OBJDIR)
+.PRECIOUS : ${OBJDIR}/%.o
+
+%.elf: $(COBJ) ${CPPOBJ} $(AOBJ) | $(OBJDIR)
 	@echo LD $@
-	$(Q)$(LD) $(LDFLAGS) $($(TARGET).LDFLAGS) -o $@ $(COBJ) $(AOBJ) $(LDLIBS)
+	$(Q)$(LD) $(LDFLAGS) $($(TARGET).LDFLAGS) -o $@ $(COBJ) ${CPPOBJ} $(AOBJ) $(LDLIBS)
 
 # Compile: create object files from C source files.
 $(OBJDIR)/%.o : %.c $(OBJDIR)/../Makefile.ac
 	@echo CC $@
 	$(Q)test -d $(dir $@) || mkdir -p $(dir $@)
 	$(Q)$(CC) -MMD -c $(CFLAGS) $< -o $@
+
+$(OBJDIR)/%.o : %.cpp $(OBJDIR)/../Makefile.ac
+	@echo CC $@
+	$(Q)test -d $(dir $@) || mkdir -p $(dir $@)
+	$(Q)$(CC) -MMD -c $(CXXFLAGS) $< -o $@
 
 # Assemble: create object files from assembler source files. ARM/Thumb
 $(AOBJ) : $(OBJDIR)/%.o : %.S
