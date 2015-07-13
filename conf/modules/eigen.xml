@@ -1,0 +1,22 @@
+<!DOCTYPE module SYSTEM "module.dtd">
+
+<module name="eigen">
+    <doc>
+        <description>
+            Integration test of Eigen
+        </description>
+    </doc>
+
+    <header>
+        <file name="eigen.h"/>
+    </header>
+
+    <init fun="eigen_test_init()"/>
+    <periodic fun="eigen_test_periodic()" freq="1"/>
+
+    <makefile>
+        <file name="eigen.cpp"/>
+				<define name="/usr/include/eigen3" type="I"/>
+    </makefile>
+
+</module>
