@@ -30,7 +30,7 @@
 			<set value="0" var="autopilot_flight_time" />
 			<set value="0.5" var="finken_system_set_point.distance_z" />
 			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta"
-				throttle="compensate_battery_drop(0.5)" until="stage_time > 2"
+				throttle="compensate_battery_drop(0.45)" until="stage_time > 1"
 				vmode="throttle" />
 			<!--<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta"
 				throttle="compensate_battery_drop(0.45)" until="stage_time > 2"
