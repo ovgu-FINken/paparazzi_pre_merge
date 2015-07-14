@@ -34,7 +34,6 @@
 #include "paparazzi.h"
 #include "generated/airframe.h"
 
-
 /** Autopilot inititalization.
  */
 extern void autopilot_init(void);
@@ -60,7 +59,7 @@ extern void autopilot_init(void);
 
 extern uint8_t pprz_mode;
 extern bool_t kill_throttle;
-extern uint8_t  mcu1_status;
+extern uint8_t mcu1_status;
 
 /** flight time in seconds. */
 extern uint16_t autopilot_flight_time;
@@ -68,7 +67,6 @@ extern uint16_t autopilot_flight_time;
 #define autopilot_ResetFlightTimeAndLaunch(_) { \
     autopilot_flight_time = 0; launch = FALSE; \
   }
-
 
 // FIXME, move to control
 #define LATERAL_MODE_MANUAL    0
@@ -128,7 +126,6 @@ extern bool_t power_switch;
 #define autopilot_SetPowerSwitch(_x) { power_switch = _x; }
 #endif // POWER_SWITCH_GPIO
 
-
 /* CONTROL_RATE will be removed in the next release
  * please use CONTROL_FREQUENCY instead
  */
@@ -147,12 +144,11 @@ extern bool_t power_switch;
 
 #include "subsystems/settings.h"
 
-static inline void autopilot_StoreSettings(float store)
-{
-  if (kill_throttle && store) {
-    settings_store_flag = store;
-    settings_store();
-  }
+static inline void autopilot_StoreSettings(float store) {
+	if (kill_throttle && store) {
+		settings_store_flag = store;
+		settings_store();
+	}
 }
 
 #if DOWNLINK
