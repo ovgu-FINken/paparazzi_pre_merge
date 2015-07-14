@@ -5,7 +5,7 @@ struct pid_controller rightPIDController;
 struct pid_controller backPIDController;
 struct pid_controller leftPIDController;
 
-float TOLERABLE_PROXY_DIST = 80;			//minimum treshold - if less, begin collision avoidance
+float TOLERABLE_PROXY_DIST = 100;			//minimum treshold - if less, begin collision avoidance
 float MIN_HEIGHT = 0.15;	//the minimum altitude before we can begin using sonars
 
 //this is for creating the different pids and assigning minmax-values to them.

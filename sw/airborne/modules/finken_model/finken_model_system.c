@@ -147,8 +147,7 @@ void update_actuators_set_point() {
 
 	alphaComponents[0] = radioAlpha;
 	betaComponents[0] = radioBeta;
-	float error_z_k = finken_system_set_point.distance_z
-			- finken_system_model.distance_z;
+	float error_z_k = finken_system_set_point.distance_z - finken_system_model.distance_z;
 	/*float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z;
 	 if (autopilot_mode == AP_MODE_NAV && stage_time > 0) {
 	 sum_error_z += error_z;
@@ -163,18 +162,16 @@ void update_actuators_set_point() {
 	 finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
 	 finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));*/
 
-	updateActuators();
-	/*distance_z_old = finken_system_model.distance_z;*/
-	if (!finken_system_model_control_height) {
-		error_z_k_dec1 = 0;
-		error_z_k_dec2 = 0;
-		thrust_k_dec1 = 0;
-		thrust_k_dec1 = 0;
-	}
 
-	float thrust_k = 1.6552 * thrust_k_dec1 - 0.6552 * thrust_k_dec2
-			+ 209.0553 * error_z_k - 413.7859 * error_z_k_dec1
-			+ 204.7450 * error_z_k_dec2;
+	/*distance_z_old = finken_system_model.distance_z;*/
+//	if (!finken_system_model_control_height) {
+//		error_z_k_dec1 = 0;
+//		error_z_k_dec2 = 0;
+//		thrust_k_dec1 = 0;
+//		thrust_k_dec1 = 0;
+//	}
+
+	float thrust_k = 1.6552 * thrust_k_dec1 - 0.6552 * thrust_k_dec2 + 209.0553 * error_z_k - 413.7859 * error_z_k_dec1 + 204.7450 * error_z_k_dec2;
 
 	error_z_k_dec2 = error_z_k_dec1;
 	error_z_k_dec1 = error_z_k;
@@ -187,10 +184,9 @@ void update_actuators_set_point() {
 		finken_actuators_set_point.thrust = 0.8;
 		//TODO anti-windup
 	} else {
-		finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT
-				+ thrust_k / 100;
+		finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + thrust_k / 100;
 	}
-
+	updateActuators();
 // TODO: Theta
 }
 
