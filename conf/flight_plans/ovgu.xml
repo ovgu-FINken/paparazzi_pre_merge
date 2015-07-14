@@ -9,6 +9,7 @@
 		#include "sonar/sonar_array_i2c.h"
 		#include "nav/nav_finken.h"
 		#include "finken_model/finken_model_actuators.h"
+		#include "finken_model/finken_model_system.h"
 	</header>
 	<!-- <exceptions> <exception cond="(100 > sonar_values.back || 100 > sonar_values.front 
 		) && ((sonar_values.right > sonar_values.back && sonar_values.left > sonar_values.back) 
@@ -29,12 +30,13 @@
 		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
 			<set value="0" var="autopilot_flight_time" />
 			<set value="0.5" var="finken_system_set_point.distance_z" />
-			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta"
+			<attitude pitch="0" roll="0"
 				throttle="compensate_battery_drop(0.37)" until="stage_time > 2"
 				vmode="throttle" />
-			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta"
+			<attitude pitch="0" roll="0"
 				throttle="compensate_battery_drop(0.41)" until="stage_time > 2"
-				vmode="throttle" />
+				vmode="throttle"/>
+				<set value="1" var="finken_system_model.reset"/>
 			<deroute block="inair" />
 		</block>
 

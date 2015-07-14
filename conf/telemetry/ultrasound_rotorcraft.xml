@@ -18,8 +18,24 @@
 			<message name="ROTORCRAFT_NAV_STATUS" period="1.6" />
 			<message name="WP_MOVED" period="2.6" />
 			<message name="INS" period="2.7" />
-			<message name="X_PID" period="0.2" />
-			<message name="FLOAT_PID" period="0.2" />
+<!-- 			<message name="FLOAT_DEBUG" period="0.3" /> -->
+<!-- 			<message name="X_PID" period="0.3" /> -->
+<!-- 			<message name="SONAR_ARRAY" period="0.3" /> -->
+		</mode>
+		<mode name="pids" key_press="p">
+			<message name="FLOAT_DEBUG" period="0.3" />
+			<message name="X_PID" period="0.3" />
+			<message name="SONAR_ARRAY" period="0.3" />
+			<message name="FINKEN_ACTUATORS_MODEL" period="3.2" />
+		</mode>
+		<mode name="battery_change">
+			<message name="FINKEN_ACTUATORS_MODEL" period="2.3" />
+			<message name="DL_VALUE" period="1.2" />
+			<message name="AHRS_ARDRONE2" period="1.5" />
+			<message name="ALIVE" period="2.1" />
+			<message name="ROTORCRAFT_STATUS" period="2.0" />
+			<message name="ROTORCRAFT_NAV_STATUS" period="1.6" />
+			<message name="FINKEN_SYSTEM_MODEL" period="1.1" />
 		</mode>
 		<mode name="extended">
 			<message name="FINKEN_SENSOR_MODEL" period="1.0" />
@@ -70,6 +86,7 @@
 			<message name="IMU_GYRO_SCALED" period=".075" />
 			<message name="IMU_ACCEL_SCALED" period=".075" />
 			<message name="IMU_MAG_SCALED" period=".1" />
+			<message name="FLOAT_DEBUG" period="0.2" />
 		</mode>
 
 		<mode name="ahrs">

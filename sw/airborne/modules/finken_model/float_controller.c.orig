@@ -25,6 +25,12 @@ void float_controller_periodic(void) {
 		}
 	}
 
+<<<<<<< HEAD
+		float xAcceleration = adjust(-xVelocity, 0.03, &xPIDController);
+		float yAcceleration = adjust(-yVelocity, 0.03, &yPIDController);
+		finken_actuators_set_point.alpha += xAcceleration;
+		finken_actuators_set_point.beta += yAcceleration;
+=======
 	if (sonar_values.left != 765) {
 		oldL = sonar_values.left;
 	}
@@ -36,6 +42,7 @@ void float_controller_periodic(void) {
 	}
 	if (sonar_values.back != 765) {
 		oldB = sonar_values.back;
+>>>>>>> height-control
 	}
 }
 
@@ -54,5 +61,4 @@ int getYDistanceDiff() {
 //		return -(sonar_values.right - oldB);
 //	}
 }
-
 
