@@ -35,8 +35,6 @@
 #include <math.h>
 
 #include "subsystems/datalink/downlink.h"
-#include "float_controller.h"
-
 
 // TODO: sane values
 #ifndef FINKEN_SYSTEM_P
@@ -65,6 +63,11 @@
 
 struct system_model_s finken_system_model;
 struct system_model_s finken_system_set_point;
+ bool finken_system_model_control_height;
+float thrust_k_dec1 = 0.0;
+float thrust_k_dec2 = 0.0;
+float error_z_k_dec1 = 0.0;
+float error_z_k_dec2 = 0.0;
 
 void update_actuators_set_point(void);
 
@@ -72,40 +75,22 @@ void update_actuators_set_point(void);
 float DEG_TO_GRAD_COEFF = 0.01745329251; //math.pi / 180;
 float MAX_PROXY_DIST = 5.00;		//max measurable distance from the sonar
 float MAX_IR_DIST = 2.00;			//max measurable distance from IR sensor
-float TOLERABLE_PROXY_DIST = 80;			//minimum treshold - if less, begin collision avoidance
 float FLIGHT_HEIGHT = 1.30;	//the target altitude we will try to maintain at all times
-float MIN_HEIGHT = 0.15;	//the minimum altitude before we can begin using sonars
 
 struct pid_controller zPIDController;
-
-struct pid_controller frontPIDController;
-struct pid_controller rightPIDController;
-struct pid_controller backPIDController;
-struct pid_controller leftPIDController;
-
-//this is for creating the different pids and assigning minmax-values to them.
-void init_pid() {
-	initWallController(&frontPIDController);
-	initWallController(&rightPIDController);
-	initWallController(&backPIDController);
-	initWallController(&leftPIDController);
-}
 
 void finken_system_model_init(void) {
 	finken_system_model.distance_z = 0.0;
 	finken_system_model.velocity_theta = 0.0;
 	finken_system_model.velocity_x = 0.0;
 	finken_system_model.velocity_y = 0.0;
-	finken_system_model.reset=false;
+	finken_system_model.reset = 0;
 
 	finken_actuators_set_point.alpha = 0.0;
 	finken_actuators_set_point.beta = 0.0;
 	finken_actuators_set_point.theta = 0.0;
 	finken_actuators_set_point.thrust = 0.0;
-
-
-
-	init_pid();
+	finken_system_model_control_height = 0;
 
 	register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL",
 			send_finken_system_model_telemetry);
@@ -115,6 +100,8 @@ void finken_system_model_init(void) {
 }
 
 void finken_system_model_periodic(void) {
+	if (autopilot_mode != AP_MODE_NAV)
+		finken_system_model_control_height = 0;
 	update_finken_system_model();
 	update_actuators_set_point();
 }
@@ -154,79 +141,57 @@ float pid_thrust(float irDist) {
 	return 50 + targetThrottle;
 }
 
-//pid_controller for x and y
-//currently, it will only controll the first sonar-parameter (front or left), which is just for testing. should include an integration
-//of front-back and left-right
-float max_(float x, float y) {
-	return (x < y) ? y : x;
-}
-
-float pid_planar(float sonar_dist, struct pid_controller *pid) {
-	float error = max_(TOLERABLE_PROXY_DIST - sonar_dist, 0.0);
-	return adjust(error, 0.03, pid);		//return pitch or roll
-}
-void reset(struct pid_controller *con) {
-	con->dPart = 0;
-	con->iPart = 0;
-	con->pPart = 0;
-	con->previousError = 0;
-}
-
 void update_actuators_set_point() {
-	finken_actuators_set_point.beta = (float) radio_control.values[RADIO_ROLL]
-			/ 13000 * 10;
-	finken_actuators_set_point.alpha = (float) radio_control.values[RADIO_PITCH]
-			/ 13000 * 10;
+	float radioBeta = (float) radio_control.values[RADIO_ROLL] / 13000 * 10;
+	float radioAlpha = (float) radio_control.values[RADIO_PITCH] / 13000 * 10;
 
-	float error_z = finken_system_set_point.distance_z
+	alphaComponents[0] = radioAlpha;
+	betaComponents[0] = radioBeta;
+	float error_z_k = finken_system_set_point.distance_z
 			- finken_system_model.distance_z;
-	if (autopilot_mode == AP_MODE_NAV && stage_time > 0) {
-		sum_error_z += error_z;
+	/*float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z;
+	 if (autopilot_mode == AP_MODE_NAV && stage_time > 0) {
+	 sum_error_z += error_z;
+	 } else {
+	 sum_error_z = 0;
+	 }*/
+
+	/*
+	 float velocity_z = (finken_system_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
+
+	 finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
+	 finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
+	 finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));*/
+
+	updateActuators();
+	/*distance_z_old = finken_system_model.distance_z;*/
+	if (!finken_system_model_control_height) {
+		error_z_k_dec1 = 0;
+		error_z_k_dec2 = 0;
+		thrust_k_dec1 = 0;
+		thrust_k_dec1 = 0;
+	}
+
+	float thrust_k = 1.6552 * thrust_k_dec1 - 0.6552 * thrust_k_dec2
+			+ 209.0553 * error_z_k - 413.7859 * error_z_k_dec1
+			+ 204.7450 * error_z_k_dec2;
+
+	error_z_k_dec2 = error_z_k_dec1;
+	error_z_k_dec1 = error_z_k;
+
+	thrust_k_dec2 = thrust_k_dec1;
+	thrust_k_dec1 = thrust_k;
+	if (FINKEN_THRUST_DEFAULT + thrust_k / 100 < 0.2) {
+		finken_actuators_set_point.thrust = 0.2;
+	} else if (FINKEN_THRUST_DEFAULT + thrust_k / 100 > 0.8) {
+		finken_actuators_set_point.thrust = 0.8;
+		//TODO anti-windup
 	} else {
-		sum_error_z = 0;
+		finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT
+				+ thrust_k / 100;
 	}
 
-	float velocity_z = (finken_system_model.distance_z - distance_z_old)
-			* FINKEN_SYSTEM_UPDATE_FREQ;
-
-	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT
-			+ error_z * FINKEN_THRUST_P;
-	//finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
-	//finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
-
-//	the height controller. Since we will use a different one, it is currently not included.
-//	finken_actuators_set_point.thrust = pid_thrust(finken_system_model.distance_z);
-
-	//reset all value of PID controller after changing the flight mode
-	if (finken_system_model.reset) {
-		reset(&frontPIDController);
-		reset(&backPIDController);
-        reset(&leftPIDController);
-		reset(&rightPIDController);
-		reset(&xFinkenFloatController);
-		reset(&yFinkenFloatController);
-		finken_system_model.reset=false;
-	}
-
-	if (finken_system_model.distance_z > MIN_HEIGHT) {
-		float front = pid_planar(finken_sensor_model.distance_d_front,
-				&frontPIDController);
-		float back = pid_planar(finken_sensor_model.distance_d_back,
-				&backPIDController);
-		float xDegree = ((front - back) / 141) * 12;
-		finken_actuators_set_point.alpha += xDegree;	//pitch
-
-		float left = pid_planar(finken_sensor_model.distance_d_left,
-				&leftPIDController);
-		float right = pid_planar(finken_sensor_model.distance_d_right,
-				&rightPIDController);
-		float yDegree = ((left - right) / 141) * 12;
-		finken_actuators_set_point.beta += yDegree;	//roll
-	}
-
-	distance_z_old = finken_system_model.distance_z;
-
-	// TODO: Theta
+// TODO: Theta
 }
 
 void send_finken_system_model_telemetry(struct transport_tx *trans,
@@ -245,10 +210,10 @@ void send_finken_system_model_telemetry(struct transport_tx *trans,
 void send_x_pid_telemetry(struct transport_tx *trans, struct link_device *link) {
 	trans = trans;
 	link = link;
-	DOWNLINK_SEND_X_PID(DefaultChannel, DefaultDevice, &frontPIDController.t,
-			&frontPIDController.pPart, &frontPIDController.iPart,
-			&frontPIDController.dPart, &frontPIDController.previousError,
-			&frontPIDController.res);
+	DOWNLINK_SEND_X_PID(DefaultChannel, DefaultDevice, &leftPIDController.t,
+			&leftPIDController.pPart, &leftPIDController.iPart,
+			&leftPIDController.dPart, &leftPIDController.previousError,
+			&leftPIDController.res);
 }
 void send_float_pid_telemetry(struct transport_tx *trans,
 		struct link_device *link) {

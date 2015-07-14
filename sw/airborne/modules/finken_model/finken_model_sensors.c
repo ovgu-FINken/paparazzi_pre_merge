@@ -50,22 +50,14 @@ void finken_sensor_model_init(void)
 void finken_sensor_model_periodic(void)
 {
   finken_sensor_model.distance_z       = ir_distance_equalized;
-	if(sonar_values.front < 200)
+	if(sonar_values.front != 765)
 		finken_sensor_model.distance_d_front = sonar_values.front;
-	else
-		finken_sensor_model.distance_d_front = 200;
-	if(sonar_values.right < 200)
+	if(sonar_values.right != 765)
 		finken_sensor_model.distance_d_right = sonar_values.right;
-	else
-		finken_sensor_model.distance_d_right = 200;
-	if(sonar_values.back < 200)
+	if(sonar_values.back != 765)
 		finken_sensor_model.distance_d_back  = sonar_values.back;
-	else
-		finken_sensor_model.distance_d_back  = 200;
-	if(sonar_values.left < 200)
+	if(sonar_values.left != 765)
 		finken_sensor_model.distance_d_left  = sonar_values.left;
-	else
-		finken_sensor_model.distance_d_left  = 200;
   //finken_sensor_model.acceleration_x   = 0.0;
   //finken_sensor_model.acceleration_y   = 0.0;
   //finken_sensor_model.acceleration_z   = 0.0;

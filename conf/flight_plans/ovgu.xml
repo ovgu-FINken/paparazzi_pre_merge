@@ -7,7 +7,6 @@
 	</waypoints>
 	<header>
 		#include "sonar/sonar_array_i2c.h"
-		#include "nav/nav_finken.h"
 		#include "finken_model/finken_model_actuators.h"
 		#include "finken_model/finken_model_system.h"
 	</header>
@@ -25,6 +24,7 @@
 		<block name="inair">
 			<attitude pitch="finken_actuators_model.alpha" roll="finken_actuators_model.beta"
 				throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle" />
+				<set value="1"	var="finken_system_model_control_height"/>
 		</block>
 
 		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">

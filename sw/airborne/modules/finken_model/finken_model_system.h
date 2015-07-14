@@ -33,6 +33,7 @@
 #include "subsystems/datalink/transport.h"
 #include "subsystems/datalink/telemetry.h"
 #include "float_controller.h"
+#include "wall_avoidance_controller.h"
 
 struct system_model_s {
   float distance_z;
@@ -41,7 +42,7 @@ struct system_model_s {
   float velocity_y;
   bool reset;
 };
-
+extern bool finken_system_model_control_height;
 
 extern struct system_model_s finken_system_model;
 extern struct system_model_s finken_system_set_point;
