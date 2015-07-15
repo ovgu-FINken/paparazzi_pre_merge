@@ -1,22 +1,27 @@
 digraph FSM {
+	{
+	0 [fontcolor=red color=red]
+	1 [fontcolor=blue color= blue]
+	2 [fontcolor=forestgreen color= forestgreen]
+	}
 
 	nodesep=0.8;
 	
-	0:ne -> 0:nw [label="search_neighbor=true\ncheck_direction=false"];
+	0:ne -> 0:nw [label="search_neighbor=true\ncheck_direction=false" color=red];
 	
-	0 -> 1:n [label="search_neighbor=true\ncheck_direction=true"];
+	0 -> 1:n [label="search_neighbor=true\ncheck_direction=true" color=red];
 
-	0 -> 2 [label="search_neighbor=false\ncheck_direction=false"];
+	0 -> 2 [label="search_neighbor=false\ncheck_direction=false" color=red];
 
-	1 -> 0 [label="search_neighbor=true\ncheck_direction=false"];
+	1 -> 0 [label="search_neighbor=true\ncheck_direction=false" color=blue];
 
-	1:nw -> 1 [label="search_neighbor=true\ncheck_direction=false"];
+	1:nw -> 1 [label="search_neighbor=true\ncheck_direction=false" color=blue];
 	
-	1:s -> 2 [label="search_neighbor=false\ncheck_direction=false"];
+	1:s -> 2 [label="search_neighbor=false\ncheck_direction=false" color=blue];
 
-	2 -> 0 [label="search_neighbor=true\ncheck_direction=true"];
+	2 -> 0 [label="search_neighbor=true\ncheck_direction=true" color=forestgreen];
 
-	2 -> 1 [label="search_neighbor=true\ncheck_direction=true"];
+	2 -> 1 [label="search_neighbor=true\ncheck_direction=true" color=forestgreen];
 
-	2:s -> 2:s [label="search_neighbor=false\ncheck_direction=false"];
+	2:s -> 2:s [label="search_neighbor=false\ncheck_direction=false" color=forestgreen];
 }
