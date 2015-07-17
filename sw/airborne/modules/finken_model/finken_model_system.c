@@ -21,11 +21,11 @@
  */
 
 #include "modules/finken_model/finken_model_system.h"
-#include "subsystems/navigation/common_flight_plan.h"
+//#include "subsystems/navigation/common_flight_plan.h"
 
 /* input */
 #include "modules/finken_model/finken_model_sensors.h"
-#include "modules/finken_model/finken_model_environment.h"
+//#include "modules/finken_model/finken_model_environment.h"
 
 #include "subsystems/radio_control.h"
 #include "arch/stm32/subsystems/radio_control/spektrum_arch.h"
@@ -36,34 +36,10 @@
 
 #include "subsystems/datalink/downlink.h"
 
-// TODO: sane values
-#ifndef FINKEN_SYSTEM_P
-#define FINKEN_SYSTEM_P 0.075
-#endif
-
-#ifndef FINKEN_SYSTEM_I
-#define FINKEN_SYSTEM_I 0.00
-#endif
-
-#ifndef FINKEN_THRUST_P
-#define FINKEN_THRUST_P /* 0.15 */0.10
-#endif
-
-#ifndef FINKEN_THRUST_I
-#define FINKEN_THRUST_I /*  0.05  */0.05
-#endif
-
-#ifndef FINKEN_SYSTEM_UPDATE_FREQ
-#define FINKEN_SYSTEM_UPDATE_FREQ 30
-#endif
-
-#ifndef FINKEN_VERTICAL_VELOCITY_FACTOR
-#define FINKEN_VERTICAL_VELOCITY_FACTOR 0.04
-#endif
-
 struct system_model_s finken_system_model;
 struct system_model_s finken_system_set_point;
- bool finken_system_model_control_height;
+bool finken_system_model_control_height;
+
 float thrust_k_dec1 = 0.0;
 float thrust_k_dec2 = 0.0;
 float error_z_k_dec1 = 0.0;
@@ -78,7 +54,6 @@ float MAX_IR_DIST = 2.00;			//max measurable distance from IR sensor
 float FLIGHT_HEIGHT = 1.30;	//the target altitude we will try to maintain at all times
 
 struct pid_controller zPIDController;
-<<<<<<< HEAD
 struct pid_controller xPIDController;
 struct pid_controller yPIDController;
 
@@ -86,9 +61,6 @@ struct pid_controller yPIDController;
 //this is for creating the different pids and assigning minmax-values to them.
 static void init_pid()
 {
-	zPIDController.p = 1;// zero integral coeff, because limiting the PID output will mess up the integral part
-	zPIDController.d = 1;
-
 	// PID Controller: try to control roll and pitch directly from the measured distance
 	xPIDController.p = 4.7;
 	xPIDController.d = 6.9;
@@ -98,8 +70,6 @@ static void init_pid()
 	yPIDController.d = 6.9;
 	setMinMax(-6, 6, &yPIDController);		// Todo or -8, 8? Why different to xPID?
 }
-=======
->>>>>>> wall-avoid/master
 
 void finken_system_model_init(void) {
 	finken_system_model.distance_z = 0.0;
@@ -113,6 +83,8 @@ void finken_system_model_init(void) {
 	finken_actuators_set_point.theta = 0.0;
 	finken_actuators_set_point.thrust = 0.0;
 	finken_system_model_control_height = 0;
+	
+	init_pid();
 
 	register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL",
 			send_finken_system_model_telemetry);
@@ -121,9 +93,10 @@ void finken_system_model_init(void) {
 			send_float_pid_telemetry);
 }
 
-void finken_system_model_periodic(void) {
-	if (autopilot_mode != AP_MODE_NAV)
-		finken_system_model_control_height = 0;
+void finken_system_model_periodic(void)
+{
+	if ( autopilot_mode != AP_MODE_NAV )
+		finken_system_model_control_height = 1;
 	update_finken_system_model();
 	update_actuators_set_point();
 }
@@ -194,23 +167,31 @@ void update_actuators_set_point() {
 //		thrust_k_dec1 = 0;
 //	}
 
-	float thrust_k = 1.6552 * thrust_k_dec1 - 0.6552 * thrust_k_dec2 + 209.0553 * error_z_k - 413.7859 * error_z_k_dec1 + 204.7450 * error_z_k_dec2;
+	float thrust_k = 1.6552f * thrust_k_dec1 - 0.6552f * thrust_k_dec2 + 209.0553f * error_z_k - 413.7859f * error_z_k_dec1 + 204.7450f * error_z_k_dec2;
+	
+	if( !finken_system_model_control_height )
+		thrust_k = 0;
 
 	error_z_k_dec2 = error_z_k_dec1;
 	error_z_k_dec1 = error_z_k;
+	
+	thrust_k_dec2=thrust_k_dec1;
+	thrust_k_dec1=thrust_k;
 
-	thrust_k_dec2 = thrust_k_dec1;
-	thrust_k_dec1 = thrust_k;
-	if (FINKEN_THRUST_DEFAULT + thrust_k / 100 < 0.2) {
+	if (FINKEN_THRUST_DEFAULT + thrust_k /100 < 0.2 || FINKEN_THRUST_DEFAULT + thrust_k / 100 > 0.8)
+		thrust_k -= 2*(209.0553f - 413.7859f + 204.7450)*(error_z_k+error_z_k_dec1+error_z_k_dec2)/3;
+
+	if(FINKEN_THRUST_DEFAULT + thrust_k / 100 < 0.2){
 		finken_actuators_set_point.thrust = 0.2;
-	} else if (FINKEN_THRUST_DEFAULT + thrust_k / 100 > 0.8) {
+	}
+	else if(FINKEN_THRUST_DEFAULT + thrust_k / 100 > 0.8){
 		finken_actuators_set_point.thrust = 0.8;
 		//TODO anti-windup
-	} else {
+	}
+	else{
 		finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + thrust_k / 100;
 	}
-	updateActuators();
-// TODO: Theta
+	// TODO: Theta
 }
 
 void send_finken_system_model_telemetry(struct transport_tx *trans,
