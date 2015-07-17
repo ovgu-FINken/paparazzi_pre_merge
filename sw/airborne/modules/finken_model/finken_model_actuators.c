@@ -27,6 +27,9 @@
 struct actuators_model_s finken_actuators_model;
 struct actuators_model_s finken_actuators_set_point;
 
+float alphaComponents[COMP_LENGTH];
+float betaComponents[COMP_LENGTH];
+
 void finken_actuators_model_init(void) {
 	finken_actuators_model.alpha  = 0;
 	finken_actuators_model.beta   = 0;
@@ -41,7 +44,7 @@ void finken_actuators_model_periodic(void) {
 	finken_actuators_model.beta = finken_actuators_set_point.beta;
 	finken_actuators_model.theta = finken_actuators_set_point.theta;
 	finken_actuators_model.thrust = compensate_battery_drop(finken_actuators_set_point.thrust);
-
+	// finken_actuators_model.vsupply_tel=(int) electrical.vsupply*1000;  //noch nicht Funktionstauglich
 }
 
 float compensate_battery_drop(float thrust_setpoint) {
@@ -65,3 +68,18 @@ void send_finken_actuators_model_telemetry(struct transport_tx *trans, struct li
 		&finken_actuators_model.thrust
 	);
 }
+
+
+float sum(float * array){
+	float sum = 0;
+	for(int i = 0; i < COMP_LENGTH;i++){
+		sum += array[i];
+	}
+	return sum;
+}
+
+void updateActuators(){
+	finken_actuators_model.beta = sum(betaComponents);
+	finken_actuators_model.alpha = sum(alphaComponents);
+}
+
