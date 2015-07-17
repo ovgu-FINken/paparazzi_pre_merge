@@ -2237,7 +2237,7 @@
 
    <message name="FLOAT_DEBUG" id="254">
     <description>Values of the wall/collision-avoidance pid-controller</description>
-    <field name="timestep" type="uint32"/>
+    <field name="timestep" type="float"/>
     <field name="p" type="float"/>
     <field name="i" type="float"/>
     <field name="d" type="float"/>

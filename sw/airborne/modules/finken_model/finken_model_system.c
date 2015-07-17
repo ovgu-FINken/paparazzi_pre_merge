@@ -53,24 +53,6 @@ float MAX_PROXY_DIST = 5.00;		//max measurable distance from the sonar
 float MAX_IR_DIST = 2.00;			//max measurable distance from IR sensor
 float FLIGHT_HEIGHT = 1.30;	//the target altitude we will try to maintain at all times
 
-struct pid_controller zPIDController;
-struct pid_controller xPIDController;
-struct pid_controller yPIDController;
-
-
-//this is for creating the different pids and assigning minmax-values to them.
-static void init_pid()
-{
-	// PID Controller: try to control roll and pitch directly from the measured distance
-	xPIDController.p = 4.7;
-	xPIDController.d = 6.9;
-	setMinMax(-6, 6, &xPIDController);
-
-	yPIDController.p = 4.7;
-	yPIDController.d = 6.9;
-	setMinMax(-6, 6, &yPIDController);		// Todo or -8, 8? Why different to xPID?
-}
-
 void finken_system_model_init(void) {
 	finken_system_model.distance_z = 0.0;
 	finken_system_model.velocity_theta = 0.0;
@@ -84,8 +66,6 @@ void finken_system_model_init(void) {
 	finken_actuators_set_point.thrust = 0.0;
 	finken_system_model_control_height = 0;
 	
-	init_pid();
-
 	register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL",
 			send_finken_system_model_telemetry);
 	register_periodic_telemetry(DefaultPeriodic, "X_PID", send_x_pid_telemetry);
@@ -111,32 +91,6 @@ void update_finken_system_model(void) {
 	finken_system_model.velocity_y = finken_sensor_model.velocity_y;
 }
 
-/*
- * Use finken_system_set_point to calculate new actuator settings
- */
-float sum_error_x = 0;
-float sum_error_y = 0;
-float sum_error_z = 0;
-float distance_z_old = 0.0;
-
-float oldIRDist = 0;
-
-//This method is for the height controller. Since we will use a different one, it is useless, but not yet deleted. :D
-static float pid_thrust(float irDist)
-{
-	float target, curr, error;
-
-	float dt = 0.1;	//Todo find correct time step
-
-	// height control
-	target = (FLIGHT_HEIGHT - irDist) / dt;
-	curr = (irDist - oldIRDist) / dt;
-	error = target - curr;
-	float targetThrottle = adjust(error, 1 / FINKEN_SYSTEM_UPDATE_FREQ,
-			&zPIDController);
-	return 50 + targetThrottle;
-}
-
 void update_actuators_set_point() {
 	float radioBeta = (float) radio_control.values[RADIO_ROLL] / 13000 * 10;
 	float radioAlpha = (float) radio_control.values[RADIO_PITCH] / 13000 * 10;
@@ -144,28 +98,6 @@ void update_actuators_set_point() {
 	alphaComponents[0] = radioAlpha;
 	betaComponents[0] = radioBeta;
 	float error_z_k = finken_system_set_point.distance_z - finken_system_model.distance_z;
-	/*float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z;
-	 if (autopilot_mode == AP_MODE_NAV && stage_time > 0) {
-	 sum_error_z += error_z;
-	 } else {
-	 sum_error_z = 0;
-	 }*/
-
-	/*
-	 float velocity_z = (finken_system_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
-
-	 finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
-	 finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
-	 finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));*/
-
-
-	/*distance_z_old = finken_system_model.distance_z;*/
-//	if (!finken_system_model_control_height) {
-//		error_z_k_dec1 = 0;
-//		error_z_k_dec2 = 0;
-//		thrust_k_dec1 = 0;
-//		thrust_k_dec1 = 0;
-//	}
 
 	float thrust_k = 1.6552f * thrust_k_dec1 - 0.6552f * thrust_k_dec2 + 209.0553f * error_z_k - 413.7859f * error_z_k_dec1 + 204.7450f * error_z_k_dec2;
 	
