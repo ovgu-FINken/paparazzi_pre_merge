@@ -52,7 +52,7 @@ void finken_sensor_model_init(void)
   register_periodic_telemetry(DefaultPeriodic, "FINKEN_SENSOR_MODEL", send_finken_sensor_model_telemetry);
 }
 
-static inline min(float a, float b){
+static float min(float a, float b){
 	return a<b?a:b;
 }
 
