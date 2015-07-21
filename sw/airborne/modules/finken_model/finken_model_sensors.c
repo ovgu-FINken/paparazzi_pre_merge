@@ -52,7 +52,7 @@ void finken_sensor_model_init(void)
   register_periodic_telemetry(DefaultPeriodic, "FINKEN_SENSOR_MODEL", send_finken_sensor_model_telemetry);
 }
 
-static float min(float a, float b){
+static int16_t min(int16_t a, int16_t b){
 	return a<b?a:b;
 }
 
@@ -60,8 +60,8 @@ void finken_sensor_model_periodic(void)
 {
   finken_sensor_model.distance_z       = ir_distance_equalized;
 	finken_sensor_model.distance_d_front = min(sonar_values.front, finken_sensor_model.remote_d_front);
-	finken_sensor_model.distance_d_back = min(sonar_values.back, finken_sensor_model.remote_d_back);
-	finken_sensor_model.distance_d_left = min(sonar_values.left, finken_sensor_model.remote_d_left);
+	finken_sensor_model.distance_d_back  = min(sonar_values.back, finken_sensor_model.remote_d_back);
+	finken_sensor_model.distance_d_left  = min(sonar_values.left, finken_sensor_model.remote_d_left);
 	finken_sensor_model.distance_d_right = min(sonar_values.right, finken_sensor_model.remote_d_right);
   finken_sensor_model.acceleration_x   = 0.0;
   finken_sensor_model.acceleration_y   = 0.0;
