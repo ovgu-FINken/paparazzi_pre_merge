@@ -13,15 +13,13 @@ ARCH_L=f4
 ARCH_DIR=stm32
 SRC_ARCH=arch/$(ARCH_DIR)
 $(TARGET).ARCHDIR = $(ARCH)
-$(TARGET).LDSCRIPT=$(SRC_ARCH)/apogee.ld
+$(TARGET).LDSCRIPT=$(SRC_ARCH)/stm32f4_discovery.ld
 
 HARD_FLOAT=yes
 
 # default flash mode is via usb dfu bootloader
-# possibilities: DFU, SWD
-FLASH_MODE ?= DFU
-STLINK ?= n
-DFU_UTIL ?= y
+# possibilities: STLINK, DFU-UTIL, SWD, JTAG_BMP
+FLASH_MODE ?= STLINK
 
 #
 # default LED configuration
@@ -42,7 +40,7 @@ MODEM_BAUD ?= B57600
 GPS_PORT ?= UART3
 GPS_BAUD ?= B38400
 
-RADIO_CONTROL_SPEKTRUM_PRIMARY_PORT ?= UART2
+RADIO_CONTROL_SPEKTRUM_PRIMARY_PORT ?= UART1
 
 
 #

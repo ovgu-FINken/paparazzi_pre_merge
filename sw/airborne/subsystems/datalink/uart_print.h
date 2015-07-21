@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005 Pascal Brisset, Antoine Drouin
+ * Copyright (C) 2015 Gautier Hattenberger <gautier.hattenberger@enac.fr>
  *
  * This file is part of paparazzi.
  *
@@ -24,39 +25,76 @@
 
 #include "mcu_periph/uart.h"
 #include "mcu_periph/usb_serial.h"
+#include "mcu_periph/link_device.h"
 
-#define _PrintString(out_fun, s) { \
-  uint8_t i = 0;                  \
-  while (s[i]) {                  \
-    out_fun(s[i]);		  \
-    i++;                          \
-  }                               \
+#define _PrintString(out_fun, s) {  \
+    uint8_t i = 0;                  \
+    while (s[i]) {                  \
+      out_fun(s[i]);                \
+      i++;                          \
+    }                               \
+  }
+
+static inline void print_string(struct link_device *dev, char *s)
+{
+  uint8_t i = 0;
+  while (s[i]) {
+    dev->put_byte(dev->periph, s[i]);
+    i++;
+  }
 }
 
-#define _PrintHex(out_fun, c) {						\
+#define _PrintHex(out_fun, c) {     \
     const uint8_t hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7',   \
-			      '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' }; \
-    uint8_t high = (c & 0xF0)>>4;					\
-    uint8_t low  = c & 0x0F;						\
-    out_fun(hex[high]);							\
-    out_fun(hex[low]);							\
-}									\
+                              '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' }; \
+    uint8_t high = (c & 0xF0)>>4;   \
+    uint8_t low  = c & 0x0F;        \
+    out_fun(hex[high]);             \
+    out_fun(hex[low]);              \
+  }
 
-#define _PrintHex16(out_fun, c ) {			\
-    uint8_t high16 = (uint8_t)(c>>8);			\
-    uint8_t low16  = (uint8_t)(c);			\
-    _PrintHex(out_fun, high16);				\
-    _PrintHex(out_fun, low16);				\
+static inline void print_hex(struct link_device *dev, uint8_t c)
+{
+  const uint8_t hex[16] =
+  { '0', '1', '2', '3', '4', '5', '6', '7',
+    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+  uint8_t high = (c & 0xF0)>>4;
+  uint8_t low  = c & 0x0F;
+  dev->put_byte(dev->periph, hex[high]);
+  dev->put_byte(dev->periph, hex[low]);
 }
 
-#define _PrintHex32(out_fun, c ) {			\
-    uint16_t high32 = (uint16_t)(c>>16);			\
-    uint16_t low32  = (uint16_t)(c);			\
-    _PrintHex16(out_fun, high32);				\
-    _PrintHex16(out_fun, low32);				\
+#define _PrintHex16(out_fun, c ) {    \
+    uint8_t high16 = (uint8_t)(c>>8); \
+    uint8_t low16  = (uint8_t)(c);    \
+    _PrintHex(out_fun, high16);       \
+    _PrintHex(out_fun, low16);        \
+  }
+
+static inline void print_hex16(struct link_device *dev, uint16_t c)
+{
+  uint8_t high16 = (uint8_t)(c>>8);
+  uint8_t low16  = (uint8_t)(c);
+  print_hex(dev, high16);
+  print_hex(dev, low16);
 }
 
-#ifdef USE_UART0
+#define _PrintHex32(out_fun, c ) {        \
+    uint16_t high32 = (uint16_t)(c>>16);  \
+    uint16_t low32  = (uint16_t)(c);      \
+    _PrintHex16(out_fun, high32);         \
+    _PrintHex16(out_fun, low32);          \
+  }
+
+static inline void print_hex32(struct link_device *dev, uint32_t c)
+{
+  uint16_t high32 = (uint16_t)(c>>16);
+  uint16_t low32  = (uint16_t)(c);
+  print_hex16(dev, high32);
+  print_hex16(dev, low32);
+}
+
+#if USE_UART0
 
 #define UART0PrintHex(c) _PrintHex(UART0Transmit, c)
 #define UART0PrintHex16(c) _PrintHex16(UART0Transmit, c)
@@ -65,7 +103,7 @@
 
 #endif /* USE_UART0 */
 
-#ifdef USE_UART1
+#if USE_UART1
 
 #define UART1PrintHex(c) _PrintHex(UART1Transmit, c)
 #define UART1PrintHex16(c) _PrintHex16(UART1Transmit, c)
@@ -74,7 +112,7 @@
 
 #endif /* USE_UART1 */
 
-#ifdef USE_UART2
+#if USE_UART2
 
 #define UART2PrintHex(c) _PrintHex(UART2Transmit, c)
 #define UART2PrintHex16(c) _PrintHex16(UART2Transmit, c)
@@ -83,7 +121,7 @@
 
 #endif /* USE_UART2 */
 
-#ifdef USE_UART3
+#if USE_UART3
 
 #define UART3PrintHex(c) _PrintHex(UART3Transmit, c)
 #define UART3PrintHex16(c) _PrintHex16(UART3Transmit, c)
@@ -92,7 +130,16 @@
 
 #endif /* USE_UART3 */
 
-#ifdef USE_UART5
+#if USE_UART4
+
+#define UART4PrintHex(c) _PrintHex(UART4Transmit, c)
+#define UART4PrintHex16(c) _PrintHex16(UART4Transmit, c)
+#define UART4PrintHex32(c) _PrintHex32(UART4Transmit, c)
+#define UART4PrintString(s) _PrintString(UART4Transmit, s)
+
+#endif /* USE_UART4 */
+
+#if USE_UART5
 
 #define UART5PrintHex(c) _PrintHex(UART5Transmit, c)
 #define UART5PrintHex16(c) _PrintHex16(UART5Transmit, c)
@@ -100,6 +147,15 @@
 #define UART5PrintString(s) _PrintString(UART5Transmit, s)
 
 #endif /* USE_UART5 */
+
+#if USE_UART6
+
+#define UART6PrintHex(c) _PrintHex(UART6Transmit, c)
+#define UART6PrintHex16(c) _PrintHex16(UART6Transmit, c)
+#define UART6PrintHex32(c) _PrintHex32(UART6Transmit, c)
+#define UART6PrintString(s) _PrintString(UART6Transmit, s)
+
+#endif /* USE_UART6 */
 
 #define UsbSPrintHex(c) _PrintHex(VCOM_putchar, c)
 #define UsbSPrintHex16(c) _PrintHex16(VCOM_putchar, c)

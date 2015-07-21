@@ -1,8 +1,6 @@
-(***************** Editing ONE (single) flight plan **************************)open Printf
+(***************** Editing ONE (single) flight plan **************************)
+open Printf
 open Latlong
-
-module G2D = Geometry_2d
-
 
 let (//) = Filename.concat
 let fp_example = Env.flight_plans_path // "example.xml"
@@ -65,6 +63,7 @@ let close_fp = fun geomap ->
     | Some (fp, _filename) ->
       let close = fun () ->
         fp#destroy ();
+        geomap#clear_georefs ();
         current_fp := None in
       match GToolbox.question_box ~title:"Closing flight plan" ~buttons:["Close"; "Save&Close"; "Cancel"] "Do you want to save/close ?" with
           2 -> save_fp geomap; close ()

@@ -27,42 +27,21 @@
 #define STABILIZATION_ATTITUDE_RC_SETPOINT_H
 
 #include "std.h"
-#include "generated/airframe.h"
 #include "math/pprz_algebra_int.h"
 #include "math/pprz_algebra_float.h"
-
-#include "subsystems/radio_control.h"
-#include "state.h"
-
-
-#ifdef STABILIZATION_ATTITUDE_DEADBAND_A
-#define ROLL_DEADBAND_EXCEEDED()                                        \
-  (radio_control.values[RADIO_ROLL] >  STABILIZATION_ATTITUDE_DEADBAND_A || \
-   radio_control.values[RADIO_ROLL] < -STABILIZATION_ATTITUDE_DEADBAND_A)
-#else
-#define ROLL_DEADBAND_EXCEEDED() (TRUE)
-#endif /* STABILIZATION_ATTITUDE_DEADBAND_A */
-
-#ifdef STABILIZATION_ATTITUDE_DEADBAND_E
-#define PITCH_DEADBAND_EXCEEDED()                                       \
-  (radio_control.values[RADIO_PITCH] >  STABILIZATION_ATTITUDE_DEADBAND_E || \
-   radio_control.values[RADIO_PITCH] < -STABILIZATION_ATTITUDE_DEADBAND_E)
-#else
-#define PITCH_DEADBAND_EXCEEDED() (TRUE)
-#endif /* STABILIZATION_ATTITUDE_DEADBAND_E */
-
-#define YAW_DEADBAND_EXCEEDED()                                         \
-  (radio_control.values[RADIO_YAW] >  STABILIZATION_ATTITUDE_DEADBAND_R || \
-   radio_control.values[RADIO_YAW] < -STABILIZATION_ATTITUDE_DEADBAND_R)
 
 extern void stabilization_attitude_reset_care_free_heading(void);
 extern int32_t stabilization_attitude_get_heading_i(void);
 extern float stabilization_attitude_get_heading_f(void);
-extern void stabilization_attitude_read_rc_setpoint_eulers(struct Int32Eulers *sp, bool_t in_flight);
-extern void stabilization_attitude_read_rc_setpoint_eulers_f(struct FloatEulers *sp, bool_t in_flight);
-extern void stabilization_attitude_read_rc_roll_pitch_quat_f(struct FloatQuat* q);
-extern void stabilization_attitude_read_rc_roll_pitch_earth_quat_f(struct FloatQuat* q);
-extern void stabilization_attitude_read_rc_setpoint_quat_f(struct FloatQuat* q_sp, bool_t in_flight);
-extern void stabilization_attitude_read_rc_setpoint_quat_earth_bound_f(struct FloatQuat* q_sp, bool_t in_flight);
+extern void stabilization_attitude_read_rc_setpoint_eulers(struct Int32Eulers *sp, bool_t in_flight, bool_t in_carefree,
+    bool_t coordinated_turn);
+extern void stabilization_attitude_read_rc_setpoint_eulers_f(struct FloatEulers *sp, bool_t in_flight,
+    bool_t in_carefree, bool_t coordinated_turn);
+extern void stabilization_attitude_read_rc_roll_pitch_quat_f(struct FloatQuat *q);
+extern void stabilization_attitude_read_rc_roll_pitch_earth_quat_f(struct FloatQuat *q);
+extern void stabilization_attitude_read_rc_setpoint_quat_f(struct FloatQuat *q_sp, bool_t in_flight, bool_t in_carefree,
+    bool_t coordinated_turn);
+extern void stabilization_attitude_read_rc_setpoint_quat_earth_bound_f(struct FloatQuat *q_sp, bool_t in_flight,
+    bool_t in_carefree, bool_t coordinated_turn);
 
 #endif /* STABILIZATION_ATTITUDE_RC_SETPOINT_H */

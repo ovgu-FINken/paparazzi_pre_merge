@@ -29,6 +29,9 @@
 
 #include "std.h"
 #include "modules/finken_model/finken_model_system.h"
+#include "mcu_periph/link_device.h"
+#include "subsystems/datalink/transport.h"
+#include "subsystems/datalink/telemetry.h"
 
 struct environment_model_s {
   float   alpha;
@@ -36,11 +39,10 @@ struct environment_model_s {
 };
 
 extern struct environment_model_s finken_environment_model;
-extern struct system_model_s finken_system_set_point;
 
 extern void finken_environment_model_init(void);
 extern void finken_environment_model_periodic(void);
 
-extern void send_finken_environment_model_telemetry(void);
+extern void send_finken_environment_model_telemetry(struct transport_tx *trans, struct link_device* link);
 
 #endif

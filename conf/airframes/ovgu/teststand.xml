@@ -10,14 +10,11 @@
       <subsystem name="radio_control" type="spektrum">
         <define name="RADIO_MODE" value="RADIO_FLAP"/>
         <define name="RADIO_KILL_SWITCH" value="RADIO_GEAR"/>
+	<define name="SPEKTRUM_BIND_PIN_HIGH"/>
 				<!--
         <configure name="USE_SECONDARY_SPEKTRUM_RECEIVER" value="1"/>
 				/-->
       </subsystem>
-    </target>
-
-    <target name="nps" board="pc">
-      <subsystem name="fdm" type="jsbsim"/>
     </target>
 
     <subsystem name="motor_mixing"/>
@@ -42,17 +39,20 @@
 		<load name="sonar_array_i2c.xml">
 			<define name="SONAR_I2C_DEV" value="i2c2"/>
 			<define name="USE_I2C2" />
+			<!-- I2C Clockspeed of 5kHz because clock-stretching /-->
+			<define name="I2C2_CLOCK_SPEED" value="5000"/>
+			<!--<define name="I2C_DEBUG_LED"/>-->
 		</load>
-		<load name="mavlink_decoder.xml">
+		<!--<load name="mavlink_decoder.xml">
 			<configure name="MAVLINK_PORT" value="UART2" />
 			<configure name="MAVLINK_BAUD" value="B115200" />
 		</load>
 		<load name="px4flow.xml" />
-		<load name="nav_finken.xml" />
-        <load name="finken_model.xml" />
-        <load name="finken_ir_adc.xml">
-            <configure name="ADC_IR" value="ADC_3"/>
-        </load>
+		<load name="nav_finken.xml" />-->
+    <load name="finken_model.xml" />
+    <load name="finken_ir_adc.xml">
+    	<configure name="ADC_IR" value="ADC_3"/>
+    </load>
 	</modules>
 
 	<!--

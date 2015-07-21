@@ -21,7 +21,6 @@
  */
 
 #include "modules/finken_model/finken_model_system.h"
-#include "subsystems/datalink/telemetry.h"
 #include "subsystems/navigation/common_flight_plan.h"
 
 /* input */
@@ -59,7 +58,7 @@
 #endif
 
 struct system_model_s finken_system_model;
-struct actuators_model_s finken_actuators_set_point;
+struct system_model_s finken_system_set_point;
 
 void update_actuators_set_point(void);
 
@@ -85,9 +84,7 @@ void finken_system_model_periodic(void)
 
 void update_finken_system_model(void)
 {
-	if(finken_sensor_model.distance_z < 2.5) {
-		finken_system_model.distance_z     = finken_sensor_model.distance_z;
-	}
+	finken_system_model.distance_z     = finken_sensor_model.distance_z;
 	
   finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
   finken_system_model.velocity_x     = finken_sensor_model.velocity_x;
@@ -137,8 +134,10 @@ void update_actuators_set_point()
 	// TODO: Theta
 }
 
-void send_finken_system_model_telemetry(void)
+void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link)
 {
+  trans=trans;
+  link=link;
   DOWNLINK_SEND_FINKEN_SYSTEM_MODEL(
     DefaultChannel,
     DefaultDevice,

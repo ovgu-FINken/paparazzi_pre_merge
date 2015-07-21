@@ -33,6 +33,7 @@
 #include <caml/mlvalues.h>
 #include <caml/fail.h>
 #include <caml/alloc.h>
+#include <caml/memory.h>
 
 static int baudrates[] = { B0, B50, B75, B110, B134, B150, B200, B300, B600, B1200, B1800, B2400, B4800, B9600, B19200, B38400, B57600, B115200, B230400 };
 
@@ -42,34 +43,35 @@ static int baudrates[] = { B0, B50, B75, B110, B134, B150, B200, B300, B600, B12
 /****************************************************************************/
 value c_init_serial(value device, value speed, value hw_flow_control)
 {
+  CAMLparam3 (device, speed, hw_flow_control);
   struct termios orig_termios, cur_termios;
 
   int br = baudrates[Int_val(speed)];
 
-  int fd = open(String_val(device), O_RDWR|O_NONBLOCK);
+  int fd = open(String_val(device), O_RDWR|O_NOCTTY|O_NONBLOCK);
 
   if (fd == -1) failwith("opening modem serial device : fd < 0");
 
   if (tcgetattr(fd, &orig_termios)) failwith("getting modem serial device attr");
   cur_termios = orig_termios;
 
-  /* input modes */
+  /* input modes - turn off input processing */
   cur_termios.c_iflag &= ~(IGNBRK|BRKINT|IGNPAR|PARMRK|INPCK|ISTRIP|INLCR|IGNCR
 			    |ICRNL |IXON|IXANY|IXOFF|IMAXBEL);
   /* pas IGNCR sinon il vire les 0x0D */
   cur_termios.c_iflag |= BRKINT;
 
-  /* output_flags */
+  /* output_flags - turn off output processing */
   cur_termios.c_oflag  &=~(OPOST|ONLCR|OCRNL|ONOCR|ONLRET);
 
   /* control modes */
+  cur_termios.c_cflag &= ~(CSIZE|CSTOPB|CREAD|PARENB|PARODD|HUPCL|CLOCAL);
+  cur_termios.c_cflag |= CREAD|CS8|CLOCAL;
   if (Bool_val(hw_flow_control)) {
-    cur_termios.c_cflag &= ~(CSIZE|CSTOPB|CREAD|PARENB|PARODD|HUPCL|CLOCAL);
-    cur_termios.c_cflag |= CREAD|CS8|CLOCAL|CRTSCTS;
+    cur_termios.c_cflag |= CRTSCTS;
   }
   else {
-    cur_termios.c_cflag &= ~(CSIZE|CSTOPB|CREAD|PARENB|PARODD|HUPCL|CLOCAL|CRTSCTS);
-    cur_termios.c_cflag |= CREAD|CS8|CLOCAL;
+    cur_termios.c_cflag &= ~(CRTSCTS);
   }
 
   /* local modes */
@@ -80,10 +82,12 @@ value c_init_serial(value device, value speed, value hw_flow_control)
 
   if (tcsetattr(fd, TCSADRAIN, &cur_termios)) failwith("setting modem serial device attr");
 
-  return Val_int(fd);
+  CAMLreturn (Val_int(fd));
 }
 
-value c_set_dtr(value val_fd, value val_bit) {
+value c_set_dtr(value val_fd, value val_bit)
+{
+  CAMLparam2 (val_fd, val_bit);
   int status;
   int fd = Int_val(val_fd);
 
@@ -93,13 +97,14 @@ value c_set_dtr(value val_fd, value val_bit) {
   else
     status &= ~TIOCM_DTR;
   ioctl(fd, TIOCMSET, &status);
-  return Val_unit;
+  CAMLreturn (Val_unit);
 }
 
 
 /* From the gPhoto I/O library */
 value c_serial_set_baudrate(value val_fd, value speed)
 {
+  CAMLparam2 (val_fd, speed);
   struct termios tio;
   int fd = Int_val(val_fd);
 
@@ -121,5 +126,5 @@ value c_serial_set_baudrate(value val_fd, value speed)
   if (tcsetattr(fd, TCSANOW | TCSAFLUSH, &tio) < 0) {
     failwith("tcsetattr");
   }
-  return Val_unit;
+  CAMLreturn (Val_unit);
 }

@@ -30,13 +30,6 @@
 #include "generated/airframe.h"
 #include "std.h"
 
-#ifndef INS_PROPAGATE_FREQUENCY
-#define INS_PROPAGATE_FREQUENCY PERIODIC_FREQUENCY
-#endif
-PRINT_CONFIG_VAR(INS_PROPAGATE_FREQUENCY)
-
-#define DT_VFILTER (1./(INS_PROPAGATE_FREQUENCY))
-
 /*
 
 X = [ z zdot bias ]
@@ -62,41 +55,40 @@ temps :
 #endif
 
 /* default parameters */
-#define Qzz       VF_FLOAT_ACCEL_NOISE * DT_VFILTER * DT_VFILTER / 2.
-#define Qzdotzdot VF_FLOAT_ACCEL_NOISE * DT_VFILTER
 #define Qbiasbias 1e-7
 
-float vff_z;
-float vff_bias;
-float vff_zdot;
-float vff_zdotdot;
+struct Vff vff;
 
-float vff_P[VFF_STATE_SIZE][VFF_STATE_SIZE];
-
-float vff_z_meas;
-
-#if DOWNLINK
+#if PERIODIC_TELEMETRY
 #include "subsystems/datalink/telemetry.h"
 
-static void send_vff(void) {
-  DOWNLINK_SEND_VFF(DefaultChannel, DefaultDevice,
-      &vff_z_meas, &vff_z, &vff_zdot, &vff_bias,
-      &vff_P[0][0], &vff_P[1][1], &vff_P[2][2]);
+static void send_vff(struct transport_tx *trans, struct link_device *dev)
+{
+  pprz_msg_send_VFF(trans, dev, AC_ID,
+                    &vff.z_meas, &vff.z, &vff.zdot, &vff.bias,
+                    &vff.P[0][0], &vff.P[1][1], &vff.P[2][2]);
 }
 #endif
 
-void vff_init(float init_z, float init_zdot, float init_bias) {
-  vff_z    = init_z;
-  vff_zdot = init_zdot;
-  vff_bias = init_bias;
+void vff_init_zero(void)
+{
+  vff_init(0., 0., 0.);
+}
+
+void vff_init(float init_z, float init_zdot, float init_bias)
+{
+  vff.z    = init_z;
+  vff.zdot = init_zdot;
+  vff.bias = init_bias;
   int i, j;
-  for (i=0; i<VFF_STATE_SIZE; i++) {
-    for (j=0; j<VFF_STATE_SIZE; j++)
-      vff_P[i][j] = 0.;
-    vff_P[i][i] = VF_FLOAT_INIT_PXX;
+  for (i = 0; i < VFF_STATE_SIZE; i++) {
+    for (j = 0; j < VFF_STATE_SIZE; j++) {
+      vff.P[i][j] = 0.;
+    }
+    vff.P[i][i] = VF_FLOAT_INIT_PXX;
   }
 
-#if DOWNLINK
+#if PERIODIC_TELEMETRY
   register_periodic_telemetry(DefaultPeriodic, "VFF", send_vff);
 #endif
 }
@@ -119,31 +111,32 @@ void vff_init(float init_z, float init_zdot, float init_bias) {
  Pk1 = F * Pk0 * F' + Q;
 
 */
-void vff_propagate(float accel) {
+void vff_propagate(float accel, float dt)
+{
   /* update state (Xk1) */
-  vff_zdotdot = accel + 9.81 - vff_bias;
-  vff_z = vff_z + DT_VFILTER * vff_zdot;
-  vff_zdot = vff_zdot + DT_VFILTER * vff_zdotdot;
+  vff.zdotdot = accel + 9.81 - vff.bias;
+  vff.z = vff.z + dt * vff.zdot;
+  vff.zdot = vff.zdot + dt * vff.zdotdot;
   /* update covariance (Pk1) */
-  const float FPF00 = vff_P[0][0] + DT_VFILTER * ( vff_P[1][0] + vff_P[0][1] + DT_VFILTER * vff_P[1][1] );
-  const float FPF01 = vff_P[0][1] + DT_VFILTER * ( vff_P[1][1] - vff_P[0][2] - DT_VFILTER * vff_P[1][2] );
-  const float FPF02 = vff_P[0][2] + DT_VFILTER * ( vff_P[1][2] );
-  const float FPF10 = vff_P[1][0] + DT_VFILTER * (-vff_P[2][0] + vff_P[1][1] - DT_VFILTER * vff_P[2][1] );
-  const float FPF11 = vff_P[1][1] + DT_VFILTER * (-vff_P[2][1] - vff_P[1][2] + DT_VFILTER * vff_P[2][2] );
-  const float FPF12 = vff_P[1][2] + DT_VFILTER * (-vff_P[2][2] );
-  const float FPF20 = vff_P[2][0] + DT_VFILTER * ( vff_P[2][1] );
-  const float FPF21 = vff_P[2][1] + DT_VFILTER * (-vff_P[2][2] );
-  const float FPF22 = vff_P[2][2];
+  const float FPF00 = vff.P[0][0] + dt * (vff.P[1][0] + vff.P[0][1] + dt * vff.P[1][1]);
+  const float FPF01 = vff.P[0][1] + dt * (vff.P[1][1] - vff.P[0][2] - dt * vff.P[1][2]);
+  const float FPF02 = vff.P[0][2] + dt * (vff.P[1][2]);
+  const float FPF10 = vff.P[1][0] + dt * (-vff.P[2][0] + vff.P[1][1] - dt * vff.P[2][1]);
+  const float FPF11 = vff.P[1][1] + dt * (-vff.P[2][1] - vff.P[1][2] + dt * vff.P[2][2]);
+  const float FPF12 = vff.P[1][2] + dt * (-vff.P[2][2]);
+  const float FPF20 = vff.P[2][0] + dt * (vff.P[2][1]);
+  const float FPF21 = vff.P[2][1] + dt * (-vff.P[2][2]);
+  const float FPF22 = vff.P[2][2];
 
-  vff_P[0][0] = FPF00 + Qzz;
-  vff_P[0][1] = FPF01;
-  vff_P[0][2] = FPF02;
-  vff_P[1][0] = FPF10;
-  vff_P[1][1] = FPF11 + Qzdotzdot;
-  vff_P[1][2] = FPF12;
-  vff_P[2][0] = FPF20;
-  vff_P[2][1] = FPF21;
-  vff_P[2][2] = FPF22 + Qbiasbias;
+  vff.P[0][0] = FPF00 + VF_FLOAT_ACCEL_NOISE * dt * dt / 2.;
+  vff.P[0][1] = FPF01;
+  vff.P[0][2] = FPF02;
+  vff.P[1][0] = FPF10;
+  vff.P[1][1] = FPF11 + VF_FLOAT_ACCEL_NOISE * dt;
+  vff.P[1][2] = FPF12;
+  vff.P[2][0] = FPF20;
+  vff.P[2][1] = FPF21;
+  vff.P[2][2] = FPF22 + Qbiasbias;
 
 }
 /*
@@ -160,46 +153,49 @@ void vff_propagate(float accel) {
   // update covariance
   Pp = Pm - K*H*Pm;
 */
-static inline void update_z_conf(float z_meas, float conf) {
-  vff_z_meas = z_meas;
+static inline void update_z_conf(float z_meas, float conf)
+{
+  vff.z_meas = z_meas;
 
-  const float y = z_meas - vff_z;
-  const float S = vff_P[0][0] + conf;
-  const float K1 = vff_P[0][0] * 1/S;
-  const float K2 = vff_P[1][0] * 1/S;
-  const float K3 = vff_P[2][0] * 1/S;
+  const float y = z_meas - vff.z;
+  const float S = vff.P[0][0] + conf;
+  const float K1 = vff.P[0][0] * 1 / S;
+  const float K2 = vff.P[1][0] * 1 / S;
+  const float K3 = vff.P[2][0] * 1 / S;
 
-  vff_z    = vff_z    + K1 * y;
-  vff_zdot = vff_zdot + K2 * y;
-  vff_bias = vff_bias + K3 * y;
+  vff.z    = vff.z    + K1 * y;
+  vff.zdot = vff.zdot + K2 * y;
+  vff.bias = vff.bias + K3 * y;
 
-  const float P11 = (1. - K1) * vff_P[0][0];
-  const float P12 = (1. - K1) * vff_P[0][1];
-  const float P13 = (1. - K1) * vff_P[0][2];
-  const float P21 = -K2 * vff_P[0][0] + vff_P[1][0];
-  const float P22 = -K2 * vff_P[0][1] + vff_P[1][1];
-  const float P23 = -K2 * vff_P[0][2] + vff_P[1][2];
-  const float P31 = -K3 * vff_P[0][0] + vff_P[2][0];
-  const float P32 = -K3 * vff_P[0][1] + vff_P[2][1];
-  const float P33 = -K3 * vff_P[0][2] + vff_P[2][2];
+  const float P11 = (1. - K1) * vff.P[0][0];
+  const float P12 = (1. - K1) * vff.P[0][1];
+  const float P13 = (1. - K1) * vff.P[0][2];
+  const float P21 = -K2 * vff.P[0][0] + vff.P[1][0];
+  const float P22 = -K2 * vff.P[0][1] + vff.P[1][1];
+  const float P23 = -K2 * vff.P[0][2] + vff.P[1][2];
+  const float P31 = -K3 * vff.P[0][0] + vff.P[2][0];
+  const float P32 = -K3 * vff.P[0][1] + vff.P[2][1];
+  const float P33 = -K3 * vff.P[0][2] + vff.P[2][2];
 
-  vff_P[0][0] = P11;
-  vff_P[0][1] = P12;
-  vff_P[0][2] = P13;
-  vff_P[1][0] = P21;
-  vff_P[1][1] = P22;
-  vff_P[1][2] = P23;
-  vff_P[2][0] = P31;
-  vff_P[2][1] = P32;
-  vff_P[2][2] = P33;
+  vff.P[0][0] = P11;
+  vff.P[0][1] = P12;
+  vff.P[0][2] = P13;
+  vff.P[1][0] = P21;
+  vff.P[1][1] = P22;
+  vff.P[1][2] = P23;
+  vff.P[2][0] = P31;
+  vff.P[2][1] = P32;
+  vff.P[2][2] = P33;
 
 }
 
-void vff_update(float z_meas) {
+void vff_update(float z_meas)
+{
   update_z_conf(z_meas, VF_FLOAT_MEAS_NOISE);
 }
 
-void vff_update_z_conf(float z_meas, float conf) {
+void vff_update_z_conf(float z_meas, float conf)
+{
   update_z_conf(z_meas, conf);
 }
 
@@ -217,44 +213,46 @@ void vff_update_z_conf(float z_meas, float conf) {
   // update covariance
   Pp = Pm - K*H*Pm;
 */
-static inline void update_vz_conf(float vz, float conf) {
-  const float yd = vz - vff_zdot;
-  const float S = vff_P[1][1] + conf;
-  const float K1 = vff_P[0][1] * 1/S;
-  const float K2 = vff_P[1][1] * 1/S;
-  const float K3 = vff_P[2][1] * 1/S;
+static inline void update_vz_conf(float vz, float conf)
+{
+  const float yd = vz - vff.zdot;
+  const float S = vff.P[1][1] + conf;
+  const float K1 = vff.P[0][1] * 1 / S;
+  const float K2 = vff.P[1][1] * 1 / S;
+  const float K3 = vff.P[2][1] * 1 / S;
 
-  vff_z    = vff_z    + K1 * yd;
-  vff_zdot = vff_zdot + K2 * yd;
-  vff_bias = vff_bias + K3 * yd;
+  vff.z    = vff.z    + K1 * yd;
+  vff.zdot = vff.zdot + K2 * yd;
+  vff.bias = vff.bias + K3 * yd;
 
-  const float P11 = -K1 * vff_P[1][0] + vff_P[0][0];
-  const float P12 = -K1 * vff_P[1][1] + vff_P[0][1];
-  const float P13 = -K1 * vff_P[1][2] + vff_P[0][2];
-  const float P21 = (1. - K2) * vff_P[1][0];
-  const float P22 = (1. - K2) * vff_P[1][1];
-  const float P23 = (1. - K2) * vff_P[1][2];
-  const float P31 = -K3 * vff_P[1][0] + vff_P[2][0];
-  const float P32 = -K3 * vff_P[1][1] + vff_P[2][1];
-  const float P33 = -K3 * vff_P[1][2] + vff_P[2][2];
+  const float P11 = -K1 * vff.P[1][0] + vff.P[0][0];
+  const float P12 = -K1 * vff.P[1][1] + vff.P[0][1];
+  const float P13 = -K1 * vff.P[1][2] + vff.P[0][2];
+  const float P21 = (1. - K2) * vff.P[1][0];
+  const float P22 = (1. - K2) * vff.P[1][1];
+  const float P23 = (1. - K2) * vff.P[1][2];
+  const float P31 = -K3 * vff.P[1][0] + vff.P[2][0];
+  const float P32 = -K3 * vff.P[1][1] + vff.P[2][1];
+  const float P33 = -K3 * vff.P[1][2] + vff.P[2][2];
 
-  vff_P[0][0] = P11;
-  vff_P[0][1] = P12;
-  vff_P[0][2] = P13;
-  vff_P[1][0] = P21;
-  vff_P[1][1] = P22;
-  vff_P[1][2] = P23;
-  vff_P[2][0] = P31;
-  vff_P[2][1] = P32;
-  vff_P[2][2] = P33;
+  vff.P[0][0] = P11;
+  vff.P[0][1] = P12;
+  vff.P[0][2] = P13;
+  vff.P[1][0] = P21;
+  vff.P[1][1] = P22;
+  vff.P[1][2] = P23;
+  vff.P[2][0] = P31;
+  vff.P[2][1] = P32;
+  vff.P[2][2] = P33;
 
 }
 
-void vff_update_vz_conf(float vz_meas, float conf) {
+void vff_update_vz_conf(float vz_meas, float conf)
+{
   update_vz_conf(vz_meas, conf);
 }
 
-void vff_realign(float z_meas) {
-  vff_z = z_meas;
-  vff_zdot = 0;
+void vff_realign(float z_meas)
+{
+  vff_init(z_meas, 0., 0.);
 }

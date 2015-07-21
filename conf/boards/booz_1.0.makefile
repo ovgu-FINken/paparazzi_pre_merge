@@ -1,16 +1,14 @@
 #
 # booz_1.0.makefile
 #
-# http://paparazzi.enac.fr/wiki/Booz
+# http://wiki.paparazziuav.org/wiki/Booz
 #
 ARCH=lpc21
 BOARD=booz
 BOARD_VERSION=1.0
 BOARD_CFG=\"boards/$(BOARD)_$(BOARD_VERSION).h\"
 
-ifndef FLASH_MODE
-FLASH_MODE = IAP
-endif
+FLASH_MODE ?= IAP
 
 #
 #

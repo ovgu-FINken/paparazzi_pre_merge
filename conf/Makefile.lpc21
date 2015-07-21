@@ -37,6 +37,7 @@ Q=@
 #
 # find compiler toolchain
 #
+ALLOW_OLD_ARM_MULTILIB_TOOLCHAIN = 1
 include $(PAPARAZZI_SRC)/conf/Makefile.arm-embedded-toolchain
 
 #
@@ -68,8 +69,7 @@ ASRCARM = crt0.S
 
 # Optimization level, can be [0, 1, 2, 3, s].
 # 0 = turn off optimization. s = optimize for size.
-OPT = s
-#OPT=3
+OPT ?= s
 
 CSTANDARD = -std=gnu99
 
@@ -96,7 +96,9 @@ CFLAGS += -Wshadow
 CFLAGS += -Wnested-externs
 
 CFLAGS += $(CSTANDARD)
-CFLAGS += $($(TARGET).CFLAGS) $(LOCAL_CFLAGS)
+CFLAGS += $($(TARGET).CFLAGS) $(USER_CFLAGS)
+# on old lpc, avoid using double precision in some geodetic functions
+CFLAGS += -DUSE_SINGLE_PRECISION_LLA_ECEF
 
 # Assembler flags.
 ASFLAGS = -Wa,-adhlns=$(OBJDIR)/$(notdir $(<:.S=.lst))
@@ -174,6 +176,11 @@ include $(PAPARAZZI_SRC)/conf/Makefile.arm-embedded-common
 # Default target.
 all: printcommands sizebefore build sizeafter
 
+# depend order only for parallel make
+sizebefore: | printcommands
+build: | printcommands sizebefore
+sizeafter: | build
+
 build: $(OBJDIR) elf hex lss sym
 
 $(OBJDIR):
@@ -187,7 +194,7 @@ sym: $(OBJDIR)/$(TARGET).sym
 
 
 # Program the device.
-load upload program: $(OBJDIR)/$(TARGET).hex
+upload program: $(OBJDIR)/$(TARGET).hex
 ifeq ($(FLASH_MODE),IAP)
 	$(SUDO) $(LPC21IAP)  $(OBJDIR)/$(TARGET).elf
 else ifeq ($(FLASH_MODE),JTAG)
@@ -244,7 +251,7 @@ $(OBJDIR)/%.o : $(SRC_ARCH)/lpcusb/%.c $(OBJDIR)/../Makefile.ac
 	$(Q)$(CC) -MMD -c $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@
 
 
-# grab files in var/$(AIRCRAFT)/$(TARGET) aka $(OBJDIR)
+# grab files in var/aircrafts/$(AIRCRAFT)/$(TARGET) aka $(OBJDIR)
 #$(OBJDIR)/%.o : $(OBJDIR)/%.c
 #	@echo CC $@
 #	$(Q)$(CC) -c $(ALL_CFLAGS) $(CONLYFLAGS) $< -o $@
@@ -262,7 +269,7 @@ $(AOBJARM) : $(OBJDIR)/%.o : $(SRC_ARCH)/%.S
 
 
 # Listing of phony targets.
-.PHONY : all build elf hex lss sym load upload program
+.PHONY : all build elf hex lss sym upload program
 
 
 #

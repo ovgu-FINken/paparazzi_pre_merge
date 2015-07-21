@@ -38,41 +38,78 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/cm3/systick.h>
 #include "std.h"
+#ifdef RTOS_IS_CHIBIOS
+#include "chibios_stub.h"
+#include "chconf.h"
+#endif
 
 /**
  * Get the time in microseconds since startup.
  * WARNING: overflows after 70min!
- * @return current system time as uint32_t
+ * @return microseconds since startup as uint32_t
  */
-static inline uint32_t get_sys_time_usec(void) {
+static inline uint32_t get_sys_time_usec(void)
+{
+#ifdef RTOS_IS_CHIBIOS
+  return (chibios_chTimeNow() * (1000000 / CH_FREQUENCY));
+#else
   return sys_time.nb_sec * 1000000 +
-    usec_of_cpu_ticks(sys_time.nb_sec_rem) +
-    usec_of_cpu_ticks(systick_get_reload() - systick_get_value());
+         usec_of_cpu_ticks(sys_time.nb_sec_rem) +
+         usec_of_cpu_ticks(systick_get_reload() - systick_get_value());
+#endif
 }
 
-/* Generic timer macros */
-#define SysTimeTimerStart(_t) { _t = get_sys_time_usec(); }
-#define SysTimeTimer(_t) ( get_sys_time_usec() - (_t))
-#define SysTimeTimerStop(_t) { _t = ( get_sys_time_usec() - (_t)); }
+/**
+ * Get the time in milliseconds since startup.
+ * @return milliseconds since startup as uint32_t
+ */
+static inline uint32_t get_sys_time_msec(void)
+{
+#ifdef RTOS_IS_CHIBIOS
+  return (chibios_chTimeNow() * (1000 / CH_FREQUENCY));
+#else
+  return sys_time.nb_sec * 1000 +
+         msec_of_cpu_ticks(sys_time.nb_sec_rem) +
+         msec_of_cpu_ticks(systick_get_reload() - systick_get_value());
+#endif
+}
+
 
 /** Busy wait in microseconds.
- * @todo: doesn't handle wrap-around at
- * 2^32 / 1000000 = 4294s = ~72min
+ *
+ *  max value is limited by the max number of cycle
+ *  i.e 2^32 * usec_of_cpu_ticks(systick_get_reload())
  */
-static inline void sys_time_usleep(uint32_t us) {
-  /* duration and end time in SYS_TIME_TICKS */
-  uint32_t d_sys_ticks = sys_time_ticks_of_usec(us);
-  uint32_t end_nb_tick = sys_time.nb_tick + d_sys_ticks;
-
-  /* remainder in CPU_TICKS */
-  uint32_t rem_cpu_ticks = cpu_ticks_of_usec(us) - d_sys_ticks * sys_time.resolution_cpu_ticks;
-  /* cortex systick counts backwards, end value is reload_value - remainder */
-  uint32_t end_cpu_ticks = systick_get_reload() - rem_cpu_ticks;
-
-  /* first wait until end time in SYS_TIME_TICKS */
-  while (sys_time.nb_tick < end_nb_tick);
-  /* then wait remaining cpu ticks */
-  while (systick_get_value() > end_cpu_ticks);
+static inline void sys_time_usleep(uint32_t us)
+{
+#ifdef RTOS_IS_CHIBIOS
+  chibios_chThdSleepMicroseconds(us);
+#else
+  // start time
+  uint32_t start = systick_get_value();
+  // max time of one full counter cycle (n + 1 ticks)
+  uint32_t DT = usec_of_cpu_ticks(systick_get_reload() + 1);
+  // number of cycles
+  uint32_t n = us / DT;
+  // remaining number of cpu ticks
+  uint32_t rem = cpu_ticks_of_usec(us % DT);
+  // end time depend on the current value of the counter
+  uint32_t end;
+  if (rem < start) {
+    end = start - rem;
+  } else {
+    // one more count flag is required
+    n++;
+    end = systick_get_reload() - rem + start;
+  }
+  // count number of cycles (when counter reachs 0)
+  while (n) {
+    while (!systick_get_countflag());
+    n--;
+  }
+  // wait remaining ticks
+  while (systick_get_value() > end);
+#endif
 }
 
 #endif /* SYS_TIME_ARCH_H */

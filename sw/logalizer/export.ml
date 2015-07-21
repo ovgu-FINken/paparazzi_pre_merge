@@ -75,7 +75,7 @@ let fill_data = fun (treeview:GTree.view) (model:GTree.tree_store) messages_xml 
 	treeview#expand_row (model#get_path parent);
       model#set ~row ~column:col_to_export to_export;
       model#set ~row ~column:col_field field_name)
-      (Xml.children msg))
+      (List.filter (fun x -> Xml.tag x = "field") (Xml.children msg)))
     (Xml.children messages_xml)
 
 type timestamp =
@@ -178,7 +178,7 @@ let export_values = fun ?(sep="tab") ?(export_geo_pos=true) (model:GTree.tree_st
     if export_geo_pos then begin
       try
 	let wgs84 = get_last_geo_pos lookup in
-	bprintf buf "%s%.6f%s%.6f" sep ((Rad>>Deg) wgs84.posn_lat) sep ((Rad>>Deg) wgs84.posn_long)
+	bprintf buf "%s%.9f%s%.9f" sep ((Rad>>Deg) wgs84.posn_lat) sep ((Rad>>Deg) wgs84.posn_long)
       with
 	exc ->
 	  all_values := false;
@@ -274,8 +274,19 @@ let popup = fun ?(no_gui = false) xml log_filename data ->
   (** Render the columns *)
   display_columns w#treeview_messages model;
 
+  (** Build list of message name *)
+  let msg_names = Hashtbl.create 30 in
+  List.iter (fun (_, name, _) -> if not (Hashtbl.mem msg_names name) then Hashtbl.add msg_names name ()) data;
   (** Fill the colums *)
-  let xml_class = ExtXml.child ~select:(fun c -> ExtXml.attrib c "name" = class_name) xml "class" in
+  let xml_class = try ExtXml.child ~select:(fun x -> Xml.attrib x "name" = class_name) xml "msg_class"
+    with Not_found -> ExtXml.child ~select:(fun x -> Xml.attrib x "name" = class_name) xml "class" in
+  (** Filter xml message *)
+  let xml_class = Xml.Element (
+    class_name, [],
+    List.filter (fun xml ->
+      let name = Xml.attrib xml "name" in
+      Hashtbl.mem msg_names name) (Xml.children xml_class)
+      ) in
   let prefs = read_preferences () in
   fill_data w#treeview_messages model xml_class prefs;
 

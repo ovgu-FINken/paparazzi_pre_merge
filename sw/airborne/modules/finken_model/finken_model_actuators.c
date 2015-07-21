@@ -25,6 +25,7 @@
 #include "subsystems/electrical.h"
 
 struct actuators_model_s finken_actuators_model;
+struct actuators_model_s finken_actuators_set_point;
 
 void finken_actuators_model_init(void) {
 	finken_actuators_model.alpha  = 0;
@@ -51,8 +52,10 @@ float compensate_battery_drop(float thrust_setpoint) {
 		return 1.0;
 	return thrust;
 }
-void send_finken_actuators_model_telemetry(void)
+void send_finken_actuators_model_telemetry(struct transport_tx *trans, struct link_device* link)
 {
+	trans=trans;
+	link=link;
 	DOWNLINK_SEND_FINKEN_ACTUATORS_MODEL(
 		DefaultChannel,
 		DefaultDevice,
