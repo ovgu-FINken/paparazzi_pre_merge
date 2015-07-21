@@ -1,0 +1,17 @@
+<conf>
+	<aircraft type = "real" name = "SimFinken">
+			<signal name="throttle" default=50 min=0    max=100 type=float  unit="percent">
+			<signal name="pitch"    default=0  min=-90  max=90  type=float  unit="degree"/>
+			<signal name="roll"     default=0  min=-90  max=90  type=float  unit="degree"-/>
+			<signal name="yaw"      default=0  min=-180 max=180 type=float  unit="degree"/>
+			<signal name="height"   default=0  min=0    max=500 type=floeat unit="cm"/>
+		<components>
+			<sensors>
+				<sensor1 name="SimFinken_sensor_front" type="distance_ultrasonic"/>	
+				<sensor2 name="SimFinken_sensor_back" type="distance_ultrasonic"/>	
+				<sensor3 name="SimFinken_sensor_left" type="distance_ultrasonic"/>	
+				<sensor4 name="SimFinken_sensor_right" type="distance_ultrasonic"/>	
+			</sensors>
+		</components>
+	</aircraft>
+</conf>
