@@ -1918,14 +1918,28 @@
 	</message>
 
   <message name="FINKEN_SENSOR_MODEL" id="217">
-    <field name="distance_z"       type="float" alt_unit="cm"/>
     <field name="distance_d_front" type="int16" alt_unit="cm"/>
     <field name="distance_d_rigth" type="int16" alt_unit="cm"/>
     <field name="distance_d_left"  type="int16" alt_unit="cm"/>
     <field name="distance_d_back"  type="int16" alt_unit="cm"/>
+    <field name="pos_z"            type="float" alt_unit="m"/>
+    <field name="pos_x"            type="float" alt_unit="m"/>
+    <field name="pos_y"            type="float" alt_unit="m"/>
+    <field name="pos_pitch"        type="float" alt_unit="rad"/>
+    <field name="pos_roll"         type="float" alt_unit="rad"/>
+    <field name="pos_yaw"          type="float" alt_unit="rad"/>
     <field name="velocity_x"       type="float" alt_unit="m/s"/>
     <field name="velocity_y"       type="float" alt_unit="m/s"/>
-    <!--<field name="acceleration_z"   type="float" alt_unit="m/s^2"/>-->
+    <field name="velocity_z"       type="float" alt_unit="m/s"/>
+    <field name="velocity_pitch"   type="float" alt_unit="rad/s"/>
+    <field name="velocity_roll"    type="float" alt_unit="rad/s"/>
+    <field name="velocity_yaw"     type="float" alt_unit="rad/s"/>
+		<field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
+		<field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
+		<field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
+    <field name="acceleration_pitch" type="float" alt_unit="rad/s^ 2"/>
+    <field name="acceleration_roll" type="float" alt_unit="rad/s^2"/>
+    <field name="acceleration_yaw" type="float" alt_unit="rad/s^2"/>
   </message>
 
 

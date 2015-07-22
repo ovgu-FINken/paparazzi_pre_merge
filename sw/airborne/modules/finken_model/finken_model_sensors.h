@@ -33,19 +33,28 @@
 #include "subsystems/datalink/telemetry.h"
 
 struct sensor_model_s {
-  float   distance_z;
   int16_t distance_d_front;
   int16_t distance_d_right;
   int16_t distance_d_back;
   int16_t distance_d_left;
+  float   pos_x;
+  float   pos_y;
+  float   pos_z;
+  float   pos_pitch;
+  float   pos_roll;
+  float   pos_yaw;
+  float   velocity_x;
+  float   velocity_y;
+  float   velocity_z;
+  float   velocity_pitch;
+  float   velocity_roll;
+  float   velocity_yaw;
   float   acceleration_x;
   float   acceleration_y;
   float   acceleration_z;
-  float   velocity_alpha;
-  float   velocity_beta;
-  float   velocity_theta;
-  float   velocity_x;
-  float   velocity_y;
+  float   acceleration_pitch;
+  float   acceleration_roll;
+  float   acceleration_yaw;
 };
 
 extern struct sensor_model_s finken_sensor_model;
