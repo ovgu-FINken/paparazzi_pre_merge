@@ -82,7 +82,8 @@ void finken_system_model_periodic(void)
 	finken_actuators_set_point.roll  = 0.0;
 	finken_actuators_set_point.yaw  = 0.0;
 
-	float error_z = finken_system_set_point.z - finken_sensor_model.pos_z; 
+	float distance_z = POS_FLOAT_OF_BFP(finken_sensor_model.pos.z);
+	float error_z = finken_system_set_point.z - distance_z; 
 	if(autopilot_mode == AP_MODE_NAV && stage_time > 0) 
 	{
 		sum_error_z += error_z;
@@ -92,7 +93,7 @@ void finken_system_model_periodic(void)
 		sum_error_z = 0;
 	}
 
-	float velocity_z = (finken_sensor_model.pos_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
+	float velocity_z = (distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
 
 	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
 	finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
@@ -100,7 +101,7 @@ void finken_system_model_periodic(void)
 	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
 
-	distance_z_old = finken_sensor_model.pos_z;
+	distance_z_old = distance_z;
 
 	// TODO: Theta
 }

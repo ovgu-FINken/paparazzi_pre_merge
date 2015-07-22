@@ -1937,9 +1937,6 @@
 		<field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
 		<field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
 		<field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
-    <field name="acceleration_pitch" type="float" alt_unit="rad/s^ 2"/>
-    <field name="acceleration_roll" type="float" alt_unit="rad/s^2"/>
-    <field name="acceleration_yaw" type="float" alt_unit="rad/s^2"/>
   </message>
 
 
