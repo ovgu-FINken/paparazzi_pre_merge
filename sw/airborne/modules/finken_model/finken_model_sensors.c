@@ -24,7 +24,7 @@
 
 /* input */
 #include "modules/sonar/sonar_array_i2c.h"
-#include "modules/finken_ir_adc/finken_ir_adc.h"
+//#include "modules/finken_ir_adc/finken_ir_adc.h"
 
 struct sensor_model_s finken_sensor_model;
 
@@ -49,8 +49,8 @@ void finken_sensor_model_init(void)
 
 void finken_sensor_model_periodic(void)
 {
-  finken_sensor_model.distance_z       = ir_distance_equalized;
-	if(sonar_values.front < 200)
+  finken_sensor_model.distance_z       =  optical_flow.ground_distance;
+	if(sonar_values.front != 765)
 		finken_sensor_model.distance_d_front = sonar_values.front;
 	else
 		finken_sensor_model.distance_d_front = 200;
@@ -72,8 +72,8 @@ void finken_sensor_model_periodic(void)
   finken_sensor_model.velocity_alpha   = 0.0;
   finken_sensor_model.velocity_beta    = 0.0;
   finken_sensor_model.velocity_theta   = 0.0;
-  finken_sensor_model.velocity_x       = 0.0;
-  finken_sensor_model.velocity_y       = 0.0;
+  finken_sensor_model.velocity_x       = optical_flow.flow_comp_m_x;
+  finken_sensor_model.velocity_y       = optical_flow.flow_comp_m_y;
 }
 
 void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_device* link) {
@@ -86,6 +86,9 @@ void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_
     &finken_sensor_model.distance_d_front,
     &finken_sensor_model.distance_d_right,
     &finken_sensor_model.distance_d_left,
-    &finken_sensor_model.distance_d_back
+    &finken_sensor_model.distance_d_back,
+    &finken_sensor_model.velocity_x,
+    &finken_sensor_model.velocity_y
+    //&finken_sensor_model.acceleration_z
   );
 }

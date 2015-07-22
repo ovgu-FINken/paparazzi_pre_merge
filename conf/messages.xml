@@ -1923,6 +1923,9 @@
     <field name="distance_d_rigth" type="int16" alt_unit="cm"/>
     <field name="distance_d_left"  type="int16" alt_unit="cm"/>
     <field name="distance_d_back"  type="int16" alt_unit="cm"/>
+    <field name="velocity_x"       type="float" alt_unit="m/s"/>
+    <field name="velocity_y"       type="float" alt_unit="m/s"/>
+    <!--<field name="acceleration_z"   type="float" alt_unit="m/s^2"/>-->
   </message>
 
 
