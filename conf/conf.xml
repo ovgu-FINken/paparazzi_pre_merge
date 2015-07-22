@@ -13,7 +13,7 @@
   <aircraft
    name="Quad_Lia_ovgu_02"
    ac_id="2"
-   airframe="airframes/ovgu/free_flight.xml"
+   airframe="airframes/ovgu/free_flight_flow.xml"
    radio="radios/spektrum.xml"
    telemetry="telemetry/ovgu/free_flight.xml"
    flight_plan="flight_plans/ovgu/free_flight.xml"
