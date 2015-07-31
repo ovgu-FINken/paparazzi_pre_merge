@@ -177,6 +177,9 @@ static void send_status(struct transport_tx *trans, struct link_device *dev)
 #if USE_GPS
   uint8_t fix = gps.fix;
 #else
+#ifndef GPS_FIX_NONE
+#define GPS_FIX_NONE 0x00
+#endif
   uint8_t fix = GPS_FIX_NONE;
 #endif
   uint16_t time_sec = sys_time.nb_sec;
