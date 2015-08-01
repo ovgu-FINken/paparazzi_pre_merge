@@ -42,6 +42,7 @@
 			<!-- I2C Clockspeed of 5kHz because clock-stretching /-->
 			<define name="I2C2_CLOCK_SPEED" value="5000"/>
 		</load>
+		<load name="kalman.xml" />
 <!--<load name="mavlink_decoder.xml">
 			<configure name="MAVLINK_PORT" value="UART2" />
 			<configure name="MAVLINK_BAUD" value="B115200" />
