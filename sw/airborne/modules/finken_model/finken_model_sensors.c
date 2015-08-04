@@ -27,6 +27,7 @@
 #include "state.h"
 #include "subsystems/imu.h"
 //#include "modules/finken_ir_adc/finken_ir_adc.h"
+#include "modules/optical_flow/px4flow.h"
 
 struct sensor_model_s finken_sensor_model;
 
