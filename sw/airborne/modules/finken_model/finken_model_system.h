@@ -32,13 +32,17 @@
 #include "mcu_periph/link_device.h"
 #include "subsystems/datalink/transport.h"
 #include "subsystems/datalink/telemetry.h"
+#include "float_controller.h"
+#include "wall_avoidance_controller.h"
 
 struct system_model_s {
   float z;
   float yaw;
   float velocity_x;
   float velocity_y;
+  bool reset;
 };
+extern bool finken_system_model_control_height;
 
 extern struct system_model_s finken_system_set_point;
 
@@ -48,4 +52,6 @@ void update_finken_system_model(void);
 
 extern void send_finken_system_set_point_telemetry(struct transport_tx *trans, struct link_device* link);
 
+extern void send_x_pid_telemetry(struct transport_tx *trans, struct link_device *link);
+extern void send_float_pid_telemetry(struct transport_tx *trans, struct link_device *link);
 #endif

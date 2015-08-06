@@ -10,6 +10,11 @@
 	</header>
 	<blocks>
 
+		<block name="default">
+			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="stage_time > 30" vmode="throttle" />
+			<deroute block="inair"/>
+		</block>
+
 		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
       <set value="0" var="kill_throttle"/>
       <set value="0" var="autopilot_flight_time"/>
@@ -23,9 +28,6 @@
 			<deroute block="default"/>
 		</block>
 
-		<block name="default">
-			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="FALSE" vmode="throttle" />
-		</block>
   </blocks>
 </flight_plan>
 

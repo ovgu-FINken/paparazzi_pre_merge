@@ -36,6 +36,7 @@ struct actuators_model_s {
 	float roll;
 	float yaw;
 	float thrust;
+	// int vsupply_tel; //noch nicht Funktionstauglich
 };
 
 extern struct actuators_model_s finken_actuators_model;
@@ -47,5 +48,4 @@ extern void finken_actuators_model_periodic(void);
 extern void send_finken_actuators_model_telemetry(struct transport_tx *trans, struct link_device* link);
 extern void send_finken_actuators_set_point_telemetry(struct transport_tx *trans, struct link_device* link);
 extern float compensate_battery_drop(float thrust_setpoint);
-
 #endif

@@ -27,6 +27,7 @@
 struct actuators_model_s finken_actuators_model;
 struct actuators_model_s finken_actuators_set_point;
 
+
 void finken_actuators_model_init(void) {
 	finken_actuators_model.pitch  = 0;
 	finken_actuators_model.roll   = 0;

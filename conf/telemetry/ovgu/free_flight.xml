@@ -2,7 +2,6 @@
 <!DOCTYPE telemetry SYSTEM "../telemetry.dtd">
 <telemetry>
 
-
   <process name="Main">
 
     <mode name="default" key_press="d">
