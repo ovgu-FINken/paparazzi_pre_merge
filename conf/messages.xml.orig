@@ -1918,25 +1918,14 @@
 	</message>
 
   <message name="FINKEN_SENSOR_MODEL" id="217">
+    <field name="distance_z"       type="float" alt_unit="cm"/>
     <field name="distance_d_front" type="int16" alt_unit="cm"/>
     <field name="distance_d_rigth" type="int16" alt_unit="cm"/>
     <field name="distance_d_left"  type="int16" alt_unit="cm"/>
     <field name="distance_d_back"  type="int16" alt_unit="cm"/>
-    <field name="pos_x"            type="float" alt_unit="m"/>
-    <field name="pos_y"            type="float" alt_unit="m"/>
-    <field name="pos_z"            type="float" alt_unit="m"/>
-    <field name="pos_pitch"        type="float" alt_unit="rad"/>
-    <field name="pos_roll"         type="float" alt_unit="rad"/>
-    <field name="pos_yaw"          type="float" alt_unit="rad"/>
-    <field name="velocity_x"       type="float" alt_unit="m/s"/>
-    <field name="velocity_y"       type="float" alt_unit="m/s"/>
-    <field name="velocity_z"       type="float" alt_unit="m/s"/>
-    <field name="velocity_pitch"   type="float" alt_unit="rad/s"/>
-    <field name="velocity_roll"    type="float" alt_unit="rad/s"/>
-    <field name="velocity_yaw"     type="float" alt_unit="rad/s"/>
-		<field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
-		<field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
-		<field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
+    <!--<field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
+    <field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
+    <field name="acceleration_z"   type="float" alt_unit="m/s^2"/>-->
   </message>
 
 
@@ -1987,17 +1976,7 @@
     <field name="AMSL_GPS" type="float" unit="ft" alt_unit="m"/>
   </message>
 
-  <message name="KALMAN" id="224">
-    <field name="pos_x" type="float" unit="m"/>
-    <field name="pos_y" type="float" unit="m"/>
-	<field name="pos_z" type="float" unit="m"/>
-	<field name="vel_x" type="float" unit="m/s"/>
-    <field name="vel_y" type="float" unit="m/s"/>
-	<field name="vel_z" type="float" unit="m/s"/>
-	<field name="acc_x" type="float" unit="m/s^2"/>
-    <field name="acc_y" type="float" unit="m/s^2"/>
-	<field name="acc_z" type="float" unit="m/s^2"/>
-  </message>
+ <!--224 is free -->
 
   <message name="VIDEO_SYNC" id="225">
     <field name="id" type="uint8"/>
@@ -2027,7 +2006,14 @@
     <field name="cmd_theta"   type="int32" alt_unit="deg" alt_unit_coef="0.0139882"/>
   </message>
 
-  <!--229 is free -->
+	<message name="SONAR_DEBUG" id="229">
+		<field name="Front_State" type="uint8"/>
+		<field name="Left_State" type="uint8"/>
+		<field name="Back_State" type="uint8"/>
+		<field name="Right_State" type="uint8"/>
+		<field name="I2C2_State" type="uint8" />
+		<field name="I2C2_WD"    type="int16" />
+	</message>
 
   <message name="AHRS_ARDRONE2" id="230">
     <field name="state" type="uint32" />
@@ -2153,12 +2139,28 @@
     <field name="vy"   type="float" unit="m/s"/>
     <field name="vz"   type="float" unit="m/s"/>
   </message>
-  
-	<message name="FINKEN_SYSTEM_SET_POINT" id="246">
-		<field name="distance_z" type="float" unit="m"/>
-		<field name="yaw"        type="float" unit="deg"/>
-		<field name="velocity_x" type="float" unit="m/s"/>
-		<field name="velocity_y" type="float" unit="m/s"/>
+
+
+  <message name="FINKEN_ENVIRONMENT_MODEL" id="245">
+    <field name="alpha"            type="float" alt_unit="degree"/>
+    <field name="distance"         type="int16" alt_unit="cm"/>
+  </message>
+
+  <message name="FINKEN_SYSTEM_MODEL" id="246">
+    <field name="distance_z"       type="float" alt_unit="cm"/>
+    <field name="velocity_theta"   type="float" alt_unit="m/s"/>
+    <field name="velocity_x"       type="float" alt_unit="m/s"/>
+    <field name="velocity_y"       type="float" alt_unit="m/s"/>
+<<<<<<< HEAD
+    <field name="alpha_setpoint"            type="float" alt_unit="degree"/>
+		<field name="beta_setpoint"             type="float" alt_unit="degree"/>
+    <field name="thrust_setpoint"            type="float" alt_unit="degree"/>
+	<field name = "height_setpoint" type = "float" />
+=======
+    <field name="alpha_setpoint"   type="float" alt_unit="degree"/>
+		<field name="beta_setpoint"    type="float" alt_unit="degree"/>
+    <field name="thrust_setpoint"  type="float" alt_unit="degree"/>
+>>>>>>> 9cccba08c05248f261d21a3082327c4e2a10eb42
   </message>
 
   <message name="PPRZ_DEBUG" id="247">
@@ -2206,18 +2208,23 @@
     <field name="barometer" type="float" unit="Pa" /> -->
   </message>
 
-  <message name="FINKEN_ACTUATORS_SET_POINT" id="250">
-    <field name="pitch"            type="float" alt_unit="degree"/>
-    <field name="roll"             type="float" alt_unit="degree"/>
-    <field name="yaw"              type="float" alt_unit="degree"/>
-    <field name="thrust"           type="float" alt_unit="%"/>
+  <message name="AFL_COEFFS" id="250">
+      <field name="roll_a"   type="float"/>
+      <field name="roll_b"  type="float"/>
+      <field name="roll_c"  type="float"/>
+      <field name="pitch_a"  type="float"/>
+      <field name="pitch_b"   type="float"/>
+      <field name="pitch_c"   type="float"/>
+      <field name="yaw_a"   type="float"/>
+      <field name="yaw_b"  type="float"/>
+      <field name="yaw_c"  type="float"/>
   </message>
 
   <message name="FINKEN_ACTUATORS_MODEL" id="251">
-    <field name="pitch"            type="float" alt_unit="degree"/>
-    <field name="roll"             type="float" alt_unit="degree"/>
-    <field name="yaw"              type="float" alt_unit="degree"/>
-    <field name="thrust"           type="float" alt_unit="%"/>
+    <field name="alpha"  type="float" alt_unit="degree"/>
+    <field name="beta"   type="float" alt_unit="degree"/>
+    <field name="theta"  type="float" alt_unit="degree"/>
+    <field name="thrust" type="float" alt_unit="degree"/>
   </message>
 
  <message name="FINKEN_IR_ADC" id="252">
@@ -2242,7 +2249,7 @@
 
    <message name="FLOAT_DEBUG" id="254">
     <description>Values of the wall/collision-avoidance pid-controller</description>
-    <field name="timestep" type="float"/>
+    <field name="timestep" type="uint32"/>
     <field name="p" type="float"/>
     <field name="i" type="float"/>
     <field name="d" type="float"/>

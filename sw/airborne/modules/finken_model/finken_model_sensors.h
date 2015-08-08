@@ -31,21 +31,18 @@
 #include "mcu_periph/link_device.h"
 #include "subsystems/datalink/transport.h"
 #include "subsystems/datalink/telemetry.h"
+#include "math/pprz_algebra_int.h"
 
 struct sensor_model_s {
-  float   distance_z;
   int16_t distance_d_front;
   int16_t distance_d_right;
   int16_t distance_d_back;
   int16_t distance_d_left;
-  float   acceleration_x;
-  float   acceleration_y;
-  float   acceleration_z;
-  float   velocity_alpha;
-  float   velocity_beta;
-  float   velocity_theta;
-  float   velocity_x;
-  float   velocity_y;
+  struct Int32Vect3 pos;
+  struct Int32Quat attitude;
+  struct Int32Vect3 velocity;
+  struct Int32Rates rates;
+  struct Int32Vect3  acceleration;
 };
 
 extern struct sensor_model_s finken_sensor_model;

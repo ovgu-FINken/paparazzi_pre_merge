@@ -1,14 +1,19 @@
-<!-- DOCTYPE flight_plan SYSTEM "flight_plan.dtd" -->
+<?xml version="1.0"?>
+<!--<DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">-->
 
 <flight_plan NAME="Fink" LON0="1.27289" MAX_DIST_FROM_HOME="1000" GROUND_ALT="185" SECURITY_HEIGHT="25" QFU="270" ALT="250" LAT0="43.46223">
   <waypoints>
     <waypoint name="HOME" x="0.0" y="120.0" alt="250."/>
   </waypoints>
 	<header>
-		#include "modules/finken_model/finken_model_system.h"
 		#include "modules/finken_model/finken_model_actuators.h"
 	</header>
 	<blocks>
+
+		<block name="default">
+			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="stage_time > 30" vmode="throttle" />
+			<deroute block="inair"/>
+		</block>
 
 		<block key="t" name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
       <set value="0" var="kill_throttle"/>
@@ -19,13 +24,10 @@
 		</block>
 
 		<block name="inair">
-			<attitude pitch="finken_actuators_set_point.alpha" roll="finken_actuators_set_point.beta" throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle"/>
+			<attitude pitch="finken_actuators_set_point.pitch" roll="finken_actuators_set_point.roll" yaw="finken_actuators_set_point.yaw" throttle="finken_actuators_set_point.thrust" until="FALSE" vmode="throttle"/>
 			<deroute block="default"/>
 		</block>
 
-		<block name="default">
-			<attitude pitch="0.0" roll="0.0" throttle="0.0" until="FALSE" vmode="throttle" />
-		</block>
   </blocks>
 </flight_plan>
 

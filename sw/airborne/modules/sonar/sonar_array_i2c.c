@@ -67,13 +67,8 @@
 #define SONAR_ADDR_LEFT 0x74
 #endif
 
-enum Sonars{
-	START = 0,
-	FRONT = 0,
-	RIGHT,
-	BACK,
-	LEFT,
-	END
+enum Sonars {
+	START = 0, FRONT = 0, RIGHT, BACK, LEFT, END
 };
 
 enum SonarState{
@@ -83,21 +78,24 @@ enum SonarState{
 };
 
 enum SonarState sonarState[END];
-
-
 struct sonar_values_s sonar_values;
 
-static void setSonarValue(enum Sonars sonar, uint16_t value){
-	switch(sonar){
-		case(FRONT): sonar_values.front=value;
-								 break;
-		case(RIGHT): sonar_values.right=value;
-								 break;
-		case(BACK):  sonar_values.back=value;
-								 break;
-		case(LEFT):  sonar_values.left=value;
-								 break;
-		default:		 break;
+static void setSonarValue(enum Sonars sonar, uint16_t value) {
+	switch (sonar) {
+	case (FRONT):
+		sonar_values.front = value;
+		break;
+	case (RIGHT):
+		sonar_values.right = value;
+		break;
+	case (BACK):
+		sonar_values.back = value;
+		break;
+	case (LEFT):
+		sonar_values.left = value;
+		break;
+	default:
+		break;
 	}
 }
 
@@ -105,37 +103,35 @@ enum Sonars current_sonar;
 struct i2c_transaction sonar_i2c_read_trans[END];
 struct i2c_transaction sonar_i2c_write_trans[END];
 
-void send_sonar_debug_telemetry(struct transport_tx *trans, struct link_device *link);
 void sonar_array_i2c_init(void)
 {
 	current_sonar = START;
 
-	for(unsigned int i=START;i<END;i++){
+	for (unsigned int i = START; i < END; i++) {
 		sonar_i2c_read_trans[i].buf[0] = 0;
 		sonar_i2c_read_trans[i].buf[1] = 0;
-		sonar_i2c_read_trans[i].slave_addr = (SONAR_ADDR_FRONT + i)<<1 | 1;
+		sonar_i2c_read_trans[i].slave_addr = (SONAR_ADDR_FRONT + i) << 1 | 1;
 		sonar_i2c_read_trans[i].len_r = 2;
 		sonar_i2c_read_trans[i].status = I2CTransDone;
 	}
-	
-	for(unsigned int i=START;i<END;i++){
+
+	for (unsigned int i = START; i < END; i++) {
 		sonar_i2c_write_trans[i].buf[0] = 81;
-		sonar_i2c_write_trans[i].slave_addr = (SONAR_ADDR_FRONT + i)<<1;
-		sonar_i2c_write_trans[i].len_w=1;
+		sonar_i2c_write_trans[i].slave_addr = (SONAR_ADDR_FRONT + i) << 1;
+		sonar_i2c_write_trans[i].len_w = 1;
 		sonar_i2c_write_trans[i].status = I2CTransDone;
 	}
-	
-	for(unsigned int i=START; i<END; i++)
+
+	for (unsigned int i = START; i < END; i++)
 		setSonarValue(i, 0);
 
 	for(unsigned int i=START; i<END; i++)
 		sonarState[i] = READY;
 
 	// register telemetry
-	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY", send_sonar_array_telemetry);
-	register_periodic_telemetry(DefaultPeriodic, "SONAR_DEBUG", send_sonar_debug_telemetry);
+	register_periodic_telemetry(DefaultPeriodic, "SONAR_ARRAY",
+			send_sonar_array_telemetry);
 }
-
 
 /** sonar_send_command
  *	send take_range_reading command (0x51) to the sonar sensors to trigger the range readin
@@ -178,9 +174,8 @@ static void sonar_read(enum Sonars sonar)
 }
 
 /** Read I2C value to update sonar measurement and request new value
-*/
-void sonar_array_i2c_periodic(void)
-{
+ */
+void sonar_array_i2c_periodic(void) {
 #ifndef SITL
 	enum Sonars read_sonar = current_sonar;
 	enum Sonars fetch_sonar = (current_sonar+1)%END;
@@ -195,19 +190,8 @@ void sonar_array_i2c_periodic(void)
 #endif // SITL
 }
 
-void send_sonar_debug_telemetry(struct transport_tx *trans, struct link_device *link){
-	trans=trans;
-	link=link;
-	int16_t i2c2_wd     = i2c2.watchdog;
-	uint8_t i2c2_status = i2c2.status;
-	DOWNLINK_SEND_SONAR_DEBUG(DefaultChannel, DefaultDevice,
-		sonarState+0,
-		sonarState+1,
-		sonarState+2,
-		sonarState+3,
-		&i2c2_status,
-		&i2c2_wd
-	);
+void sonar_array_i2c_event(void) {
+	// i guess it it not possible to query verything so often
 }
 
 void send_sonar_array_telemetry(struct transport_tx *trans, struct link_device *link)
@@ -215,8 +199,6 @@ void send_sonar_array_telemetry(struct transport_tx *trans, struct link_device *
 	trans=trans;
 	link=link;
 	DOWNLINK_SEND_SONAR_ARRAY(DefaultChannel, DefaultDevice,
-			&sonar_values.front,
-			&sonar_values.right,
-			&sonar_values.back,
+			&sonar_values.front, &sonar_values.right, &sonar_values.back,
 			&sonar_values.left);
 }

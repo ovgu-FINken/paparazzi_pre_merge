@@ -49,6 +49,8 @@ kalman16_observation_t k_pva_m;
 #error FIXMATRIX_MAX_SIZE must be greater or equal to the number of states, inputs and measurements.
 #endif
 
+fix16_t m;
+
 // init state vector
 void kalman_sv_init(void) {
 	// init state vector
@@ -123,7 +125,7 @@ void kalman_init(void) {
 	const fix16_t dt_2 = fix16_sq(dt);
 	const fix16_t dt_3 = fix16_mul(dt, dt_2);
 	const fix16_t dt_4 = fix16_sq(dt_2);
-	const fix16_t m = fix16_from_float(290);				// SET MASS!!! [g]
+	fix16_t m = fix16_from_float(290);						// SET MASS!!! [g]
 	const fix16_t init_uncert = fix16_from_float(1.0);		// SET INITIAL UNCERTEANTY!!!
 	const fix16_t sigma = fix16_from_float(1.0);			// SET SIGMA!!!
 	fix16_t helper_const;									// varible to speed up matrix assignment
