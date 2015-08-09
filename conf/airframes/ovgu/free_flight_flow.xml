@@ -37,11 +37,12 @@
   </firmware>
 	<modules>
         <load name="kalman.xml"/>
-		<load name="sonar_array_i2c.xml">
+		<load name="sensor_filter.xml" />
+		<!--<load name="sonar_array_i2c.xml">
 			<define name="SONAR_I2C_DEV" value="i2c2"/>
 			<define name="USE_I2C2" />
 			<define name="I2C2_CLOCK_SPEED" value="5000" />
-		</load>
+		</load>-->
 		<load name="mavlink_decoder.xml">
 			<configure name="MAVLINK_PORT" value="UART2" />
 			<configure name="MAVLINK_BAUD" value="B115200" />
