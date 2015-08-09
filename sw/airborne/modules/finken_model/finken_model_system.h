@@ -45,6 +45,7 @@ struct system_model_s {
 extern bool finken_system_model_control_height;
 
 extern struct system_model_s finken_system_set_point;
+extern float takeoff_pitch, takeoff_roll;
 
 extern void finken_system_model_init(void);
 extern void finken_system_model_periodic(void);
