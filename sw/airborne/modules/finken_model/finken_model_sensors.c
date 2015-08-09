@@ -50,8 +50,8 @@ void finken_sensor_model_periodic(void)
 
   finken_sensor_model.pos.z            = POS_BFP_OF_REAL(optical_flow.ground_distance);
 	memcpy(&finken_sensor_model.attitude, stateGetNedToBodyQuat_i(), sizeof(struct Int32Quat));
-  finken_sensor_model.velocity.x       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_x);
-  finken_sensor_model.velocity.y       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_y);
+  finken_sensor_model.velocity.x       = SPEED_BFP_OF_REAL(-optical_flow.flow_comp_m_y);
+  finken_sensor_model.velocity.y       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_x);
 }
 
 void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_device* link) {
@@ -66,8 +66,8 @@ void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_
 	float pos_pitch  = ANGLE_FLOAT_OF_BFP(attitude.theta);
 	float pos_roll   = ANGLE_FLOAT_OF_BFP(attitude.phi);
 	float pos_yaw    = ANGLE_FLOAT_OF_BFP(attitude.psi);
-	float velocity_x = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.y);
-	float velocity_y = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.x);
+	float velocity_x = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.x);
+	float velocity_y = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.y);
 	float velocity_z = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.z);
 	float rate_pitch = RATE_FLOAT_OF_BFP(finken_sensor_model.rates.p);
 	float rate_roll  = RATE_FLOAT_OF_BFP(finken_sensor_model.rates.q);
