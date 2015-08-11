@@ -26,10 +26,13 @@
 #include "modules/sonar/sonar_array_i2c.h"
 #include "state.h"
 #include "subsystems/imu.h"
-#include "modules/finken_ir_adc/finken_ir_adc.h"
-//#include "modules/optical_flow/px4flow.h"
+#include "modules/sensor_filter/sensor_filter.h"
+//#include "modules/finken_ir_adc/finken_ir_adc.h"
+#include "modules/optical_flow/px4flow.h"
 
 struct sensor_model_s finken_sensor_model;
+int64_t temp_mult;
+uint32_t last_ts;
 
 float pos_z;
 /*enum {pos_z_size = 1};
@@ -49,13 +52,21 @@ void finken_sensor_model_init(void)
 
 void finken_sensor_model_periodic(void)
 {
-  memcpy(&finken_sensor_model.rates, &imu.gyro, sizeof(struct Int32Rates));
-  memcpy(&finken_sensor_model.acceleration, &imu.accel, sizeof(struct Int32Vect3));
+  // current timestamp
+  uint32_t now_ms = get_sys_time_msec();
 
-	finken_sensor_model.distance_d_front = sonar_values.front;
+  memcpy(&finken_sensor_model.rates, &imu.gyro, sizeof(struct Int32Rates));
+	/* x = y and y = x because of the coord. transformation from sensor to body coord. system */
+	finken_sensor_model.acceleration.x = sensor_filtered.acceleration.y;
+	finken_sensor_model.acceleration.y = -sensor_filtered.acceleration.x;
+	finken_sensor_model.acceleration.z = sensor_filtered.acceleration.z;
+//  memcpy(&finken_sensor_model.acceleration, &imu.accel, sizeof(struct Int32Vect3));
+	//finken_sensor_model.acceleration.x = sensor_filtered.acceleration.x;
+
+	/*finken_sensor_model.distance_d_front = sonar_values.front;
 	finken_sensor_model.distance_d_right = sonar_values.right;
 	finken_sensor_model.distance_d_back  = sonar_values.back;
-	finken_sensor_model.distance_d_left  = sonar_values.left;
+	finken_sensor_model.distance_d_left  = sonar_values.left;*/
 
 	if(optical_flow.ground_distance < maxZ){
 		pos_z/*_data[pos_z_i++]*/ = optical_flow.ground_distance;
@@ -68,8 +79,22 @@ void finken_sensor_model_periodic(void)
 
   finken_sensor_model.pos.z            = POS_BFP_OF_REAL(pos_z);
 	memcpy(&finken_sensor_model.attitude, stateGetNedToBodyQuat_i(), sizeof(struct Int32Quat));
-  finken_sensor_model.velocity.x       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_x);
-  finken_sensor_model.velocity.y       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_y);
+	/* x = -y and y = x because of the coord. transformation from sensor to body coord. system */	
+	//finken_sensor_model.velocity.x       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_x);
+	finken_sensor_model.velocity.x       = SPEED_BFP_OF_REAL(-optical_flow.flow_comp_m_y);
+	//finken_sensor_model.velocity.y       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_y);
+	finken_sensor_model.velocity.y       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_x);
+
+	if (now_ms > last_ts) {
+		//fraction for position: 8, for speed 19 --> difference is 11
+		temp_mult = (((int64_t)finken_sensor_model.velocity.x / (1<<11)) * (now_ms - last_ts));
+		finken_sensor_model.pos.x += ((temp_mult / 1000));
+
+		temp_mult = (((int64_t)finken_sensor_model.velocity.y) * (now_ms - last_ts)) / (1<<11);
+		finken_sensor_model.pos.y += ((temp_mult / 1000));
+
+		last_ts = now_ms;
+	}
 }
 
 void send_finken_hc_debug(struct transport_tx *trans, struct link_device* link) {
@@ -96,8 +121,8 @@ void send_finken_sensor_model_telemetry(struct transport_tx *trans, struct link_
 	float pos_pitch  = ANGLE_FLOAT_OF_BFP(attitude.theta);
 	float pos_roll   = ANGLE_FLOAT_OF_BFP(attitude.phi);
 	float pos_yaw    = ANGLE_FLOAT_OF_BFP(attitude.psi);
-	float velocity_x = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.y);
-	float velocity_y = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.x);
+	float velocity_x = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.x);
+	float velocity_y = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.y);
 	float velocity_z = SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.z);
 	float rate_pitch = RATE_FLOAT_OF_BFP(finken_sensor_model.rates.p);
 	float rate_roll  = RATE_FLOAT_OF_BFP(finken_sensor_model.rates.q);

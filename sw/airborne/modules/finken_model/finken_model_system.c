@@ -34,6 +34,34 @@
 
 #include "subsystems/datalink/downlink.h"
 
+#ifndef FINKEN_VELOCITY_X_P
+#define FINKEN_VELOCITY_X_P 0.05
+#endif
+
+#ifndef FINKEN_VELOCITY_Y_P
+#define FINKEN_VELOCITY_Y_P 0.05
+#endif
+
+#ifndef FINKEN_VELOCITY_X_D
+#define FINKEN_VELOCITY_X_D 0
+#endif
+
+#ifndef FINKEN_VELOCITY_Y_D
+#define FINKEN_VELOCITY_Y_D 0
+#endif
+
+#ifndef FINKEN_VELOCITY_CONTROL_MODE
+#define FINKEN_VELOCITY_CONTROL_MODE 0
+#endif
+
+#ifndef FINKEN_VELOCITY_DESIRED_X
+#define FINKEN_VELOCITY_DESIRED_X 0	// m/sec
+#endif
+
+#ifndef FINKEN_VELOCITY_DESIRED_Y
+#define FINKEN_VELOCITY_DESIRED_Y 0	// m/sec
+#endif
+
 struct system_model_s finken_system_set_point;
 bool finken_system_model_control_height;
 
@@ -49,13 +77,20 @@ static const float deadRoll  =  1.0f;
 static const float deadPitch =  1.0f;
 static const float deadYaw   =  1.0f;
 
+float error_x_p = 0.0;
+float error_y_p = 0.0;
+float error_x_d = 0.0;
+float error_y_d = 0.0;
+
+float temp_pitch = 0;
+float temp_roll = 0;
 
 void finken_system_model_init(void) {
   finken_system_set_point.z          = 0.0;
   finken_system_set_point.yaw        = 0.0;
-  finken_system_set_point.velocity_x = 0.0;
-  finken_system_set_point.velocity_y = 0.0;
 	finken_system_model_control_height = 0;
+  finken_system_set_point.velocity_x = FINKEN_VELOCITY_DESIRED_Y;
+  finken_system_set_point.velocity_y = FINKEN_VELOCITY_DESIRED_X;
 
   register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_SET_POINT", send_finken_system_set_point_telemetry);
 
@@ -64,6 +99,9 @@ void finken_system_model_init(void) {
 /*
  * Use finken_system_set_point to calculate new actuator settings
  */
+
+float takeoff_roll, takeoff_pitch;
+
 void finken_system_model_periodic(void)
 {	
 	finken_actuators_set_point.roll  = (float) radio_control.values[RADIO_ROLL] / 13000.0 * maxRoll;
@@ -109,6 +147,23 @@ void finken_system_model_periodic(void)
 	else{
 		finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + thrust_k / 100;
 	}
+	error_x_p = (finken_system_set_point.velocity_x - SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.x)) * FINKEN_VELOCITY_X_P;
+	error_y_p = (finken_system_set_point.velocity_y - SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.y)) * FINKEN_VELOCITY_Y_P;
+	error_x_d = (0 - ACCEL_FLOAT_OF_BFP(finken_sensor_model.acceleration.x)) * FINKEN_VELOCITY_X_D;	//constant velocity
+	error_y_d = (0 - ACCEL_FLOAT_OF_BFP(finken_sensor_model.acceleration.y)) * FINKEN_VELOCITY_Y_D;	//constant velocity
+
+	temp_pitch = error_x_p + error_x_d;
+	temp_roll = error_y_p + error_y_d;
+
+	if(FINKEN_VELOCITY_CONTROL_MODE)	{
+		finken_actuators_set_point.pitch = error_x_p + error_x_d;
+		finken_actuators_set_point.roll = error_y_p + error_y_d;
+	}
+	else	{
+	finken_actuators_set_point.pitch = 0.0;
+	finken_actuators_set_point.roll  = 0.0;
+	}
+
 	// TODO: Theta
 }
 
@@ -121,7 +176,7 @@ void send_finken_system_set_point_telemetry(struct transport_tx *trans, struct l
     DefaultDevice,
 		&finken_system_set_point.z,
 		&finken_system_set_point.yaw,
-		&finken_system_set_point.velocity_x,
-		&finken_system_set_point.velocity_y
+		&temp_pitch,	//finken_system_set_point.velocity_x,
+		&temp_roll	//finken_system_set_point.velocity_y
   );
 }

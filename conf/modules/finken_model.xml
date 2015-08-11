@@ -25,4 +25,5 @@
 		<define name="FINKEN_THRUST_LOW" value="0.60" />
 		<define name="FINKEN_SYSTEM_UPDATE_FREQ" value="30" />
 	</makefile>
+
 </module>
