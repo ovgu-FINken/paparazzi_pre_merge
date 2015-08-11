@@ -1987,7 +1987,13 @@
     <field name="AMSL_GPS" type="float" unit="ft" alt_unit="m"/>
   </message>
 
- <!--224 is free -->
+ <message name="HC_DEBUG" id="224">
+ 	<field name="height" type="float" unit="m"/>
+	<field name="thrust" type="float" unit="%"/>
+	<field name="roll" type="float" unit="deg"/>
+	<field name="pitch" type="float" unit="deg"/>
+	<field name="yaw" type="float" unit="deg"/>
+ </message>
 
   <message name="VIDEO_SYNC" id="225">
     <field name="id" type="uint8"/>

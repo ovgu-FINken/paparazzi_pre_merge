@@ -5,7 +5,8 @@
   <process name="Main">
 
     <mode name="default" key_press="d">
-      <message name="FINKEN_SENSOR_MODEL"      period="0.1" />
+      <!--<message name="FINKEN_SENSOR_MODEL"      period="0.1" />-->
+      <message name="HC_DEBUG"      period="0.04" />
 			<message name="FINKEN_SYSTEM_MODEL"      period="3" />
       <message name="FINKEN_ACTUATORS_MODEL"   period="3" />
       <message name="DL_VALUE"                 period="3"/>

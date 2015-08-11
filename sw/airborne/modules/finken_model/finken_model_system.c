@@ -42,6 +42,14 @@ float thrust_k_dec2 = 0.0;
 float error_z_k_dec1 = 0.0;
 float error_z_k_dec2 = 0.0;
 
+static const float maxRoll   = 20.0f;
+static const float maxPitch  = 20.0f;
+static const float maxYaw    = 20.0f;
+static const float deadRoll  =  1.0f;
+static const float deadPitch =  1.0f;
+static const float deadYaw   =  1.0f;
+
+
 void finken_system_model_init(void) {
   finken_system_set_point.z          = 0.0;
   finken_system_set_point.yaw        = 0.0;
@@ -57,16 +65,27 @@ void finken_system_model_init(void) {
  * Use finken_system_set_point to calculate new actuator settings
  */
 void finken_system_model_periodic(void)
-{
-	if ( autopilot_mode != AP_MODE_NAV )
-		finken_system_model_control_height = 1;
+{	
+	finken_actuators_set_point.roll  = (float) radio_control.values[RADIO_ROLL] / 13000.0 * maxRoll;
+	finken_actuators_set_point.pitch = (float) radio_control.values[RADIO_PITCH] / 13000.0 * maxPitch;
+	finken_actuators_set_point.yaw   = (float) radio_control.values[RADIO_YAW] / 13000.0 * maxYaw;
+
+	if(finken_actuators_set_point.roll < deadRoll && finken_actuators_set_point.roll > -deadRoll)
+		finken_actuators_set_point.roll = 0.0f;
+	if(finken_actuators_set_point.roll > maxRoll)
+		finken_actuators_set_point.roll = maxRoll;
+	if(finken_actuators_set_point.pitch < deadPitch&& finken_actuators_set_point.pitch > -deadPitch)
+		finken_actuators_set_point.pitch = 0.0f;
+	if(finken_actuators_set_point.pitch > maxPitch)
+		finken_actuators_set_point.pitch = maxPitch;
+	if(finken_actuators_set_point.yaw < deadPitch && finken_actuators_set_point.yaw > -deadYaw)
+		finken_actuators_set_point.yaw = 0.0f;
+	if(finken_actuators_set_point.yaw > maxYaw)
+		finken_actuators_set_point.yaw = maxYaw;
 	
-	finken_actuators_set_point.roll = (float) radio_control.values[RADIO_ROLL] / 13000 * 10;
-	finken_actuators_set_point.pitch= (float) radio_control.values[RADIO_PITCH] / 13000 * 10;
+	float error_z_k = finken_system_set_point.z - pos_z;//POS_FLOAT_OF_BFP(finken_sensor_model.pos.z);
 
-	float error_z_k =POS_FLOAT_OF_BFP(finken_system_set_point.z - finken_sensor_model.pos.z);
-
-	float thrust_k = 1.6552f * thrust_k_dec1 - 0.6552f * thrust_k_dec2 + 209.0553f * error_z_k - 413.7859f * error_z_k_dec1 + 204.7450f * error_z_k_dec2;
+	float thrust_k = 1.41177f * thrust_k_dec1 - 0.41177f * thrust_k_dec2 + 214.71242f * error_z_k - 423.51634f * error_z_k_dec1 + 208.83007f * error_z_k_dec2;
 	
 	if( !finken_system_model_control_height )
 		thrust_k = 0;
@@ -77,14 +96,14 @@ void finken_system_model_periodic(void)
 	thrust_k_dec2=thrust_k_dec1;
 	thrust_k_dec1=thrust_k;
 
-	if (FINKEN_THRUST_DEFAULT + thrust_k /100 < 0.2 || FINKEN_THRUST_DEFAULT + thrust_k / 100 > 0.8)
-		thrust_k -= 2*(209.0553f - 413.7859f + 204.7450)*(error_z_k+error_z_k_dec1+error_z_k_dec2)/3;
+	if (FINKEN_THRUST_DEFAULT + thrust_k /100 < 0.25f || FINKEN_THRUST_DEFAULT + thrust_k / 100 > 1.0f)
+		thrust_k -= 2*(214.71242f - 423.51634f + 208.83007f)*(error_z_k+error_z_k_dec1+error_z_k_dec2)/3;
 
-	if(FINKEN_THRUST_DEFAULT + thrust_k / 100 < 0.2){
-		finken_actuators_set_point.thrust = 0.2;
+	if(FINKEN_THRUST_DEFAULT + thrust_k / 100 < 0.25f){
+		finken_actuators_set_point.thrust = 0.25f;
 	}
-	else if(FINKEN_THRUST_DEFAULT + thrust_k / 100 > 0.8){
-		finken_actuators_set_point.thrust = 0.8;
+	else if(FINKEN_THRUST_DEFAULT + thrust_k / 100 > 1.0f){
+		finken_actuators_set_point.thrust = 1.0f;
 		//TODO anti-windup
 	}
 	else{
