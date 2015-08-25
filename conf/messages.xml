@@ -1866,17 +1866,37 @@
     <field name="msg" type="char[]"/>
   </message>
 
-  <message name="STAB_ATTITUDE_INDI" id="216">
-    <field name="angular_accel_p" type="float"/>
-    <field name="angular_accel_q" type="float"/>
-    <field name="angular_accel_r" type="float"/>
-    <field name="angular_accel_ref_p" type="float"/>
-    <field name="angular_accel_ref_q" type="float"/>
-    <field name="angular_accel_ref_r" type="float"/>
-    <field name="g1_p" type="float"/>
-    <field name="g1_q" type="float"/>
-    <field name="g1_r" type="float"/>
-    <field name="g2_r" type="float"/>
+
+
+	<message name="SONAR_ARRAY" id="216">
+		<field name="sonar_front" type="uint16" alt_unit="cm"/>
+		<field name="sonar_right" type="uint16" alt_unit="cm"/>
+		<field name="sonar_back" type="uint16" alt_unit="cm"/>
+		<field name="sonar_left" type="uint16" alt_unit="cm"/>
+		<!--<field name="sonar_failsave_pitch" type="float" alt_unit="deg"/>
+		<field<d name="sonar_failsave_roll" type="float" alt_unit="deg"/>-->
+	</message>
+
+  <message name="FINKEN_SENSOR_MODEL" id="217">
+    <field name="distance_d_front" type="int16" alt_unit="cm"/>
+    <field name="distance_d_rigth" type="int16" alt_unit="cm"/>
+    <field name="distance_d_left"  type="int16" alt_unit="cm"/>
+    <field name="distance_d_back"  type="int16" alt_unit="cm"/>
+    <field name="pos_x"            type="float" alt_unit="m"/>
+    <field name="pos_y"            type="float" alt_unit="m"/>
+    <field name="pos_z"            type="float" alt_unit="m"/>
+    <field name="pos_pitch"        type="float" alt_unit="rad"/>
+    <field name="pos_roll"         type="float" alt_unit="rad"/>
+    <field name="pos_yaw"          type="float" alt_unit="rad"/>
+    <field name="velocity_x"       type="float" alt_unit="m/s"/>
+    <field name="velocity_y"       type="float" alt_unit="m/s"/>
+    <field name="velocity_z"       type="float" alt_unit="m/s"/>
+    <field name="velocity_pitch"   type="float" alt_unit="rad/s"/>
+    <field name="velocity_roll"    type="float" alt_unit="rad/s"/>
+    <field name="velocity_yaw"     type="float" alt_unit="rad/s"/>
+		<field name="acceleration_x"   type="float" alt_unit="m/s^2"/>
+		<field name="acceleration_y"   type="float" alt_unit="m/s^2"/>
+		<field name="acceleration_z"   type="float" alt_unit="m/s^2"/>
   </message>
 
   <!--217 is free -->
@@ -1928,7 +1948,13 @@
     <field name="AMSL_GPS" type="float" unit="ft" alt_unit="m"/>
   </message>
 
- <!--224 is free -->
+ <message name="HC_DEBUG" id="224">
+ 	<field name="height" type="float" unit="m"/>
+	<field name="thrust" type="float" unit="%"/>
+	<field name="roll" type="float" unit="deg"/>
+	<field name="pitch" type="float" unit="deg"/>
+	<field name="yaw" type="float" unit="deg"/>
+ </message>
 
   <message name="VIDEO_SYNC" id="225">
     <field name="id" type="uint8"/>
@@ -2071,9 +2097,13 @@
     <field name="vy"   type="float" unit="m/s"/>
     <field name="vz"   type="float" unit="m/s"/>
   </message>
-
-  <!-- 245 is free -->
-  <!-- 246 is free -->
+  
+	<message name="FINKEN_SYSTEM_SET_POINT" id="246">
+		<field name="distance_z" type="float" unit="m"/>
+		<field name="yaw"        type="float" unit="deg"/>
+		<field name="velocity_x" type="float" unit="m/s"/>
+		<field name="velocity_y" type="float" unit="m/s"/>
+  </message>
 
   <message name="PPRZ_DEBUG" id="247">
     <field name="module"   type="uint8"/>
@@ -2120,20 +2150,24 @@
     <field name="barometer" type="float" unit="Pa" /> -->
   </message>
 
-  <message name="AFL_COEFFS" id="250">
-      <field name="roll_a"   type="float"/>
-      <field name="roll_b"  type="float"/>
-      <field name="roll_c"  type="float"/>
-      <field name="pitch_a"  type="float"/>
-      <field name="pitch_b"   type="float"/>
-      <field name="pitch_c"   type="float"/>
-      <field name="yaw_a"   type="float"/>
-      <field name="yaw_b"  type="float"/>
-      <field name="yaw_c"  type="float"/>
+  <message name="FINKEN_ACTUATORS_SET_POINT" id="250">
+    <field name="pitch"            type="float" alt_unit="degree"/>
+    <field name="roll"             type="float" alt_unit="degree"/>
+    <field name="yaw"              type="float" alt_unit="degree"/>
+    <field name="thrust"           type="float" alt_unit="%"/>
   </message>
 
-  <!-- 251 is free -->
-  <!-- 252 is free -->
+  <message name="FINKEN_ACTUATORS_MODEL" id="251">
+    <field name="pitch"            type="float" alt_unit="degree"/>
+    <field name="roll"             type="float" alt_unit="degree"/>
+    <field name="yaw"              type="float" alt_unit="degree"/>
+    <field name="thrust"           type="float" alt_unit="%"/>
+  </message>
+
+ <message name="FINKEN_IR_ADC" id="252">
+    <field name="ir_distance" type="float" alt_unit="cm"/>
+    <field name="ir_measurement" type="uint16"/>
+	</message>
 
   <message name="I2C_ERRORS" id="253">
     <field name="wd_reset_cnt"                type="uint16"/>
@@ -2150,30 +2184,26 @@
     <field name="bus_number"                  type="uint8"/>
   </message>
 
-  <message name="RDYB_TRAJECTORY" id="254">
-    <field name="commanded_phi" type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="commanded_theta" type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="commanded_psi" type="float" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="setpoint_x" type="float" unit="m N"/>
-    <field name="setpoint_y" type="float" unit="m E"/>
-    <field name="setpoint_z" type="float" unit="m D"/>
+
+   <message name="FLOAT_DEBUG" id="254">
+    <description>Values of the wall/collision-avoidance pid-controller</description>
+    <field name="timestep" type="float"/>
+    <field name="p" type="float"/>
+    <field name="i" type="float"/>
+    <field name="d" type="float"/>
+    <field name="error" type="float"/>
+    <field name="out" type="float"/>
   </message>
 
-  <message name="HENRY_GNSS" id="255">
-    <field name="last_imu_update" type="uint32"/>
-    <field name="GPS_time" type="double"/>
-    <field name="GPS_solution_valid" type="uint8"/>
-    <field name="latitude" type="double" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="longitude" type="double" unit="rad" alt_unit="deg" alt_unit_coef="57.29578"/>
-    <field name="altitude" type="double" />
-    <field name="North" type="double" />
-    <field name="East" type="double" />
-    <field name="Down" type="double" />
-    <field name="SVs_Tracked" type="uint8" />
-    <field name="SVs_PVT" type="uint8" />
-    <field name="V_North" type="double"/>
-    <field name="V_East" type="double"/>
-    <field name="V_Down" type="double"/>
+
+   <message name="X_PID" id="255">
+    <description>Values of the wall/collision-avoidance pid-controller</description>
+    <field name="timestep" type="uint32"/>
+    <field name="p" type="float"/>
+    <field name="i" type="float"/>
+    <field name="d" type="float"/>
+    <field name="error" type="float"/>
+    <field name="out" type="float"/>
   </message>
 
 </msg_class>
