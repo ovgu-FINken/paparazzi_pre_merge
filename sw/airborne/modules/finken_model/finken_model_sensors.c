@@ -28,7 +28,7 @@
 #include "subsystems/imu.h"
 #include "modules/sensor_filter/sensor_filter.h"
 //#include "modules/finken_ir_adc/finken_ir_adc.h"
-#include "modules/optical_flow/px4flow.h"
+//#include "modules/optical_flow/px4flow.h"
 
 struct sensor_model_s finken_sensor_model;
 int64_t temp_mult;
@@ -68,10 +68,12 @@ void finken_sensor_model_periodic(void)
 	finken_sensor_model.distance_d_back  = sonar_values.back;
 	finken_sensor_model.distance_d_left  = sonar_values.left;*/
 
-	if(optical_flow.ground_distance < maxZ){
-		pos_z/*_data[pos_z_i++]*/ = optical_flow.ground_distance;
+	
+	//if(optical_flow.ground_distance < maxZ){
+	//	pos_z/*_data[pos_z_i++]*/ = optical_flow.ground_distance;
 		//pos_z_i%=pos_z_size;
-	}
+	//}
+	pos_z = ir_distance; 
 
 	/*for(uint8_t i = 0;i<pos_z_size;i++)
 		pos_z+=pos_z_data[i];
@@ -81,9 +83,9 @@ void finken_sensor_model_periodic(void)
 	memcpy(&finken_sensor_model.attitude, stateGetNedToBodyQuat_i(), sizeof(struct Int32Quat));
 	/* x = -y and y = x because of the coord. transformation from sensor to body coord. system */	
 	//finken_sensor_model.velocity.x       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_x);
-	finken_sensor_model.velocity.x       = SPEED_BFP_OF_REAL(-optical_flow.flow_comp_m_y);
+	//finken_sensor_model.velocity.x       = SPEED_BFP_OF_REAL(-optical_flow.flow_comp_m_y);
 	//finken_sensor_model.velocity.y       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_y);
-	finken_sensor_model.velocity.y       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_x);
+	//finken_sensor_model.velocity.y       = SPEED_BFP_OF_REAL(optical_flow.flow_comp_m_x);
 
 	if (now_ms > last_ts) {
 		//fraction for position: 8, for speed 19 --> difference is 11
