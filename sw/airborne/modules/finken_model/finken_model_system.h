@@ -34,19 +34,18 @@
 #include "subsystems/datalink/telemetry.h"
 
 struct system_model_s {
-  float distance_z;
-  float velocity_theta;
+  float z;
+  float yaw;
   float velocity_x;
   float velocity_y;
 };
 
-extern struct system_model_s finken_system_model;
 extern struct system_model_s finken_system_set_point;
 
 extern void finken_system_model_init(void);
 extern void finken_system_model_periodic(void);
 void update_finken_system_model(void);
 
-extern void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link);
+extern void send_finken_system_set_point_telemetry(struct transport_tx *trans, struct link_device* link);
 
 #endif

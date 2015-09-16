@@ -25,7 +25,6 @@
 
 /* input */
 #include "modules/finken_model/finken_model_sensors.h"
-#include "modules/finken_model/finken_model_environment.h"
 
 
 #include "firmwares/rotorcraft/autopilot.h"
@@ -57,38 +56,15 @@
 #define FINKEN_VERTICAL_VELOCITY_FACTOR 0.04
 #endif
 
-struct system_model_s finken_system_model;
 struct system_model_s finken_system_set_point;
 
-void update_actuators_set_point(void);
-
 void finken_system_model_init(void) {
-  finken_system_model.distance_z     = 0.0;
-  finken_system_model.velocity_theta = 0.0;
-  finken_system_model.velocity_x     = 0.0;
-  finken_system_model.velocity_y     = 0.0;
+  finken_system_set_point.z          = 0.0;
+  finken_system_set_point.yaw        = 0.0;
+  finken_system_set_point.velocity_x = 0.0;
+  finken_system_set_point.velocity_y = 0.0;
 
-	finken_actuators_set_point.alpha  = 0.0;
-	finken_actuators_set_point.beta   = 0.0;
-	finken_actuators_set_point.theta  = 0.0;
-	finken_actuators_set_point.thrust = 0.0;
-
-  register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_MODEL", send_finken_system_model_telemetry);
-}
-
-void finken_system_model_periodic(void)
-{
-	update_finken_system_model();
-	update_actuators_set_point();
-}
-
-void update_finken_system_model(void)
-{
-	finken_system_model.distance_z     = finken_sensor_model.distance_z;
-	
-  finken_system_model.velocity_theta = finken_sensor_model.velocity_theta;
-  finken_system_model.velocity_x     = finken_sensor_model.velocity_x;
-  finken_system_model.velocity_y     = finken_sensor_model.velocity_y;
+  register_periodic_telemetry(DefaultPeriodic, "FINKEN_SYSTEM_SET_POINT", send_finken_system_set_point_telemetry);
 }
 
 /*
@@ -100,18 +76,13 @@ float sum_error_z = 0;
 float distance_z_old = 0.0; 
 
 
-void update_actuators_set_point()
+void finken_system_model_periodic(void)
 {
-	/* front , back */
-	float error_x =   finken_sensor_model.distance_d_front - finken_sensor_model.distance_d_back;
-	/* left , right */
-	float error_y =   finken_sensor_model.distance_d_left - finken_sensor_model.distance_d_right;
+	finken_actuators_set_point.pitch = 0.0;
+	finken_actuators_set_point.roll  = 0.0;
+	finken_actuators_set_point.yaw  = 0.0;
 
-	finken_actuators_set_point.beta = error_x * FINKEN_SYSTEM_P;
-	finken_actuators_set_point.alpha = error_y * FINKEN_SYSTEM_P;
-
-
-	float error_z = finken_system_set_point.distance_z - finken_system_model.distance_z; 
+	float error_z = finken_system_set_point.z - finken_sensor_model.distance_z; 
 	if(autopilot_mode == AP_MODE_NAV && stage_time > 0) 
 	{
 		sum_error_z += error_z;
@@ -121,7 +92,7 @@ void update_actuators_set_point()
 		sum_error_z = 0;
 	}
 
-	float velocity_z = (finken_system_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
+	float velocity_z = (finken_sensor_model.distance_z - distance_z_old) * FINKEN_SYSTEM_UPDATE_FREQ;
 
 	finken_actuators_set_point.thrust = FINKEN_THRUST_DEFAULT + error_z * FINKEN_THRUST_P;
 	finken_actuators_set_point.thrust += sum_error_z * FINKEN_THRUST_I / FINKEN_SYSTEM_UPDATE_FREQ;
@@ -129,25 +100,22 @@ void update_actuators_set_point()
 	finken_actuators_set_point.thrust -= FINKEN_VERTICAL_VELOCITY_FACTOR * (velocity_z / (sqrt(1 + velocity_z * velocity_z)));
 
 
-	distance_z_old = finken_system_model.distance_z;
+	distance_z_old = finken_sensor_model.distance_z;
 
 	// TODO: Theta
 }
 
-void send_finken_system_model_telemetry(struct transport_tx *trans, struct link_device* link)
+void send_finken_system_set_point_telemetry(struct transport_tx *trans, struct link_device* link)
 {
   trans=trans;
   link=link;
-  DOWNLINK_SEND_FINKEN_SYSTEM_MODEL(
+  DOWNLINK_SEND_FINKEN_SYSTEM_SET_POINT(
     DefaultChannel,
     DefaultDevice,
-    &finken_system_model.distance_z,
-    &finken_system_model.velocity_theta,
-    &finken_system_model.velocity_x,
-    &finken_system_model.velocity_y,
-    &finken_actuators_set_point.alpha,
-    &finken_actuators_set_point.beta,
-    &finken_actuators_set_point.thrust
+		&finken_system_set_point.z,
+		&finken_system_set_point.yaw,
+		&finken_system_set_point.velocity_x,
+		&finken_system_set_point.velocity_y
   );
 }
 

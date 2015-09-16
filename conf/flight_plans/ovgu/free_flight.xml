@@ -1,11 +1,11 @@
-<!-- DOCTYPE flight_plan SYSTEM "flight_plan.dtd" -->
+<?xml version="1.0"?>
+<!--<DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">-->
 
 <flight_plan NAME="Fink" LON0="1.27289" MAX_DIST_FROM_HOME="1000" GROUND_ALT="185" SECURITY_HEIGHT="25" QFU="270" ALT="250" LAT0="43.46223">
   <waypoints>
     <waypoint name="HOME" x="0.0" y="120.0" alt="250."/>
   </waypoints>
 	<header>
-		#include "modules/finken_model/finken_model_system.h"
 		#include "modules/finken_model/finken_model_actuators.h"
 	</header>
 	<blocks>
@@ -19,7 +19,7 @@
 		</block>
 
 		<block name="inair">
-			<attitude pitch="finken_actuators_set_point.alpha" roll="finken_actuators_set_point.beta" throttle="finken_actuators_model.thrust" until="FALSE" vmode="throttle"/>
+			<attitude pitch="finken_actuators_set_point.pitch" roll="finken_actuators_set_point.roll" yaw="finken_actuators_set_point.yaw" throttle="finken_actuators_set_point.thrust" until="FALSE" vmode="throttle"/>
 			<deroute block="default"/>
 		</block>
 
