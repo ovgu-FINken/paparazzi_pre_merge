@@ -171,10 +171,10 @@ void finken_system_model_periodic(void)
 		finken_actuators_set_point.pitch = error_x_p + error_x_d;
 		finken_actuators_set_point.roll = error_y_p + error_y_d;
 	}
-	else	{
+	/*else	{
 	finken_actuators_set_point.pitch = 0.0;
 	finken_actuators_set_point.roll  = 0.0;
-	}
+	}*/
 
 	// TODO: Theta
 }
