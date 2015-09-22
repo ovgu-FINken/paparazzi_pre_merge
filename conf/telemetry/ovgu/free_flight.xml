@@ -42,7 +42,7 @@
     <mode name="finken_data">
 		<message name="FINKEN_SENSOR_MODEL"      	period="0.3"/>
 		<message name="FINKEN_SYSTEM_SET_POINT"     period="0.3" />
-		<message name="INS"                     	period="0.3"/>
+		<message name="INS"                     	period="3"/>
     </mode>
 
     <mode name="ppm">

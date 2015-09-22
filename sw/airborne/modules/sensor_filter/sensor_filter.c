@@ -39,8 +39,8 @@ void sensor_filter_periodic(void)
 
 	//local coordinates !!!
 	//TODO: transform into global coordinate system
-	sensor_filtered.acceleration.x = imu.accel.x;
-	sensor_filtered.acceleration.y = imu.accel.y;
+	sensor_filtered.acceleration.x = imu.accel.x;	//(7*accel_temp_x + imu.accel.x)/8;
+	sensor_filtered.acceleration.y = imu.accel.y;	//(7*accel_temp_y + imu.accel.y)/8;
 
 	sensor_filtered.acceleration.z = imu.accel.z;
 
