@@ -21,7 +21,7 @@
     <file name="finken_model_sensors.c" />
     <file name="finken_model_system.c" />
     <file name="finken_model_actuators.c" />
-		<define name="FINKEN_THRUST_DEFAULT" value="0.55" />
+		<define name="FINKEN_THRUST_DEFAULT" value="0.48" />
 		<define name="FINKEN_THRUST_LOW" value="0.60" />
 		<define name="FINKEN_SYSTEM_UPDATE_FREQ" value="30" />
 	</makefile>

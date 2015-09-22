@@ -26,7 +26,6 @@
 #include "modules/sonar/sonar_array_i2c.h"
 #include "state.h"
 #include "subsystems/imu.h"
-#include "modules/sensor_filter/sensor_filter.h"
 //#include "modules/finken_ir_adc/finken_ir_adc.h"
 #include "modules/optical_flow/px4flow.h"
 
@@ -57,9 +56,9 @@ void finken_sensor_model_periodic(void)
 
   memcpy(&finken_sensor_model.rates, &imu.gyro, sizeof(struct Int32Rates));
 	/* x = y and y = x because of the coord. transformation from sensor to body coord. system */
-	finken_sensor_model.acceleration.x = sensor_filtered.acceleration.y;
-	finken_sensor_model.acceleration.y = -sensor_filtered.acceleration.x;
-	finken_sensor_model.acceleration.z = sensor_filtered.acceleration.z;
+	finken_sensor_model.acceleration.x = imu.accel.y;
+	finken_sensor_model.acceleration.y = -imu.accel.x;
+	finken_sensor_model.acceleration.z = imu.accel.z;
 //  memcpy(&finken_sensor_model.acceleration, &imu.accel, sizeof(struct Int32Vect3));
 	//finken_sensor_model.acceleration.x = sensor_filtered.acceleration.x;
 
@@ -98,6 +97,8 @@ void finken_sensor_model_periodic(void)
 }
 
 void send_finken_hc_debug(struct transport_tx *trans, struct link_device* link) {
+  trans=trans;
+  link=link;
   DOWNLINK_SEND_HC_DEBUG(
     DefaultChannel,
     DefaultDevice,
