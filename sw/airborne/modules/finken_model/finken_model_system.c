@@ -109,6 +109,18 @@
 #define FINKEN_POSITION_DESIRED_Y 0.0	// m
 #endif
 
+#define T 1.0f/FINKEN_SYSTEM_UPDATE_FREQ
+#define T1 FINKEN_HEIGHT_CONTROL_DELAY_TIME
+#define Tn FINKEN_HEIGHT_CONTROL_FOLLOW_TIME
+#define Tv FINKEN_HEIGHT_CONTROL_HOLD_TIME
+#define Kp FINKEN_HEIGHT_CONTROL_GAIN
+
+#define a0 (2.0f*T1-T)/(2.0f*T1+T)
+#define a1 (-4.0f*T1)/(2.0f*T1+T)
+#define b0 (T*T-2.0f*Tn*T-2.0f*Tv*T+4.0f*Tn*Tv)/(2.0f*Tn*T+4.0f*T1*Tn)*Kp
+#define b1 (T*T-4.0f*Tn*Tv)/(Tn*T+2.0f*T1*Tn)*Kp
+#define b2 (T*T+2.0f*Tn*T+2.0f*Tv*T+4.0f*Tn*Tv)/(2.0f*Tn*T+4.0f*T1*Tn)*Kp
+
 struct system_model_s finken_system_set_point;
 bool finken_system_model_control_height;
 
@@ -188,7 +200,7 @@ void finken_system_model_periodic(void)
 
 	float error_z_k = finken_system_set_point.z - pos_z;//POS_FLOAT_OF_BFP(finken_sensor_model.pos.z);
 
-	float thrust_k = 1.41177f * thrust_k_dec1 - 0.41177f * thrust_k_dec2 + 214.71242f * error_z_k - 423.51634f * error_z_k_dec1 + 208.83007f * error_z_k_dec2;
+	float thrust_k = -a1 * thrust_k_dec1 - a0 * thrust_k_dec2 + b2 * error_z_k + b1 * error_z_k_dec1 + b0 * error_z_k_dec2;
 	
 	if( !finken_system_model_control_height )
 		thrust_k = 0;
@@ -200,7 +212,7 @@ void finken_system_model_periodic(void)
 	thrust_k_dec1=thrust_k;
 
 	if (FINKEN_THRUST_DEFAULT + thrust_k /100 < 0.25f || FINKEN_THRUST_DEFAULT + thrust_k / 100 > 1.0f)
-		thrust_k -= 2*(214.71242f - 423.51634f + 208.83007f)*(error_z_k+error_z_k_dec1+error_z_k_dec2)/3;
+		thrust_k -= 2*(b2 + b1 + b0)*(error_z_k+error_z_k_dec1+error_z_k_dec2)/3;
 
 	if(FINKEN_THRUST_DEFAULT + thrust_k / 100 < 0.25f){
 		finken_actuators_set_point.thrust = 0.25f;
@@ -235,6 +247,7 @@ void finken_system_model_periodic(void)
 		else if (finken_actuators_set_point.roll < -20.0f)
 			finken_actuators_set_point.roll = -20.0f;
 	}
+
 	else if(FINKEN_POSITION_CONTROL_MODE)	{
 		switch(FINKEN_POSITION_CONTROL_MODE) {
 			case 2:
