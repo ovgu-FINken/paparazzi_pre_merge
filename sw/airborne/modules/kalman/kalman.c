@@ -96,14 +96,12 @@ void update_u(void) {
 	// ------------------- start of autopilot as control unit -----------------
 	// ------------------------------------------------------------------------
 
-	
 	// controll data from autopilot
-	float alpha = finken_actuators_model.alpha / 180 * PI;
-	float beta = finken_actuators_model.beta / 180 * PI;
-	// float theta = finken_actuators_model.theta; // [rad/s] winkelgeschwindigkeit
+	float alpha = (finken_actuators_model.roll / 180.0) * PI;
+	float beta = (finken_actuators_model.pitch / 180.0) * PI;
+	// float theta = finken_actuators_model.yaw; // [rad/s] winkelgeschwindigkeit
 	float theta = 0.0;
-	float throttle = finken_actuators_model.thrust;
-	
+	float throttle = finken_actuators_model.thrust * 100;
 
 	// ------------------------------------------------------------------------
 	// -------------------- end of autopilot as control unit ------------------
@@ -123,10 +121,10 @@ void update_u(void) {
 	float throttle = (((float)radio_control.values[RADIO_THROTTLE]) + 1318.0) / 12236.0 * 100;
 
 	// handle controller spezified dead zones
-	if (alpha<1.0 && alpha>-1.0) {
+	if (alpha<0.017453 && alpha>-0.017453) {
 		alpha = 0.0;
 	}
-	if (beta<1.0 && beta>-1.0) {
+	if (beta<0.017453 && beta>-0.017453) {
 		beta = 0.0;
 	}
 */
@@ -158,8 +156,8 @@ void update_u(void) {
 		fix16_mul(theta_sin, alpha_sin)), thrust_converted);	// Thrust in X-Direction
 	u->data[1][0] = fix16_mul(fix16_sub(fix16_mul(theta_sin, fix16_mul(beta_sin, alpha_cos)), 
 		fix16_mul(theta_cos, alpha_sin)), thrust_converted);	// Thrust in Y-Direction
-	u->data[2][0] = fix16_sub(fix16_mul(fix16_mul(beta_cos, alpha_cos), thrust_converted), 
-		fix16_mul(m, fix16_from_float(9.81)));	// Thrust in Z-Direction
+	u->data[2][0] = fix16_sub(fix16_mul(m, fix16_from_float(9.81)), 
+		fix16_mul(fix16_mul(beta_cos, alpha_cos), thrust_converted));	// Thrust in Z-Direction
 }
 
 // update observation vector
@@ -177,7 +175,8 @@ void update_z(void) {
 	// Euler-Angles
 	fix16_t alpha = finken_sensor_attitude.phi * (1<<(16-INT32_ANGLE_FRAC));
 	fix16_t beta = finken_sensor_attitude.theta * (1<<(16-INT32_ANGLE_FRAC));
-	fix16_t theta = finken_sensor_attitude.psi * (1<<(16-INT32_ANGLE_FRAC));
+	//fix16_t theta = finken_sensor_attitude.psi * (1<<(16-INT32_ANGLE_FRAC));
+	fix16_t theta = 0;
 
 	// Trigonometric variables to reduce future computation
 	fix16_t alpha_sin = fix16_sin(alpha);
@@ -240,16 +239,17 @@ void update_z(void) {
 	// update measurement vector vector
 	z->data[0][0] = last_pos.x;		// pos_x
 	z->data[1][0] = last_pos.y;		// pos_y
-	z->data[2][0] = position_z;		// pos_z
+	z->data[2][0] = -position_z;	// pos_z
 	z->data[3][0] = velocity_x;		// vel_x
 	z->data[4][0] = velocity_y;		// vel_y
-	z->data[5][0] = velocity_z;		// vel_z
+	z->data[5][0] = -velocity_z;	// vel_z
 	z->data[6][0] = fix16_add(fix16_add(fix16_mul(R11, acceleration_x), 
 		fix16_mul(R12, acceleration_y)), fix16_mul(R13, acceleration_z));	// acc_x
 	z->data[7][0] = fix16_add(fix16_add(fix16_mul(R21, acceleration_x), 
 		fix16_mul(R22, acceleration_y)), fix16_mul(R23, acceleration_z));	// acc_y
-	z->data[8][0] = fix16_add(fix16_add(fix16_mul(R31, acceleration_x), 
-		fix16_mul(R32, acceleration_y)), fix16_mul(R33, acceleration_z));	// acc_z
+	z->data[8][0] = fix16_mul(fix16_add(fix16_add(fix16_mul(R31, acceleration_x), 
+		fix16_mul(R32, acceleration_y)), fix16_mul(R33, acceleration_z)), 
+		fix16_from_float(-1.0));	// acc_z
 
 	// update timestamp
 	last_time = now;
@@ -422,7 +422,7 @@ extern void update_output(void) {
 	kalman_sv_pva.pos_y = (x->data[1][0]) / (1<<(16-INT32_POS_FRAC));
 
 	// do not fall below starting position
-	if (z < 0.0) {
+	if (z > 0.0) {
 		kalman_sv_pva.pos_z = 0;
 		x->data[2][0] = 0;
 		on_ground = 1;
@@ -436,7 +436,7 @@ extern void update_output(void) {
 	kalman_sv_pva.vel_y = (x->data[4][0]) * (1<<(INT32_SPEED_FRAC-16));
 
 	// if already on ground set z-velocity 0:
-	if ((on_ground == 1) && (z_v < 0.0)) {
+	if ((on_ground == 1) && (z_v > 0.0)) {
 		kalman_sv_pva.vel_z = 0;
 		x->data[5][0] = 0;
 	}
