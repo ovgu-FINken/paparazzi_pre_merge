@@ -77,7 +77,7 @@
  *	constant to enable/disable velocity controller
  */
 #ifndef FINKEN_VELOCITY_CONTROL_MODE
-#define FINKEN_VELOCITY_CONTROL_MODE 1
+#define FINKEN_VELOCITY_CONTROL_MODE 0
 #endif
 
 /*
@@ -170,15 +170,15 @@ float takeoff_roll, takeoff_pitch, takeoff_jaw;
 
 void finken_system_model_periodic(void)
 {	
-	takeoff_roll  = (float) radio_control.values[RADIO_ROLL] / 13000.0 * maxRoll;
-	takeoff_pitch = (float) radio_control.values[RADIO_PITCH] / 13000.0 * maxPitch;
-	takeoff_jaw   = (float) radio_control.values[RADIO_YAW] / 13000.0 * maxYaw;
+	takeoff_roll  = (float) radio_control.values[RADIO_ROLL] / 12236.0 * maxRoll;
+	takeoff_pitch = (float) radio_control.values[RADIO_PITCH] / 12236.0 * maxPitch;
+	takeoff_jaw   = (float) radio_control.values[RADIO_YAW] / 12236.0 * maxYaw;
 
 /*
  * Allows manual remote control in autopilot mode
  */
 
-	/*finken_actuators_set_point.roll = takeoff_roll;
+	finken_actuators_set_point.roll = takeoff_roll;
 	finken_actuators_set_point.pitch = takeoff_pitch;
 
 	if(finken_actuators_set_point.roll < deadRoll && finken_actuators_set_point.roll > -deadRoll)
@@ -192,7 +192,7 @@ void finken_system_model_periodic(void)
 	if(finken_actuators_set_point.yaw < deadPitch && finken_actuators_set_point.yaw > -deadYaw)
 		finken_actuators_set_point.yaw = 0.0f;
 	if(finken_actuators_set_point.yaw > maxYaw)
-		finken_actuators_set_point.yaw = maxYaw;*/
+		finken_actuators_set_point.yaw = maxYaw;
 
 /*
  *	Altitude controller

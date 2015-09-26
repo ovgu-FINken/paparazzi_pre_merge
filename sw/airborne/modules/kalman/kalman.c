@@ -92,15 +92,27 @@ void update_u(void) {
 	// Pitch --> beta
 	// Yaw --> theta
 
-	/*
+	// ------------------------------------------------------------------------
+	// ------------------- start of autopilot as control unit -----------------
+	// ------------------------------------------------------------------------
+
+	
 	// controll data from autopilot
-	float alpha = finken_actuators_model.alpha;
-	float beta = finken_actuators_model.beta;
-	// float theta = finken_actuators_model.theta; // grad/s winkelgeschwindigkeit
+	float alpha = finken_actuators_model.alpha / 180 * PI;
+	float beta = finken_actuators_model.beta / 180 * PI;
+	// float theta = finken_actuators_model.theta; // [rad/s] winkelgeschwindigkeit
 	float theta = 0.0;
 	float throttle = finken_actuators_model.thrust;
-	*/
+	
 
+	// ------------------------------------------------------------------------
+	// -------------------- end of autopilot as control unit ------------------
+	// ------------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------
+	// ---------------- start of radio controller as control unit -------------
+	// ------------------------------------------------------------------------
+/*
 	// controll data from controller
 	float alpha = ((float) radio_control.values[RADIO_ROLL]) / (12236*180) * 45 * PI;
 	float beta = ((float) radio_control.values[RADIO_PITCH]) / (12236*180) * 45 * PI;
@@ -117,6 +129,10 @@ void update_u(void) {
 	if (beta<1.0 && beta>-1.0) {
 		beta = 0.0;
 	}
+*/
+	// ------------------------------------------------------------------------
+	// ----------------- end of radio controller as control unit --------------
+	// ------------------------------------------------------------------------
 
 	// trigonometric variables to reduce future computations
 	fix16_t alpha_sin = fix16_sin(fix16_from_float(alpha));
