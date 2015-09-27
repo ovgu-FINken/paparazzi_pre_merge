@@ -32,6 +32,9 @@ struct last_measurement_vertical_positions
 	fix16_t y;
 }; 
 
+// struct to communicate results to other modules
+extern struct state_vector_kalman kalman_sv_pva;
+
 extern void update_u(void);
 extern void update_z(void);
 extern void kalman_init(void);

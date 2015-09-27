@@ -33,16 +33,17 @@
 #include <math.h>
 
 #include "subsystems/datalink/downlink.h"
+#include "modules/kalman/kalman.h"
 
 /*
  *	P and D gains for the velocity control in x and y direction
  */
 #ifndef FINKEN_VELOCITY_X_P
-#define FINKEN_VELOCITY_X_P 28
+#define FINKEN_VELOCITY_X_P 7
 #endif
 
 #ifndef FINKEN_VELOCITY_Y_P
-#define FINKEN_VELOCITY_Y_P 28
+#define FINKEN_VELOCITY_Y_P 7
 #endif
 
 #ifndef FINKEN_VELOCITY_X_D
@@ -77,7 +78,7 @@
  *	constant to enable/disable velocity controller
  */
 #ifndef FINKEN_VELOCITY_CONTROL_MODE
-#define FINKEN_VELOCITY_CONTROL_MODE 0
+#define FINKEN_VELOCITY_CONTROL_MODE 1
 #endif
 
 /*
@@ -177,7 +178,7 @@ void finken_system_model_periodic(void)
 /*
  * Allows manual remote control in autopilot mode
  */
-
+/*
 	finken_actuators_set_point.roll = takeoff_roll;
 	finken_actuators_set_point.pitch = takeoff_pitch;
 
@@ -193,12 +194,12 @@ void finken_system_model_periodic(void)
 		finken_actuators_set_point.yaw = 0.0f;
 	if(finken_actuators_set_point.yaw > maxYaw)
 		finken_actuators_set_point.yaw = maxYaw;
-
+*/
 /*
  *	Altitude controller
  */
 
-	float error_z_k = finken_system_set_point.z - pos_z;//POS_FLOAT_OF_BFP(finken_sensor_model.pos.z);
+	float error_z_k = finken_system_set_point.z - pos_z; //POS_FLOAT_OF_BFP(finken_sensor_model.pos.z);
 
 	float thrust_k = -a1 * thrust_k_dec1 - a0 * thrust_k_dec2 + b2 * error_z_k + b1 * error_z_k_dec1 + b0 * error_z_k_dec2;
 	
@@ -230,8 +231,10 @@ void finken_system_model_periodic(void)
  */
 
 	if(FINKEN_VELOCITY_CONTROL_MODE)	{
-		error_vx_p = (finken_system_set_point.velocity_x - SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.x)) * FINKEN_VELOCITY_X_P;
-		error_vy_p = (finken_system_set_point.velocity_y - SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.y)) * FINKEN_VELOCITY_Y_P;
+		//error_vx_p = (finken_system_set_point.velocity_x - SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.x)) * FINKEN_VELOCITY_X_P;
+		//error_vy_p = (finken_system_set_point.velocity_y - SPEED_FLOAT_OF_BFP(finken_sensor_model.velocity.y)) * FINKEN_VELOCITY_Y_P;
+		error_vx_p = (finken_system_set_point.velocity_x - SPEED_FLOAT_OF_BFP(kalman_sv_pva.vel_x)) * FINKEN_VELOCITY_X_P;
+		error_vy_p = (finken_system_set_point.velocity_y - SPEED_FLOAT_OF_BFP(kalman_sv_pva.vel_y)) * FINKEN_VELOCITY_Y_P;
 		error_vx_d = (0 - ACCEL_FLOAT_OF_BFP(finken_sensor_model.acceleration.x)) * FINKEN_VELOCITY_X_D;	//constant velocity
 		error_vy_d = (0 - ACCEL_FLOAT_OF_BFP(finken_sensor_model.acceleration.y)) * FINKEN_VELOCITY_Y_D;	//constant velocity
 

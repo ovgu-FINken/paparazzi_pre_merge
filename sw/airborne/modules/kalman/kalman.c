@@ -12,6 +12,7 @@
 #include "math/pprz_algebra_int.h"							// fixpoint arithmetic
 #include "modules/finken_model/finken_model_actuators.h"
 #include "modules/finken_model/finken_model_sensors.h"
+#include "modules/finken_model/finken_model_system.h"
 #include "subsystems/radio_control.h"						// controll values from controller
 
 // last measurement time to compute time difference
@@ -101,7 +102,15 @@ void update_u(void) {
 	float beta = (finken_actuators_model.pitch / 180.0) * PI;
 	// float theta = finken_actuators_model.yaw; // [rad/s] winkelgeschwindigkeit
 	float theta = 0.0;
-	float throttle = finken_actuators_model.thrust * 100;
+	float throttle;
+
+	// waiting for heigth controller
+	if(finken_system_model_control_height==0) {
+		throttle = 0.0;
+	}
+	else {
+		throttle = finken_actuators_model.thrust * 100;
+	}
 
 	// ------------------------------------------------------------------------
 	// -------------------- end of autopilot as control unit ------------------
