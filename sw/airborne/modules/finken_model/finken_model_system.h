@@ -43,6 +43,8 @@ struct system_model_s {
   bool reset;
 };
 extern bool finken_system_model_control_height;
+extern bool finken_system_model_control_velocity;
+extern bool finken_system_model_control_position;
 
 extern struct system_model_s finken_system_set_point;
 extern float takeoff_pitch, takeoff_roll;
