@@ -133,7 +133,7 @@ void finken_system_model_periodic(void)
 	if(finken_actuators_set_point.yaw > maxYaw)
 		finken_actuators_set_point.yaw = maxYaw;
 	
-	float error_z_k = finken_system_set_point.z - pos_z;//POS_FLOAT_OF_BFP(finken_sensor_model.pos.z);
+	float error_z_k = finken_system_set_point.z - POS_FLOAT_OF_BFP(finken_sensor_model.pos.z);
 
 	float thrust_k = -a1 * thrust_k_dec1 - a0 * thrust_k_dec2 + b2 * error_z_k + b1 * error_z_k_dec1 + b0 * error_z_k_dec2;
 	

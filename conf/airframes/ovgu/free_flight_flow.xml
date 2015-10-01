@@ -51,11 +51,14 @@
     <!--    <load name="finken_ir_adc.xml">
             <configure name="ADC_IR" value="ADC_3"/>
     </load>-->
-    <load name="finken_model.xml" />
+    <load name="finken_model.xml">
+			<define name="USE_FLOW"/>
+		</load>
 	</modules>
 
 	<section name="FINKEN" prefix="FINKEN_"/>
-		<include href="conf/modules/finken_model/$AC_ID_param.xml"/>
+	<include href="conf/modules/finken_model/$AC_ID_param.xml"/>
+	<include href="conf/modules/finken_model/common.xml"/>
 	<!--
     ^Front^
 	NW			NE

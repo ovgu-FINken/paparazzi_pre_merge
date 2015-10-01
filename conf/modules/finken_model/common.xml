@@ -1,0 +1,5 @@
+<airframe>
+	<section name="FINKEN" prefix="FINKEN_" >
+		<define name="MAX_Z" value="3.0" />
+	</section>
+</airframe>
